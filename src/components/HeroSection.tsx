@@ -37,13 +37,21 @@ export default function HeroSection({ openModal }: HeroSectionProps) {
             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
               {/* GIF with subtle frame */}
               <div className="relative rounded-2xl overflow-hidden">
+              <picture>
+                {/* Modern browsers will use this efficient WebP */}
+                <source srcSet="/images/aberdeenhero-fallback.gif" type="image/gif" />
+
+                {/* Older browsers will use the NEW, SMALLER GIF */}
+                <source srcSet="/images/aberdeenhero-fallback.gif" type="image/gif" />
+
+                {/* Final safety net for very old browsers */}
                 <img
-                  src="/images/aberdeenhero.gif"
-                  alt="AI-Powered Customer Insights Platform showing real-time analytics and data visualization"
+                  src="/images/aberdeenhero-fallback.gif"
+                  alt="AI-Powered Customer Insights Platform..."
                   className="w-full h-auto max-h-80 object-cover"
                   loading="eager"
                 />
-
+              </picture>
                 {/* Overlay gradient for better text visibility if needed */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
               </div>
