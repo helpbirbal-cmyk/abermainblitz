@@ -12,7 +12,7 @@ export default function CTASection({
   openModal
 }: CtaSectionProps) {
   return (
-    <section className="py-20 bg-gradient-hero text-white">
+    <section className="py-20 bg-black text-white">
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-6xl font-bold mb-6">{title}</h2>
         <p className="text-xl mb-10 max-w-3xl mx-auto">{description}</p>

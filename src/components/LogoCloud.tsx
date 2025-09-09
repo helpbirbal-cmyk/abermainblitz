@@ -31,7 +31,7 @@ const logos = [
 
 export default function LogoCloud() {
   return (
-    <section id="results"   className="py-16 bg-blue-700 text-white ">
+    <section id="results"   className="py-16 bg-black text-white ">
       <div className="max-w-7xl mx-auto px-4">
         <p className="text-center text-5xl font-bold  mb-8">Customers</p>
         <div className="flex flex-wrap justify-center bg-white items-center gap-8 md:gap-16">

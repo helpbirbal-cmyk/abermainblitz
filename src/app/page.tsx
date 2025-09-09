@@ -13,6 +13,8 @@ import CTASection from '@/components/CTASection'
 import Footer from '@/components/Footer'
 import DemoModal from '@/components/DemoModal'
 import HalftoneWaves from "@/components/halftonewaves"
+import FloatingPaths from "@/components/BackgroundPaths"
+
 
 export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -28,7 +30,7 @@ export default function HomePage() {
   return (
     <>
       <Navigation openModal={openModal} />
-      <HeroSection openModal={openModal} />
+      <FloatingPaths openModal={openModal} />
       <LogoCloud />
       <IndustrySolutions />
 
