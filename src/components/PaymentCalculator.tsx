@@ -408,7 +408,8 @@ export default function PaymentCalculator({ onRequestDemo }: PaymentCalculatorPr
       dailyTPV,
       annualTPV,
       savingsAsPercentageOfRevenue,
-      revenueIncreasePercentage
+      revenueIncreasePercentage,
+      currentSupportCost
     };
   }, [inputs]);
 
@@ -486,7 +487,8 @@ const monthlyTrendData = useMemo(() => generateTrendData(), [inputs, results]);
       value: inputs.avgValue,
       min: 10,
       max: 1000,
-      step: 10
+      step: 10,
+      formatValue: (v: number) => `${v}ms` // ← Add this
     }
   ];
 
@@ -497,7 +499,8 @@ const monthlyTrendData = useMemo(() => generateTrendData(), [inputs, results]);
       value: inputs.currentLatency,
       min: 50,
       max: 1000,
-      step: 10
+      step: 10,
+      formatValue: (v: number) => `${v}ms` // ← Add this
     },
     {
       label: "Target Latency (ms)",
@@ -505,7 +508,8 @@ const monthlyTrendData = useMemo(() => generateTrendData(), [inputs, results]);
       value: inputs.mozarkLatency,
       min: 10,
       max: 200,
-      step: 5
+      step: 5,
+      formatValue: (v: number) => `${v}ms` // ← Add this
     }
   ];
 
@@ -587,44 +591,54 @@ const monthlyTrendData = useMemo(() => generateTrendData(), [inputs, results]);
     }
   ];
 
+  // For latency savings - calculate actual improvement percentage
+  const latencyImprovement = ((results.currentAbandonment - results.mozarkAbandonment) / results.currentAbandonment) * 100;
+
+  // For fraud/decline reductions - use the configured percentages but adjust for realism
+  const effectiveFraudReduction = inputs.fraudReduction * 0.8; // 80% of configured value (more realistic)
+
   // Revised metrics for the new layout
   const summaryMetrics = [
     {
       label: "Total Annual Impact",
-      value: formatCurrency(results.totalDailySavings*365),
-      description: "Combined Financial Impact",
+      value: formatCurrency(results.totalAnnualSavings),
+      change: Math.round((results.totalAnnualSavings / results.annualTPV) * 100), // % of total volume
+      isPositive: true,
+      description: `Adds ${Math.round((results.totalAnnualSavings / results.annualTPV) * 100)}% to your bottom line`,
       icon: "🚀"
-    },
-
+    }
   ];
-
   const keyAchievements = [
-    {
-      label: "Latency Savings",
-      value: formatCurrency(results.dailySavings),
-      description: "Reduced transaction failures",
-      icon: "🌟"
-    },
-    {
-      label: "Fraud Prevention",
-      value: formatCurrency(results.fraudSavings),
-      description: "Fewer fraudulent transactions",
-      icon: "🌟"
-    },
-    {
-      label: "Decline Reduction",
-      value: formatCurrency(results.declineSavings),
-      description: "Fewer declined transactions",
-      icon: "🌟"
-    },
-    {
-      label: "Operational Savings",
-      value: formatCurrency(results.supportSavings),
-      description: "Lower support costs",
-      icon: "🌟"
-    },
-  ];
+  // Decline Reduction - shows actual impact
+  {
+    label: "Decline Prevention",
+    value: formatCurrency(results.declineSavings * 365),
+    change: Math.round(inputs.declineReduction * 0.85), // 85% of target (realistic)
+    isPositive: true,
+    description: `Prevents ${Math.round(inputs.declineReduction * 0.85)} declined transactions daily`,
+    icon: "📉"
+  },
 
+  // Operational Savings - shows cost efficiency
+  {
+    label: "Operational Efficiency",
+    value: formatCurrency(results.supportSavings * 365),
+    change: Math.round((results.supportSavings / results.currentSupportCost) * 100),
+    isPositive: true,
+    description: `Reduces support costs by ${Math.round(results.supportSavings / results.currentSupportCost * 100)}%`,
+    icon: "⚙️"
+  },
+
+  // Fraud Prevention - shows risk reduction
+  {
+    label: "Fraud Prevention",
+    value: formatCurrency(results.fraudSavings * 365),
+    change: Math.round(inputs.fraudReduction * 0.9), // 90% of target
+    isPositive: true,
+    description: `Reduces fraud losses by ${Math.round(inputs.fraudReduction)}%`,
+    icon: "🛡️"
+  }
+];
   return (
     <div className="space-y-8">
       {/* Input Form with Clean Layout */}

@@ -4,7 +4,12 @@ import * as React from "react"
 import * as AccordionPrimitive from "@radix-ui/react-accordion"
 import { ChevronDownIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+// import { cn } from "@/lib/utils"
+
+// Add this simple cn function at the top:
+function cn(...classes: (string | undefined | boolean)[]) {
+  return classes.filter(Boolean).join(' ').trim()
+}
 
 function Accordion({
   ...props

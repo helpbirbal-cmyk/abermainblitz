@@ -1,25 +1,43 @@
-// components/ui/ResultCard.tsx
-interface ResultCardProps {
-  title: string;
-  value: string;
-  bgColor: string;
-  borderColor: string;
-  textColor: string;
-  titleColor: string;
-}
+// components/sections/ResultsSection.tsx (or wherever it is)
+import ResultCard from './ui/ResultCard';
 
-export default function ResultCard({
-  title,
-  value,
-  bgColor,
-  borderColor,
-  textColor,
-  titleColor
-}: ResultCardProps) {
+export default function ResultsSection() {
+  const results = [
+    {
+      title: "ROI Increase",
+      value: "45%",
+      bgColor: "bg-green-50",
+      borderColor: "border-green-200",
+      textColor: "text-green-700",
+      titleColor: "text-green-600"
+    },
+    {
+      title: "Cost Reduction",
+      value: "30%",
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200",
+      textColor: "text-blue-700",
+      titleColor: "text-blue-600"
+    },
+    // Add more result cards with all required props
+  ];
+
   return (
-    <div className={`${bgColor} p-3 rounded-lg border ${borderColor}`}>
-      <h3 className={`text-xs font-medium ${titleColor} mb-1`}>{title}</h3>
-      <p className={`text-lg font-bold ${textColor}`}>{value}</p>
-    </div>
+    <section>
+      <h2>Our Results</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {results.map((result, index) => (
+          <ResultCard
+            key={index}
+            title={result.title}
+            value={result.value}
+            bgColor={result.bgColor}
+            borderColor={result.borderColor}
+            textColor={result.textColor}
+            titleColor={result.titleColor}
+          />
+        ))}
+      </div>
+    </section>
   );
 }

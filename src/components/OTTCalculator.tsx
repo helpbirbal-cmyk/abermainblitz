@@ -1,3 +1,4 @@
+// components/OTTCalculator.tsx
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -368,7 +369,8 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
       value: inputs.avgViewTime,
       min: 1,
       max: 120,
-      step: 1
+      step: 1,
+      formatValue: (v: number) => `${v} min` // Add this
     },
     {
       label: "Monthly Churn Rate (%)",
@@ -388,7 +390,8 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
       value: inputs.avgCpm,
       min: 1,
       max: 50,
-      step: 0.5
+      step: 0.5,
+      formatValue: (v: number) => `${v} min` // Add this
     },
     {
       label: "Subscription Price ($)",
@@ -407,7 +410,8 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
       value: inputs.currentLatency,
       min: 1.0,
       max: 20.0,
-      step: 0.1
+      step: 0.1,
+      formatValue: (v: number) => `${v} min` // Add this
     },
     {
       label: "Target Latency (seconds)",
@@ -425,6 +429,8 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
       label: "Total Annual Impact",
       value: formatCurrency(results.totalMonthlySavings),
       description: "Combined Financial Impact",
+      change: 12, // Change to number
+      isPositive: true,
       icon: "💸"
     },
   /**  {
@@ -441,18 +447,24 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
       label: "Ad Revenue Impact",
       value: formatCurrency(results.potentialSavings),
       description: "From reduced buffering",
+      change: 8, // Change to number
+      isPositive: true,
       icon: "⬆️"
     },
     {
       label: "Churn Reduction Impact",
       value: formatCurrency(results.churnSavings / 12),
       description: "Monthly subscriber retention",
+      change: 10, // Change to number
+      isPositive: true,
       icon: "⬆️"
     },
     {
       label: "Operational Impact",
       value: formatCurrency(results.operationalSavings),
       description: "Bandwidth optimization",
+      change: 7, // Change to number
+      isPositive: true,
       icon: "⬆️"
     },
   ];
