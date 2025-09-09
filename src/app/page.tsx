@@ -36,7 +36,7 @@ export default function HomePage() {
       <CostCalculators openModal={openModal} />
       <CTASection
         title="Ready to Transform Your Customer Experience?"
-        description="Partner with Aberdeen and leverage the power of MozarkAI to drive growth, reduce churn, and increase revenue."
+        description="Leverage Aberdeen's Expertise & MozarkAI to drive growth, reduce churn, and increase revenue."
         openModal={openModal} />
         <Footer />
 

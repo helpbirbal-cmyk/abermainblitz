@@ -31,7 +31,7 @@ export default function Navigation({ openModal }: NavigationProps) {
                 width={120}
                 height={32}
                 className="h-8 w-auto"
-              />
+              /> Mojo
               <span className="text-white">|</span>
               <Image
                 src="/images/mozarkicon.png" // Make sure the file extension is correct
