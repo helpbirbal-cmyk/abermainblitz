@@ -31,7 +31,7 @@ export default function HomePage() {
       <HeroSection openModal={openModal} />
       <LogoCloud />
       <IndustrySolutions />
-      <ResultsSection />
+
       <TechnologySection />
       <CostCalculators openModal={openModal} />
       <CTASection
