@@ -62,7 +62,7 @@ function FloatingPaths({ position, isMobile }: { position: number; isMobile: boo
 }
 
 export default function BackgroundPaths({
-  title = "Achieve Zero Defects",
+  title = "Achieve ZERO Defects",
 }: {
   title?: string
 }) {
@@ -82,7 +82,7 @@ export default function BackgroundPaths({
   // Split the title into lines for proper animation
   const titleLines = [
     "Achieve",
-    "Zero Defects"
+    "ZERO Defects"
   ]
 
   return (
@@ -139,18 +139,17 @@ export default function BackgroundPaths({
             </div>
 
             <div className="text-sm md:text-base text-black dark:text-white opacity-80 max-w-2xl leading-relaxed text-center">
-              AberCXO's expertise & Mozark's synthetic monitoring proactively tests  user journeys from a global network,
-              pinpointing front-end, network & API issues with AI-powered root cause analysis
+              Mozark's AI-powered synthetic testing & monitoring to pinpoint front-end, network & API issues
             </div>
 
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-blue-700 opacity-60
+              className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-blue-700 opacity-80
                          border border-black/30 dark:border-white/30 text-white dark:text-white hover:text-black
                          hover:bg-white /5 dark:hover:bg-white /5 transition-colors duration-300"
             >
-              <span className="font-bold">Do More for Less</span>
+              <span className="font-bold">Do MORE in Less</span>
               <motion.span
                 animate={{ x: [0, 5, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
