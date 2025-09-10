@@ -135,22 +135,22 @@ export default function BackgroundPaths({
             className="flex flex-col items-center space-y-5 mt-6 md:mt-8 px-4"
           >
             <div className="text-lg md:text-xl font-medium text-black dark:text-white opacity-90">
-              Know Your App Performance, Before Your Users Complain
+              Know Your App Performance, Before Users Complain
             </div>
 
             <div className="text-sm md:text-base text-black dark:text-white opacity-80 max-w-2xl leading-relaxed text-center">
-              Mozark's synthetic monitoring proactively tests critical user journeys from a global network,
-              pinpointing front-end, network, and API issues with AI-powered root cause analysis
+              AberCXO's expertise & Mozark's synthetic monitoring proactively tests  user journeys from a global network,
+              pinpointing front-end, network & API issues with AI-powered root cause analysis
             </div>
 
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center space-x-2 px-6 py-3 rounded-full bg-transparent
-                         border border-black/30 dark:border-white/30 text-black dark:text-white
-                         hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-300"
+              className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-blue-700 opacity-60
+                         border border-black/30 dark:border-white/30 text-white dark:text-white hover:text-black
+                         hover:bg-white /5 dark:hover:bg-white /5 transition-colors duration-300"
             >
-              <span className="font-medium">Do More, Cut Time, Costs</span>
+              <span className="font-bold">Do More for Less</span>
               <motion.span
                 animate={{ x: [0, 5, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
