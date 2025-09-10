@@ -92,8 +92,8 @@ export default function BackgroundPaths({
 
   // Split the title into lines for proper animation
   const titleLines = [
-    "Achieve",
-    "ZERO Defects"
+    "Make Your App",
+    "ZERO Defect App",
   ]
 
   return (
@@ -147,15 +147,15 @@ export default function BackgroundPaths({
             transition={{ delay: 0.8, duration: 0.8 }}
             className="flex flex-col items-center space-y-5 mt-6 md:mt-8 px-2 w-full" // Reduced padding on mobile
           >
-            <div className="text-lg md:text-xl font-medium text-black dark:text-white opacity-90">
-              Know Your App Performance,<br />Before Users Suffer
+            <div className="text-md md:text-xl font-medium text-black dark:text-white opacity-90">
+              Know Your App Performance, Before Users Leave
             </div>
 
             <div className="text-sm md:text-base text-black dark:text-white opacity-80 max-w-2xl leading-relaxed text-center">
-              Mozark's AI-powered synthetic testing & monitoring <br /> Pinpoint application, network & API issues in realtime
+              AI-powered realtime synthetic testing & monitoring t pinpoint application, network & API issues
             </div>
 
-            <div className="w-full border-t border-gray-300 dark:border-gray-700 my-4"></div>
+            <div className="w-full border-t border-gray-300 dark:border-gray-700 my-2"></div>
 
             <motion.button
               onClick={scrollToEstimator}
