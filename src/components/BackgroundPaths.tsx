@@ -69,7 +69,7 @@ function FloatingPaths({ position }: { position: number }) {
 }
 
 export default function BackgroundPaths({
-  title = "AI-Powered Digital Experience ",
+  title = "AI.Powered Digital.Experience ",
 }: {
   title?: string
 }) {
@@ -127,8 +127,11 @@ export default function BackgroundPaths({
                             hover:shadow-md dark:hover:shadow-neutral-800/50"
             >
               <span className="opacity-90 group-hover:opacity-100 transition-opacity">
-                Deliver Zero Defect Digital Experience, Do More, Cut costs & Scale Profitably
-              </span>
+                Achieve ZERO Defects
+              </span><br></br>
+              <span className="opacity-90 group-hover:opacity-100 transition-opacity">
+              Do MORE, Cut Costs & Scale
+              </span><br></br>
               <span
                 className="ml-2 md:ml-3 opacity-70 group-hover:opacity-100 group-hover:translate-x-1.5
                                 transition-all duration-300"
