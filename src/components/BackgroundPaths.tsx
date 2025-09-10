@@ -79,6 +79,17 @@ export default function BackgroundPaths({
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // Smooth scroll function
+  const scrollToEstimator = () => {
+    const estimatorSection = document.getElementById('calculator');
+    if (estimatorSection) {
+      estimatorSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
   // Split the title into lines for proper animation
   const titleLines = [
     "Achieve",
@@ -143,11 +154,12 @@ export default function BackgroundPaths({
             </div>
 
             <motion.button
+              onClick={scrollToEstimator}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-blue-700 opacity-80
-                         border border-black/30 dark:border-white/30 text-white dark:text-white hover:text-black
-                         hover:bg-white /5 dark:hover:bg-white /5 transition-colors duration-300"
+                         border border-black/30 dark:border-white/30 text-white
+                         hover:bg-white/5 transition-colors duration-300 cursor-pointer"
             >
               <span className="font-bold">Do MORE in Less</span>
               <motion.span
@@ -160,12 +172,13 @@ export default function BackgroundPaths({
           </motion.div>
         </motion.div>
 
-        {/* Scroll indicator */}
+        {/* Scroll indicator - also links to Value Estimator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 0.8 }}
-          className="absolute bottom-10 flex flex-col items-center"
+          className="absolute bottom-10 flex flex-col items-center cursor-pointer"
+          onClick={scrollToEstimator}
         >
           <span className="text-sm text-black/70 dark:text-white/70 mb-2">
             Scroll to explore
