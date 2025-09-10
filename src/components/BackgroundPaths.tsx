@@ -127,10 +127,13 @@ export default function BackgroundPaths({
                             hover:shadow-md dark:hover:shadow-neutral-800/50"
             >
               <span className="opacity-90 group-hover:opacity-100 transition-opacity">
-                Know Your App Performance, Before Your Customers Complain
-              </span><br></br>
+                Know Your App Performance, Before Your Users Complain
+              </span><br></br><br></br>
               <span className="opacity-90 group-hover:opacity-100 transition-opacity">
-              MozarkAI Does More, Cuts Time & Costs
+              Mozark's synthetic monitoring proactively tests critical user journeys from a global network, pinpointing front-end, network, and API issues with AI-powered root cause analysis
+              </span><br></br><br></br>
+              <span className="opacity-90 group-hover:opacity-100 transition-opacity">
+              Do More, Cut Time & Costs
               </span><br></br>
               <span
                 className="ml-2 md:ml-3 opacity-70 group-hover:opacity-100 group-hover:translate-x-1.5
