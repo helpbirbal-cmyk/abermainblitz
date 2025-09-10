@@ -121,7 +121,7 @@
   }
 }
 
-    
+
 /* Added custom gradient styles for the Aberdeen page */
 .bg-gradient-hero {
   background: linear-gradient(90deg, #1e40af 0%, #c026d3 100%);
@@ -230,4 +230,31 @@ input[type="range"].compact::-moz-range-thumb {
 
 input[type="range"].compact::-moz-range-thumb:hover {
   background: #3a0ca3;
+}
+
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Responsive text scaling */
+@media (max-width: 640px) {
+  .hero-text {
+    font-size: 2.5rem;
+    line-height: 1.2;
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

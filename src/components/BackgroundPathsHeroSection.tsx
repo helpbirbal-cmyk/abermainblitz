@@ -2,26 +2,10 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
 
 function FloatingPaths({ position }: { position: number }) {
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  // Adjust path complexity for mobile devices
-  const pathCount = isMobile ? 18 : 36
-
-  const paths = Array.from({ length: pathCount }, (_, i) => ({
+  const paths = Array.from({ length: 36 }, (_, i) => ({
     id: i,
     d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
       380 - i * 5 * position
@@ -31,17 +15,12 @@ function FloatingPaths({ position }: { position: number }) {
       684 - i * 5 * position
     } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
     color: `rgba(15,23,42,${0.1 + i * 0.03})`,
-    width: isMobile ? 0.3 + i * 0.02 : 0.5 + i * 0.03,
+    width: 0.5 + i * 0.03,
   }))
 
   return (
     <div className="absolute inset-0 pointer-events-none">
-      <svg
-        className="w-full h-full text-slate-950 dark:text-white"
-        viewBox="0 0 696 316"
-        fill="none"
-        preserveAspectRatio="xMidYMid slice"
-      >
+      <svg className="w-full h-full text-slate-950 dark:text-white" viewBox="0 0 696 316" fill="none">
         <title>Revolutionize Digital Experience</title>
         {paths.map((path) => (
           <motion.path
@@ -69,7 +48,7 @@ function FloatingPaths({ position }: { position: number }) {
 }
 
 export default function BackgroundPaths({
-  title = "AI-Powered Digital Experience ",
+  title = "Revolutionize Digital Experience with AI-Driven Assurance",
 }: {
   title?: string
 }) {
@@ -89,9 +68,9 @@ export default function BackgroundPaths({
           transition={{ duration: 2 }}
           className="max-w-4xl mx-auto"
         >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 md:mb-8 tracking-tighter">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 tracking-tighter">
             {words.map((word, wordIndex) => (
-              <span key={wordIndex} className="block">
+              <span key={wordIndex} className="inline-block mr-4 last:mr-0">
                 {word.split("").map((letter, letterIndex) => (
                   <motion.span
                     key={`${wordIndex}-${letterIndex}`}
@@ -119,23 +98,22 @@ export default function BackgroundPaths({
                         dark:from-white/10 dark:to-black/10 p-px rounded-2xl backdrop-blur-lg
                         overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
           >
-            <button
-              className="rounded-[1.15rem] px-6 py-4 md:px-8 md:py-6 text-base md:text-lg font-semibold backdrop-blur-md
+            <Button
+              variant="ghost"
+              className="rounded-[1.15rem] px-8 py-6 text-lg font-semibold backdrop-blur-md
                             bg-white/95 hover:bg-white/100 dark:bg-black/95 dark:hover:bg-black/100
                             text-black dark:text-white transition-all duration-300
                             group-hover:-translate-y-0.5 border border-black/10 dark:border-white/10
                             hover:shadow-md dark:hover:shadow-neutral-800/50"
             >
-              <span className="opacity-90 group-hover:opacity-100 transition-opacity">
-                Deliver Zero Defect Digital Experience, cut costs, attract and retain customers"
-              </span>
+              <span className="opacity-90 group-hover:opacity-100 transition-opacity">Deliver flawless, engaging experiences that boost loyalty, growth & cut costs</span>
               <span
-                className="ml-2 md:ml-3 opacity-70 group-hover:opacity-100 group-hover:translate-x-1.5
+                className="ml-3 opacity-70 group-hover:opacity-100 group-hover:translate-x-1.5
                                 transition-all duration-300"
               >
                 →
               </span>
-            </button>
+            </Button>
           </div>
         </motion.div>
       </div>

@@ -30,7 +30,7 @@ export default function HomePage() {
   return (
     <>
       <Navigation openModal={openModal} />
-      <FloatingPaths />
+      <HeroSection />
       <LogoCloud />
       <IndustrySolutions />
 
