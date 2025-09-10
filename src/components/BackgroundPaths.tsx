@@ -69,11 +69,10 @@ function FloatingPaths({ position }: { position: number }) {
 }
 
 export default function BackgroundPaths({
-  title = "Achieve Zero.Defects",
+  title = "Achieve Zero Defects",
 }: {
   title?: string
 }) {
-  const words = title.split(" ")
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -86,6 +85,12 @@ export default function BackgroundPaths({
 
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // Split the title into lines for proper animation
+  const titleLines = [
+    "Achieve",
+    "Zero Defects" // Keep "Zero Defects" together on the same line with a space
+  ]
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white dark:bg-black">
@@ -102,15 +107,15 @@ export default function BackgroundPaths({
           className="max-w-4xl mx-auto"
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 md:mb-8 tracking-tighter">
-            {words.map((word, wordIndex) => (
-              <span key={wordIndex} className="block">
-                {word.split("").map((letter, letterIndex) => (
+            {titleLines.map((line, lineIndex) => (
+              <div key={lineIndex} className="block whitespace-nowrap">
+                {line.split("").map((letter, letterIndex) => (
                   <motion.span
-                    key={`${wordIndex}-${letterIndex}`}
+                    key={`${lineIndex}-${letterIndex}`}
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{
-                      delay: wordIndex * 0.1 + letterIndex * 0.03,
+                      delay: lineIndex * 0.2 + letterIndex * 0.03,
                       type: "spring",
                       stiffness: 150,
                       damping: 25,
@@ -119,48 +124,77 @@ export default function BackgroundPaths({
                                         bg-gradient-to-r from-neutral-900 to-neutral-700/80
                                         dark:from-white dark:to-white/80"
                   >
-                    {letter}
+                    {letter === " " ? "\u00A0" : letter}
                   </motion.span>
                 ))}
-              </span>
+              </div>
             ))}
           </h1>
 
-          <div
-            className="inline-block group relative rounded-2xl backdrop-blur-lg
-                        overflow-hidden transition-shadow duration-300 mt-6 md:mt-8"
+          {/* Completely transparent button with text directly on background */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.8 }}
+            className="flex flex-col items-center space-y-5 mt-6 md:mt-8 px-4"
           >
-            <button
-              className="rounded-2xl px-6 py-4 md:px-8 md:py-6 text-sm md:text-base font-semibold
-                          bg-transparent hover:bg-white/5 dark:hover:bg-black/5
-                          text-black dark:text-white transition-all duration-300
-                          group-hover:-translate-y-0.5 border border-black/20 dark:border-white/20
-                          hover:shadow-md dark:hover:shadow-neutral-800/30"
+            <div className="text-lg md:text-xl font-medium text-black dark:text-white opacity-90">
+              Know Your App Performance, Before Your Users Complain
+            </div>
+
+            <div className="text-sm md:text-base text-black dark:text-white opacity-80 max-w-2xl leading-relaxed text-center">
+              Mozark's synthetic monitoring proactively tests critical user journeys from a global network,
+              pinpointing front-end, network, and API issues with AI-powered root cause analysis
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center space-x-2 px-6 py-3 rounded-full bg-transparent
+                         border border-black/30 dark:border-white/30 text-black dark:text-white
+                         hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-300"
             >
-              <div className="flex flex-col items-center space-y-3">
-                <span className="opacity-90 group-hover:opacity-100 transition-opacity font-medium">
-                  Know Your App Performance, Before Your Users Complain
-                </span>
+              <span className="font-medium">Do More, Cut Time & Costs</span>
+              <motion.span
+                animate={{ x: [0, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+              >
+                →
+              </motion.span>
+            </motion.button>
+          </motion.div>
+        </motion.div>
 
-                <span className="opacity-80 group-hover:opacity-100 transition-opacity text-xs md:text-sm max-w-2xl leading-tight md:leading-normal">
-                  Mozark's synthetic monitoring proactively tests critical user journeys from a global network,
-                  pinpointing front-end, network, and API issues with AI-powered root cause analysis
-                </span>
-
-                <div className="flex items-center mt-2">
-                  <span className="opacity-90 group-hover:opacity-100 transition-opacity text-sm md:text-base font-medium">
-                    Do More, Cut Time & Costs
-                  </span>
-                  <span
-                    className="ml-2 md:ml-3 opacity-70 group-hover:opacity-100 group-hover:translate-x-1.5
-                                    transition-all duration-300"
-                  >
-                    →
-                  </span>
-                </div>
-              </div>
-            </button>
-          </div>
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 0.8 }}
+          className="absolute bottom-10 flex flex-col items-center"
+        >
+          <span className="text-sm text-black/70 dark:text-white/70 mb-2">
+            Scroll to explore
+          </span>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-black/70 dark:text-white/70"
+            >
+              <path
+                d="M12 5V19M12 19L19 12M12 19L5 12"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </motion.div>
         </motion.div>
       </div>
     </div>
