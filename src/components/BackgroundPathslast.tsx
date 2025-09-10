@@ -8,20 +8,20 @@ function FloatingPaths({ position, isMobile }: { position: number; isMobile: boo
   // Adjust path complexity for mobile devices
   const pathCount = isMobile ? 12 : 36
 
-  // Adjusted path coordinates to extend beyond screen edges
+  // Adjusted path coordinates to center the animation
   const paths = Array.from({ length: pathCount }, (_, i) => {
-    // Make paths extend further on mobile to prevent white space
-    const extraWidth = isMobile ? 200 : 0;
+    const offsetX = isMobile ? 100 : 0;
+    const offsetY = isMobile ? -50 : 0;
 
     return {
       id: i,
-      d: `M${-extraWidth - 180 - i * 5 * position} ${-89 + i * 6}C${
-        -extraWidth - 180 - i * 5 * position
-      } ${-89 + i * 6} ${-extraWidth - 112 - i * 5 * position} ${316 - i * 6} ${
-        -extraWidth + 352 - i * 5 * position
-      } ${443 - i * 6}C${-extraWidth + 816 - i * 5 * position} ${570 - i * 6} ${
-        -extraWidth + 884 - i * 5 * position
-      } ${975 - i * 6} ${-extraWidth + 884 - i * 5 * position} ${975 - i * 6}`,
+      d: `M${offsetX - 180 - i * 5 * position} ${offsetY - 89 + i * 6}C${
+        offsetX - 180 - i * 5 * position
+      } ${offsetY - 89 + i * 6} ${offsetX - 112 - i * 5 * position} ${offsetY + 316 - i * 6} ${
+        offsetX + 352 - i * 5 * position
+      } ${offsetY + 443 - i * 6}C${offsetX + 816 - i * 5 * position} ${offsetY + 570 - i * 6} ${
+        offsetX + 884 - i * 5 * position
+      } ${offsetY + 975 - i * 6} ${offsetX + 884 - i * 5 * position} ${offsetY + 975 - i * 6}`,
       width: isMobile ? 0.5 + i * 0.04 : 0.5 + i * 0.03,
       opacity: isMobile ? 0.15 + i * 0.04 : 0.1 + i * 0.03,
     }
@@ -30,10 +30,10 @@ function FloatingPaths({ position, isMobile }: { position: number; isMobile: boo
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
       <svg
-        className="w-full h-full text-slate-950 dark:text-white scale-150 md:scale-100" // Increased scale on mobile
-        viewBox="0 0 1200 600" // Wider viewBox
+        className="w-full h-full text-slate-950 dark:text-white scale-125 md:scale-100"
+        viewBox="0 0 1000 600"
         fill="none"
-        preserveAspectRatio="none" // Changed to none to fill entire container
+        preserveAspectRatio="xMidYMid slice"
       >
         <title>Revolutionize Digital Experience</title>
         {paths.map((path) => (
@@ -97,23 +97,21 @@ export default function BackgroundPaths({
   ]
 
   return (
-    // Added overflow-x-hidden to prevent horizontal scrolling
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white dark:bg-black overflow-x-hidden">
-      {/* Background container with full width */}
-      <div className="absolute inset-0 flex items-center justify-center -top-10 md:top-0 w-full">
+    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white dark:bg-black">
+      {/* Background container with adjusted positioning */}
+      <div className="absolute inset-0 flex items-center justify-center -top-10 md:top-0">
         <div className="relative w-full h-full">
           <FloatingPaths position={1} isMobile={isMobile} />
           <FloatingPaths position={-1} isMobile={isMobile} />
         </div>
       </div>
 
-      {/* Content container with proper padding */}
-      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center flex flex-col items-center justify-center min-h-screen py-10 w-full">
+      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center flex flex-col items-center justify-center min-h-screen py-10">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 2 }}
-          className="max-w-4xl mx-auto w-full px-4" // Added px-4 for mobile padding
+          className="max-w-4xl mx-auto"
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 md:mb-8 tracking-tighter">
             {titleLines.map((line, lineIndex) => (
@@ -145,25 +143,25 @@ export default function BackgroundPaths({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.8 }}
-            className="flex flex-col items-center space-y-5 mt-6 md:mt-8 px-2 w-full" // Reduced padding on mobile
+            className="flex flex-col items-center space-y-5 mt-6 md:mt-8 px-4"
           >
             <div className="text-lg md:text-xl font-medium text-black dark:text-white opacity-90">
-              Know Your App Performance,<br />Before Users Suffer
+              Know Your App Performance, Before Users Complain
             </div>
 
             <div className="text-sm md:text-base text-black dark:text-white opacity-80 max-w-2xl leading-relaxed text-center">
-              Mozark's AI-powered synthetic testing & monitoring <br /> Pinpoint application, network & API issues in realtime
+              Mozark's AI-powered synthetic testing & monitoring to pinpoint front-end, network & API issues
             </div>
-
-            <div className="w-full border-t border-gray-300 dark:border-gray-700 my-4"></div>
 
             <motion.button
               onClick={scrollToEstimator}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-blue-700 opacity-90
-                         border border-blue-600 text-white font-semibold
-                         hover:bg-blue-600 transition-colors duration-300 cursor-pointer"
+              className="flex items-center space-x-2 px-6 py-3 rounded-lg
+                         bg-blue-700/80
+                         border border-black/30 dark:border-black/30
+                         text-white  dark:text-white
+                         hover:bg-yellow-300/90  hover:text-black transition-colors duration-300 cursor-pointer"
             >
               <span className="font-bold">Check ROI</span>
               <motion.span
