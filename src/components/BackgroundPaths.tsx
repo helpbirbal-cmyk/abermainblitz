@@ -69,7 +69,7 @@ function FloatingPaths({ position }: { position: number }) {
 }
 
 export default function BackgroundPaths({
-  title = "AI.Powered Digital.Experience ",
+  title = "Achieve Zero.Defects",
 }: {
   title?: string
 }) {
@@ -89,7 +89,7 @@ export default function BackgroundPaths({
           transition={{ duration: 2 }}
           className="max-w-4xl mx-auto"
         >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 md:mb-8 tracking-tighter">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-10 md:mb-8 tracking-tighter">
             {words.map((word, wordIndex) => (
               <span key={wordIndex} className="block">
                 {word.split("").map((letter, letterIndex) => (
@@ -127,10 +127,10 @@ export default function BackgroundPaths({
                             hover:shadow-md dark:hover:shadow-neutral-800/50"
             >
               <span className="opacity-90 group-hover:opacity-100 transition-opacity">
-                Achieve ZERO Defects
+                Know Your App Performance, Before Your Customers Complain
               </span><br></br>
               <span className="opacity-90 group-hover:opacity-100 transition-opacity">
-              Do MORE, Cut Costs & Scale
+              MozarkAI Does More, Cuts Time & Costs
               </span><br></br>
               <span
                 className="ml-2 md:ml-3 opacity-70 group-hover:opacity-100 group-hover:translate-x-1.5
