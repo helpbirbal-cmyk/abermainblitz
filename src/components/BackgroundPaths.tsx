@@ -152,7 +152,7 @@ export default function BackgroundPaths({
             </div>
 
             <div className="text-sm md:text-base text-black dark:text-white opacity-80 max-w-2xl leading-relaxed text-center">
-              AI-powered realtime synthetic testing & monitoring t pinpoint application, network & API issues
+              AI-powered synthetic testing & monitoring that pinpoints application experience issues in realtime, with root cause analysis
             </div>
 
             <div className="w-full border-t border-gray-300 dark:border-gray-700 my-2"></div>

@@ -13,7 +13,7 @@ interface CostCalculatorsProps {
 }
 
 export default function CostCalculators({ openModal }: CostCalculatorsProps) {
-  const [calculatorType, setCalculatorType] = useState<CalculatorType>('ott');
+  const [calculatorType, setCalculatorType] = useState<CalculatorType>('payment');
 
   return (
     <section id="calculator" className="py-16 bg-gradient-to-b from-blue-50 to-gray-100">
