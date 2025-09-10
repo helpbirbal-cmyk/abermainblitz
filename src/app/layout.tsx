@@ -7,8 +7,8 @@ import { Analytics } from "@vercel/analytics/next";
 
 
 export const metadata: Metadata = {
-  title: "Your App",
-  description: "Your app description",
+  title: "Aberdeen Mozark",
+  description: "Do More, Cut Costs with AI",
 };
 
 // Add this viewport export

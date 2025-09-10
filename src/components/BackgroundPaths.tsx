@@ -127,7 +127,7 @@ export default function BackgroundPaths({
                             hover:shadow-md dark:hover:shadow-neutral-800/50"
             >
               <span className="opacity-90 group-hover:opacity-100 transition-opacity">
-                Deliver Zero Defect Digital Experience, cut costs, attract and retain customers"
+                Deliver Zero Defect Digital Experience, Do More, Cut costs & Scale Profitably
               </span>
               <span
                 className="ml-2 md:ml-3 opacity-70 group-hover:opacity-100 group-hover:translate-x-1.5
