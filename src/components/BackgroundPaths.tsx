@@ -157,11 +157,13 @@ export default function BackgroundPaths({
               onClick={scrollToEstimator}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-blue-700 opacity-80
-                         border border-black/30 dark:border-white/30 text-white
-                         hover:bg-white/5 transition-colors duration-300 cursor-pointer"
+              className="flex items-center space-x-2 px-6 py-3 rounded-lg
+                         bg-blue-700/80
+                         border border-black/30 dark:border-black/30
+                         text-white  dark:text-white
+                         hover:bg-yellow-300/90  hover:text-black transition-colors duration-300 cursor-pointer"
             >
-              <span className="font-bold">Do MORE in Less</span>
+              <span className="font-bold">Check ROI</span>
               <motion.span
                 animate={{ x: [0, 5, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
