@@ -4,41 +4,34 @@
 import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 
-function FloatingPaths({ position }: { position: number }) {
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
+function FloatingPaths({ position, isMobile }: { position: number; isMobile: boolean }) {
   // Adjust path complexity for mobile devices
-  const pathCount = isMobile ? 18 : 36
+  const pathCount = isMobile ? 12 : 36
 
-  const paths = Array.from({ length: pathCount }, (_, i) => ({
-    id: i,
-    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
-      380 - i * 5 * position
-    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
-      152 - i * 5 * position
-    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
-      684 - i * 5 * position
-    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
-    color: `rgba(15,23,42,${0.1 + i * 0.03})`,
-    width: isMobile ? 0.3 + i * 0.02 : 0.5 + i * 0.03,
-  }))
+  // Adjusted path coordinates to center the animation
+  const paths = Array.from({ length: pathCount }, (_, i) => {
+    const offsetX = isMobile ? 100 : 0;
+    const offsetY = isMobile ? -50 : 0;
+
+    return {
+      id: i,
+      d: `M${offsetX - 180 - i * 5 * position} ${offsetY - 89 + i * 6}C${
+        offsetX - 180 - i * 5 * position
+      } ${offsetY - 89 + i * 6} ${offsetX - 112 - i * 5 * position} ${offsetY + 316 - i * 6} ${
+        offsetX + 352 - i * 5 * position
+      } ${offsetY + 443 - i * 6}C${offsetX + 816 - i * 5 * position} ${offsetY + 570 - i * 6} ${
+        offsetX + 884 - i * 5 * position
+      } ${offsetY + 975 - i * 6} ${offsetX + 884 - i * 5 * position} ${offsetY + 975 - i * 6}`,
+      width: isMobile ? 0.5 + i * 0.04 : 0.5 + i * 0.03,
+      opacity: isMobile ? 0.15 + i * 0.04 : 0.1 + i * 0.03,
+    }
+  })
 
   return (
-    <div className="absolute inset-0 pointer-events-none">
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
       <svg
-        className="w-full h-full text-slate-950 dark:text-white"
-        viewBox="0 0 696 316"
+        className="w-full h-full text-slate-950 dark:text-white scale-125 md:scale-100"
+        viewBox="0 0 1000 600"
         fill="none"
         preserveAspectRatio="xMidYMid slice"
       >
@@ -49,7 +42,7 @@ function FloatingPaths({ position }: { position: number }) {
             d={path.d}
             stroke="currentColor"
             strokeWidth={path.width}
-            strokeOpacity={0.1 + path.id * 0.03}
+            strokeOpacity={path.opacity}
             initial={{ pathLength: 0.3, opacity: 0.6 }}
             animate={{
               pathLength: 1,
@@ -89,17 +82,20 @@ export default function BackgroundPaths({
   // Split the title into lines for proper animation
   const titleLines = [
     "Achieve",
-    "Zero Defects" // Keep "Zero Defects" together on the same line with a space
+    "Zero Defects"
   ]
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white dark:bg-black">
-      <div className="absolute inset-0">
-        <FloatingPaths position={1} />
-        <FloatingPaths position={-1} />
+      {/* Background container with adjusted positioning */}
+      <div className="absolute inset-0 flex items-center justify-center -top-10 md:top-0">
+        <div className="relative w-full h-full">
+          <FloatingPaths position={1} isMobile={isMobile} />
+          <FloatingPaths position={-1} isMobile={isMobile} />
+        </div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center flex flex-col items-center justify-center min-h-screen">
+      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center flex flex-col items-center justify-center min-h-screen py-10">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -131,7 +127,7 @@ export default function BackgroundPaths({
             ))}
           </h1>
 
-          {/* Completely transparent button with text directly on background */}
+          {/* Content section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -154,7 +150,7 @@ export default function BackgroundPaths({
                          border border-black/30 dark:border-white/30 text-black dark:text-white
                          hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-300"
             >
-              <span className="font-medium">Do More, Cut Time & Costs</span>
+              <span className="font-medium">Do More, Cut Time, Costs</span>
               <motion.span
                 animate={{ x: [0, 5, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
