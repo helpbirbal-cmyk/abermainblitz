@@ -22,18 +22,18 @@ const differentiators = [
 
 export default function TechnologySection() {
   return (
-    <section id="technology" className="py-16 bg-white">
+    <section id="technology" className="py-16 bg-white dark:bg-black">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">MozarkAI Technology</h2>
-          <p className="text-xl text-gray-600">
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900  dark:text-white mb-4">MozarkAI Technology</h2>
+          <p className="text-xl text-gray-600 dark:text-white">
             Advanced AI & machine learning capabilities tailored for your industry
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-2xl font-semibold text-gray-900 mb-8">MozarkAI Differentiators</h3>
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-8">MozarkAI Differentiators</h3>
             <div className="space-y-6">
               {differentiators.map((item, index) => (
                 <div key={index} className="flex items-start">

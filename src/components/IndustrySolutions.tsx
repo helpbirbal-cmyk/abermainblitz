@@ -67,11 +67,11 @@ export default function IndustrySolutions() {
   const [activeTab, setActiveTab] = useState("bfsi")
 
   return (
-    <section id="solutions" className="py-16 bg-white">
+    <section id="solutions" className="py-16 bg-white dark:bg-black">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Solutions</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <h2 className="text-4xl lg:text-5xl font-bold text-black dark:text-white mb-4">Solutions</h2>
+          <p className="text-xl text-white max-w-3xl mx-auto">
             Tailored AI-powered solutions addressing unique challenges
           </p>
         </div>
