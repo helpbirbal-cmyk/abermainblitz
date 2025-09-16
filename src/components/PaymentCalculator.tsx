@@ -642,8 +642,8 @@ const monthlyTrendData = useMemo(() => generateTrendData(), [inputs, results]);
   return (
     <div className="space-y-8">
       {/* Input Form with Clean Layout */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">
+      <div className="bg-white dark:bg-black  rounded-xl shadow-lg p-6">
+        <h2 className="text-xl font-bold text-black dark:text-white mb-6">
           Financial Modelling
         </h2>
 

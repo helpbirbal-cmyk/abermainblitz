@@ -62,7 +62,7 @@ function FloatingPaths({ position, isMobile }: { position: number; isMobile: boo
 }
 
 export default function BackgroundPaths({
-  title = "Achieve ZERO Defects",
+  title = "Achieve ZERO DEFECTS",
 }: {
   title?: string
 }) {
@@ -92,8 +92,8 @@ export default function BackgroundPaths({
 
   // Split the title into lines for proper animation
   const titleLines = [
-    "Make Your App",
-    "ZERO Defect App",
+    "ZERO DEFECT",
+    "Your App",
   ]
 
   return (
@@ -148,7 +148,7 @@ export default function BackgroundPaths({
             className="flex flex-col items-center space-y-5 mt-6 md:mt-8 px-2 w-full" // Reduced padding on mobile
           >
             <div className="text-md md:text-xl font-medium text-black dark:text-white opacity-90">
-              Know Your App Performance, Before Users Leave
+              Know Your App Performance, Before Your Users
             </div>
 
             <div className="text-sm md:text-base text-black dark:text-white opacity-80 max-w-2xl leading-relaxed text-center">
@@ -165,7 +165,7 @@ export default function BackgroundPaths({
                          border border-blue-600 text-white font-semibold
                          hover:bg-blue-600 transition-colors duration-300 cursor-pointer"
             >
-              <span className="font-bold">Check ROI</span>
+              <span className="font-bold">Calculate ROI</span>
               <motion.span
                 animate={{ x: [0, 5, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}

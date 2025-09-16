@@ -6,7 +6,7 @@ interface CalculatorIntroProps {
 
 export default function CalculatorIntro({ calculatorType, setCalculatorType }: CalculatorIntroProps) {
   return (
-    <div className="text-center mb-8">
+    <div className="text-center mb-8 bg-white dark:bg-black rounded-xl shadow-md  border-black dark:border-white">
       <h2 className="text-2xl font-bold text-black dark:text-white mb-4">
       Value Estimator
       </h2>

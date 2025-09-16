@@ -26,33 +26,33 @@ export default function TechnologySection() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900  dark:text-white mb-4">MozarkAI Technology</h2>
-          <p className="text-xl text-gray-600 dark:text-white">
+          <p className="text-xl ">
             Advanced AI & machine learning capabilities tailored for your industry
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+          <div className="bg-white dark:bg-black rounded-xl shadow-sm border border-black dark:border-white p-8">
             <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-8">MozarkAI Differentiators</h3>
-            <div className="space-y-6">
+            <div className="space-y-6 ">
               {differentiators.map((item, index) => (
                 <div key={index} className="flex items-start">
                   <div
-                    className="bg-green-500 rounded-full flex items-center justify-center text-white mr-4 flex-shrink-0"
+                    className="bg-green-500 rounded-full flex items-center justify-center  mr-4 flex-shrink-0"
                     style={{ width: "24px", height: "24px", fontSize: "12px" }}
                   >
                     ✓
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">{item.title}</h4>
-                    <p className="text-sm text-gray-600">{item.description}</p>
+                    <h4 className="font-semibold text-black dark:text-white mb-1">{item.title}</h4>
+                    <p className="text-sm text-black dark:text-white">{item.description}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
           {/* Corrected image section */}
-          <div className="relative rounded-2xl overflow-hidden" style={{ height: "640px" }}>
+          <div className="relative rounded-3xl overflow-hidden" style={{ height: "640px" }}>
              <Image
                 src="/images/mozarkarch.jpg"
                 alt="MozarkAI Technology Architecture"

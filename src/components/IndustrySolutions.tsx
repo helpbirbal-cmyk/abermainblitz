@@ -101,12 +101,12 @@ export default function IndustrySolutions() {
 
         <div className="grid md:grid-cols-3 gap-8">
           {(activeTab === "bfsi" ? bfsiSolutions : ottSolutions).map((solution, index) => (
-            <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+            <div key={index} className="bg-dark/30 dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow">
               <div className={`${activeTab === "bfsi" ? "bg-blue-50" : "bg-red-50"} rounded-lg inline-flex p-3 mb-4`}>
                 {solution.icon}
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">{solution.title}</h3>
-              <p className="text-gray-600">{solution.description}</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">{solution.title}</h3>
+              <p className="text-gray-900 dark:text-white">{solution.description}</p>
             </div>
           ))}
         </div>

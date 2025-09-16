@@ -17,11 +17,9 @@ export default function CTASection({
         <h2 className="text-6xl font-bold mb-6">{title}</h2>
         <p className="text-xl mb-10 max-w-3xl mx-auto">{description}</p>
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-          <button onClick={() => openModal('bfsi')} className="bg-transparent text-white border-2 border-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300 hover:bg-white hover:text-black hover:border-black">
-            Book BFSI Demo
-          </button>
-          <button onClick={() => openModal('ott')} className="bg-transparent text-white border-2 border-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300 hover:bg-white hover:text-black hover:border-black">
-            Book OTT Demo
+          
+          <button onClick={() => openModal('ott')} className="bg-blue-700  text-white  border-2 border-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300 hover:bg-white hover:text-black hover:border-black">
+            Book a Demo
           </button>
         </div>
       </div>
