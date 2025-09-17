@@ -681,7 +681,7 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
               </ul>
             </div>
 
-            {/* Monthly Trend Chart 
+            {/* Monthly Trend Chart
             <div className="bg-white p-6 rounded-xl shadow-md mt-6">
               <h4 className="text-lg font-bold text-gray-800 mb-4">Projected Subscriber Trend</h4>
               <div className="h-48">
@@ -703,9 +703,9 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
             <div className="mt-8 text-center">
               <button
                 onClick={openModal}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md w-full"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md ring-2 ring-red-500"
               >
-                Get Detailed Analysis
+                Email Me this!
               </button>
             </div>
           </div>

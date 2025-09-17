@@ -920,9 +920,9 @@ const monthlyTrendData = useMemo(() => generateTrendData(), [inputs, results]);
             <div className="mt-8 text-center">
               <button
                 onClick={openModal}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md w-full"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-md ring-2 ring-red-500"
               >
-                Get Detailed Analysis
+                Email Me this!
               </button>
             </div>
           </div>

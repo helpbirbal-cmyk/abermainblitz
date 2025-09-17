@@ -60,7 +60,7 @@ export default function Navigation({ openModal }: NavigationProps) {
           <div className="hidden lg:block">
             <button
               onClick={() => openModal('general')}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium"
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium ring-2 ring-red-500"
             >
               Book Demo
             </button>

@@ -16,8 +16,8 @@ export default function CostCalculators({ openModal }: CostCalculatorsProps) {
   const [calculatorType, setCalculatorType] = useState<CalculatorType>('payment');
 
   return (
-    <section id="calculator" className="py-4 bg-white dark:bg-black shadow-md  border-black dark:border-white ">
-      <div className="container mx-auto p-2 bg-blue-100 dark:bg-gray-800 rounded-xl shadow-md  ">
+    <section id="calculator" className="py-4 bg-white dark:bg-black shadow-md border-black dark:border-white ">
+      <div className="container mx-auto p-2 bg-blue-100 dark:bg-gray-800 rounded-xl shadow-md   ">
         {/* Unified Calculator Introduction - REPLACES the duplicate buttons */}
         <CalculatorIntro
           calculatorType={calculatorType}

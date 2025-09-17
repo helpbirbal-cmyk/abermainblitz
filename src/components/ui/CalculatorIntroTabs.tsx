@@ -15,13 +15,13 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
       </p>
 
       {/* Calculator Type Cards - Compact Version */}
-      <div className="flex justify-center gap-0 max-w-md mx-auto mb-6 border-lg border-white ">
+      <div className="flex justify-center gap-0 mx-auto mb-6 rounded-lg border-4 border-white  bg-white w-fit">
 
         <button
-          className={`flex items-center gap-2  px-3 py-3  rounded-l-lg border transition-all ${
+          className={`flex items-center gap-2  px-3 py-3  rounded-sm transition-all ${
             calculatorType === 'payment'
               ? "bg-gradient-finance text-white shadow-md"
-              : "text-black dark:text-white  hover:text-white hover:bg-gray-100 dark:hover:bg-white  hover:dark:text-black"
+              : "text-black   hover:text-white hover:bg-gray-100 dark:hover:bg-white  hover:dark:text-black"
           }`}
           onClick={() => setCalculatorType('payment')}
         >
@@ -30,10 +30,10 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
         </button>
 
         <button
-          className={`flex items-center gap-2 px-3 py-3 rounded-r-lg border transition-all ${
+          className={`flex items-center gap-2 px-3 py-3 rounded-sm transition-all ${
             calculatorType === 'ott'
               ? "bg-gradient-media text-white shadow-md"
-              : "text-black dark:text-white hover:text-white hover:bg-red-600 dark:hover:bg-white  hover:dark:text-black "
+              : "text-black  hover:text-white hover:bg-red-600 dark:hover:bg-white  hover:dark:text-black "
           }`}
           onClick={() => setCalculatorType('ott')}
         >

@@ -161,9 +161,7 @@ export default function BackgroundPaths({
               onClick={scrollToEstimator}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-blue-700 opacity-90
-                         border border-blue-600 text-white font-semibold
-                         hover:bg-blue-600 transition-colors duration-300 cursor-pointer"
+              className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-blue-700 opacity-90 ring-2 ring-red-500 border border-blue-600 text-white font-semibold hover:bg-blue-600 transition-colors duration-300 cursor-pointer"
             >
               <span className="font-bold">Calculate ROI</span>
               <motion.span
