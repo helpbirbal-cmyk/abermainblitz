@@ -472,7 +472,7 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
   return (
     <div className="space-y-8">
       {/* Input Form with Clean Layout */}
-      <div className="bg-white dark:bg-black  border-sm rounded-xl shadow-lg p-6">
+      <div className="bg-white dark:bg-gray-800  border-sm rounded-xl shadow-lg p-6">
         <h2 className="text-xl font-bold text-black dark:text-white mb-6">
           Financial Modelling
         </h2>
@@ -681,7 +681,7 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
               </ul>
             </div>
 
-            {/* Monthly Trend Chart */}
+            {/* Monthly Trend Chart 
             <div className="bg-white p-6 rounded-xl shadow-md mt-6">
               <h4 className="text-lg font-bold text-gray-800 mb-4">Projected Subscriber Trend</h4>
               <div className="h-48">
@@ -697,6 +697,7 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
                 </ResponsiveContainer>
               </div>
             </div>
+            */}
 
             {/* Get Detailed Analysis Button */}
             <div className="mt-8 text-center">

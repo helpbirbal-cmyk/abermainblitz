@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import OTTCalculator from './OTTCalculator';
 import PaymentCalculator from './PaymentCalculator';
-import CalculatorIntro from './ui/CalculatorIntro';
+import CalculatorIntro from './ui/CalculatorIntroTabs';
 
 type CalculatorType = 'ott' | 'payment';
 
@@ -17,7 +17,7 @@ export default function CostCalculators({ openModal }: CostCalculatorsProps) {
 
   return (
     <section id="calculator" className="py-4 bg-white dark:bg-black shadow-md  border-black dark:border-white ">
-      <div className="container mx-auto p-4 bg-blue-100 dark:bg-gray-600 rounded-xl shadow-md  ">
+      <div className="container mx-auto p-2 bg-blue-100 dark:bg-gray-800 rounded-xl shadow-md  ">
         {/* Unified Calculator Introduction - REPLACES the duplicate buttons */}
         <CalculatorIntro
           calculatorType={calculatorType}

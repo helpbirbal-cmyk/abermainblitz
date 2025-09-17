@@ -26,7 +26,7 @@ export default function TechnologySection() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900  dark:text-white mb-4">MozarkAI Technology</h2>
-          <p className="text-xl ">
+          <p className="text-xl text-gray-900  dark:text-white">
             Advanced AI & machine learning capabilities tailored for your industry
           </p>
         </div>

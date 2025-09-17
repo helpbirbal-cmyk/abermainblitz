@@ -34,7 +34,7 @@ export default function LogoCloud() {
     <section id="results"   className="py-16 bg-white text-black dark:bg-black dark:text-white ">
       <div className="max-w-7xl mx-auto px-4">
         <p className="text-center text-5xl font-bold  mb-8">Trusted by Customers</p>
-        <div className="flex flex-wrap justify-center bg-white items-center gap-8 md:gap-16">
+        <div className="flex flex-wrap justify-center bg-white items-center gap-8 md:gap-16 rounded-lg">
           {logos.map((logo, index) => (
             <div key={index} className="flex items-center justify-center">
               <Image

@@ -485,10 +485,10 @@ const monthlyTrendData = useMemo(() => generateTrendData(), [inputs, results]);
       label: "Average Transaction Value ($)",
       name: "avgValue",
       value: inputs.avgValue,
-      min: 10,
-      max: 1000,
-      step: 10,
-      formatValue: (v: number) => `${v}ms` // ← Add this
+      min: 1,
+      max: 100,
+      step: 1,
+      formatValue: (v: number) => `$ ${v}` // ← Add this
     }
   ];
 
@@ -642,7 +642,7 @@ const monthlyTrendData = useMemo(() => generateTrendData(), [inputs, results]);
   return (
     <div className="space-y-8">
       {/* Input Form with Clean Layout */}
-      <div className="bg-white dark:bg-black  rounded-xl shadow-lg p-6">
+      <div className="bg-white dark:bg-gray-800  rounded-xl shadow-lg p-6">
         <h2 className="text-xl font-bold text-black dark:text-white mb-6">
           Financial Modelling
         </h2>
@@ -870,7 +870,7 @@ const monthlyTrendData = useMemo(() => generateTrendData(), [inputs, results]);
               </ul>
             </div>
 
-            {/* Monthly Trend Chart */}
+            {/* Monthly Trend Chart
             <div className="bg-white p-6 rounded-xl shadow-md mt-6">
               <h4 className="text-lg font-bold text-gray-800 mb-4">Projected Transaction Trend</h4>
               <div className="h-48">
@@ -915,7 +915,7 @@ const monthlyTrendData = useMemo(() => generateTrendData(), [inputs, results]);
                 </ResponsiveContainer>
               </div>
             </div>
-
+*/}
             {/* Get Detailed Analysis Button */}
             <div className="mt-8 text-center">
               <button
