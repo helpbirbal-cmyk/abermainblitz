@@ -4,16 +4,20 @@
 import { useState } from 'react';
 import OTTCalculator from './OTTCalculator';
 import PaymentCalculator from './PaymentCalculator';
+
+import { ROICalculator } from '@/components/Calculators/ROICalculator' //new agenticaitest
+
+
 import CalculatorIntro from './ui/CalculatorIntroTabs';
 
-type CalculatorType = 'ott' | 'payment';
+type CalculatorType = 'ott' | 'payment' | 'agenticaitest';
 
 interface CostCalculatorsProps {
   openModal: (type: 'general' | 'bfsi' | 'ott' | 'payment') => void;
 }
 
 export default function CostCalculators({ openModal }: CostCalculatorsProps) {
-  const [calculatorType, setCalculatorType] = useState<CalculatorType>('payment');
+  const [calculatorType, setCalculatorType] = useState<CalculatorType>('agenticaitest');
 
   return (
     <section id="calculator" className="py-4 bg-white dark:bg-black shadow-md border-black dark:border-white ">
@@ -25,10 +29,12 @@ export default function CostCalculators({ openModal }: CostCalculatorsProps) {
         />
 
         {calculatorType === 'ott' ? (
-          <OTTCalculator onRequestDemo={() => openModal('ott')} />
-        ) : (
-          <PaymentCalculator onRequestDemo={() => openModal('payment')} />
-        )}
+      <OTTCalculator onRequestDemo={() => openModal('ott')} />
+  ) : calculatorType === 'payment' ? (
+      <PaymentCalculator onRequestDemo={() => openModal('payment')} />
+  ) : calculatorType === 'agenticaitest' ? (
+      <ROICalculator  />
+  ) : null}
       </div>
     </section>
   );

@@ -41,6 +41,17 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
           <span className="text-lg">🎬</span>
           <span className="font-medium text-sm">OTT Streaming</span>
         </button>
+        <button
+          className={`flex items-center gap-2 px-4 py-3 rounded-lg border transition-all ${
+            calculatorType === 'payment'
+              ? "bg-gradient-finance text-white shadow-md"
+              : "text-black  dark:text-white hover:bg-gradient-media dark:hover:bg-gradient-media h hover:text-white hover:dark:text-yellow-300"
+          }`}
+          onClick={() => setCalculatorType('payment')}
+        >
+          <span className="text-lg">💳</span>
+          <span className="font-medium text-sm">Online Payments</span>
+        </button>
 
       </div>
     </div>

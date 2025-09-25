@@ -14,7 +14,7 @@ import Footer from '@/components/Footer'
 import DemoModal from '@/components/DemoModal'
 import HalftoneWaves from "@/components/halftonewaves"
 import FloatingPaths from "@/components/BackgroundPaths"
-import { ROICalculator } from '@/components/Calculators/ROICalculator'
+import { ROICalculator } from '@/components/Calculators/ROICalculator' //new agenticaitest
 
 
 export default function HomePage() {
@@ -32,7 +32,7 @@ export default function HomePage() {
     <>
       <Navigation openModal={openModal} />
       <HeroSection />
-      <ROICalculator/>
+      
       <LogoCloud />
       <IndustrySolutions />
 

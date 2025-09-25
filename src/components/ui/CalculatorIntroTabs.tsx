@@ -1,7 +1,7 @@
 // components/ui/CalculatorIntro.tsx
 interface CalculatorIntroProps {
-  calculatorType: 'ott' | 'payment';
-  setCalculatorType: (type: 'ott' | 'payment') => void;
+  calculatorType: 'ott' | 'payment' | 'agenticaitest';
+  setCalculatorType: (type: 'ott' | 'payment' | 'agenticaitest') => void;
 }
 
 export default function CalculatorIntro({ calculatorType, setCalculatorType }: CalculatorIntroProps) {
@@ -16,6 +16,19 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
 
       {/* Calculator Type Cards - Compact Version */}
       <div className="flex justify-center gap-0 mx-auto mb-6 rounded-lg border-4 border-white  bg-white w-fit">
+
+      <button
+        className={`flex items-center gap-2 px-3 py-3 rounded-sm transition-all ${
+          calculatorType === 'agenticaitest'
+            ? "bg-red-700 text-white shadow-md"
+            : "text-black  hover:text-white hover:bg-red-600 dark:hover:bg-white  hover:dark:text-black "
+        }`}
+        onClick={() => setCalculatorType('agenticaitest')}
+      >
+        <span className="text-lg">🎬</span>
+        <span className="font-medium text-sm">Test Automation</span>
+      </button>
+
 
         <button
           className={`flex items-center gap-2  px-3 py-3  rounded-sm transition-all ${
@@ -40,6 +53,8 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
           <span className="text-lg">🎬</span>
           <span className="font-medium text-sm">OTT Streaming</span>
         </button>
+
+
 
       </div>
     </div>
