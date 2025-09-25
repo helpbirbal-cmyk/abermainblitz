@@ -20,7 +20,7 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
       <button
         className={`flex items-center gap-2 px-3 py-3 rounded-sm transition-all ${
           calculatorType === 'agenticaitest'
-            ? "bg-red-700 text-white shadow-md"
+            ? "bg-black text-white shadow-md"
             : "text-black  hover:text-white hover:bg-red-600 dark:hover:bg-white  hover:dark:text-black "
         }`}
         onClick={() => setCalculatorType('agenticaitest')}

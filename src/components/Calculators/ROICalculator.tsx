@@ -20,13 +20,14 @@ interface CalculatorResults {
   deviceCostSavings: number;
   totalAnnualSavings: number;
   releaseCycleImprovement: number;
+  testingCoverageImprovement: number;
 }
 
 const INDUSTRY_PRESETS = {
-  general: { efficiencyMultiplier: 1, deviceCost: 500 },
-  banking: { efficiencyMultiplier: 1.2, deviceCost: 800 },
-  fintech: { efficiencyMultiplier: 1.15, deviceCost: 700 },
-  enterprise: { efficiencyMultiplier: 1.1, deviceCost: 600 },
+  general: { efficiencyMultiplier: 1, deviceCost: 500, coverageBoost: 1 },
+  banking: { efficiencyMultiplier: 1.2, deviceCost: 800, coverageBoost: 1.3 },
+  fintech: { efficiencyMultiplier: 1.15, deviceCost: 700, coverageBoost: 1.25 },
+  enterprise: { efficiencyMultiplier: 1.1, deviceCost: 600, coverageBoost: 1.15 },
 };
 
 export const ROICalculator: React.FC = () => {
@@ -50,6 +51,7 @@ export const ROICalculator: React.FC = () => {
     const deviceCostSavings = inputs.devicesUsed * preset.deviceCost * 0.6;
     const totalAnnualSavings = annualSalarySavings + deviceCostSavings;
     const releaseCycleImprovement = Math.min(70, Math.max(30, 50 + (inputs.releaseFrequency * 5)));
+    const testingCoverageImprovement = Math.min(95, Math.max(40, 60 + (inputs.monthlyTestCycles * 0.5))) * preset.coverageBoost;
 
     return {
       reductionManualEffort: Math.round(reductionManualEffort),
@@ -58,248 +60,320 @@ export const ROICalculator: React.FC = () => {
       deviceCostSavings: Math.round(deviceCostSavings),
       totalAnnualSavings: Math.round(totalAnnualSavings),
       releaseCycleImprovement: Math.round(releaseCycleImprovement),
+      testingCoverageImprovement: Math.round(testingCoverageImprovement),
     };
   };
 
   const results = calculateROI();
 
-  const handleInputChange = (field: keyof CalculatorInputs, value: string | number) => {
+  // Fixed: Handle both number and string inputs
+  const handleInputChange = (field: keyof CalculatorInputs, value: number | string) => {
     setInputs(prev => ({
       ...prev,
-      [field]: typeof value === 'string' ? value : Number(value),
+      [field]: value,
     }));
   };
 
+  // For numeric slider inputs only
+  const handleSliderChange = (field: keyof Omit<CalculatorInputs, 'industry'>, value: number) => {
+    setInputs(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const SliderInput: React.FC<{
+    label: string;
+    value: number;
+    min: number;
+    max: number;
+    step?: number;
+    prefix?: string;
+    suffix?: string;
+    onChange: (value: number) => void;
+  }> = ({ label, value, min, max, step = 1, prefix = '', suffix = '', onChange }) => (
+    <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <label className="block text-sm font-medium text-gray-700">{label}</label>
+        <span className="text-lg font-semibold text-blue-600">
+          {prefix}{value.toLocaleString()}{suffix}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+      />
+      <div className="flex justify-between text-xs text-gray-500">
+        <span>{prefix}{min.toLocaleString()}{suffix}</span>
+        <span>{prefix}{max.toLocaleString()}{suffix}</span>
+      </div>
+    </div>
+  );
+
   return (
-    <div id="testingroi" className="max-w-6xl mx-auto p-6 bg-white rounded-xl shadow-lg">
+    <div className="max-w-7xl mx-auto p-6 bg-white rounded-xl shadow-lg">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">ROI & Savings Calculator</h2>
+        <h2 className="text-3xl font-bold text-gray-900">Testing Automation ROI Calculator</h2>
         <p className="text-gray-600 mt-2">
-          See how much you can save by automating your testing process with MozarkAI
+          Calculate your potential savings by automating manual testing processes
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Input Section */}
-        <div className="space-y-6">
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Left Column - Inputs */}
+        <div className="lg:col-span-1 space-y-8">
+          {/* Resource Metrics */}
           <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800">Your Current Setup</h3>
+            <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Resource Metrics</h3>
+            <div className="space-y-6">
+              <SliderInput
+                label="Manual Testers Count"
+                value={inputs.manualTesters}
+                min={1}
+                max={50}
+                onChange={(value) => handleSliderChange('manualTesters', value)}
+              />
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Industry Type
-                </label>
-                <select
-                  value={inputs.industry}
-                  onChange={(e) => handleInputChange('industry', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="general">General</option>
-                  <option value="banking">Banking/Finance</option>
-                  <option value="fintech">FinTech</option>
-                  <option value="enterprise">Enterprise</option>
-                </select>
-              </div>
+              <SliderInput
+                label="Weekly Testing Hours"
+                value={inputs.weeklyTestingHours}
+                min={10}
+                max={80}
+                suffix=" hrs"
+                onChange={(value) => handleSliderChange('weeklyTestingHours', value)}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Number of Manual Testers
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={inputs.manualTesters}
-                  onChange={(e) => handleInputChange('manualTesters', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+              <SliderInput
+                label="Average Tester Salary"
+                value={inputs.testerSalary}
+                min={40000}
+                max={150000}
+                step={5000}
+                prefix="$"
+                onChange={(value) => handleSliderChange('testerSalary', value)}
+              />
+            </div>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Weekly Testing Hours (per tester)
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="80"
-                  value={inputs.weeklyTestingHours}
-                  onChange={(e) => handleInputChange('weeklyTestingHours', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+          {/* Testing Metrics */}
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Testing Metrics</h3>
+            <div className="space-y-6">
+              <SliderInput
+                label="Monthly Test Cycles"
+                value={inputs.monthlyTestCycles}
+                min={5}
+                max={100}
+                onChange={(value) => handleSliderChange('monthlyTestCycles', value)}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Monthly Test Cycles
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={inputs.monthlyTestCycles}
-                  onChange={(e) => handleInputChange('monthlyTestCycles', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+              <SliderInput
+                label="Devices Used"
+                value={inputs.devicesUsed}
+                min={5}
+                max={100}
+                onChange={(value) => handleSliderChange('devicesUsed', value)}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Number of Devices Used
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={inputs.devicesUsed}
-                  onChange={(e) => handleInputChange('devicesUsed', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+              <SliderInput
+                label="Releases Per Month"
+                value={inputs.releaseFrequency}
+                min={1}
+                max={20}
+                onChange={(value) => handleSliderChange('releaseFrequency', value)}
+              />
+            </div>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Average Tester Salary (Annual)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-3 text-gray-500">$</span>
-                  <input
-                    type="number"
-                    min="30000"
-                    max="200000"
-                    step="5000"
-                    value={inputs.testerSalary}
-                    onChange={(e) => handleInputChange('testerSalary', e.target.value)}
-                    className="w-full pl-8 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Releases Per Month
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={inputs.releaseFrequency}
-                  onChange={(e) => handleInputChange('releaseFrequency', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+          {/* Industry Selection */}
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Industry Settings</h3>
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-700">Industry Type</label>
+              <select
+                value={inputs.industry}
+                onChange={(e) => handleInputChange('industry', e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="general">General Software</option>
+                <option value="banking">Banking/Finance</option>
+                <option value="fintech">FinTech</option>
+                <option value="enterprise">Enterprise</option>
+              </select>
             </div>
           </div>
         </div>
 
-        {/* Results Section */}
-        <div className="space-y-6">
-          <div className="bg-blue-50 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800">Your Potential Savings</h3>
+        {/* Right Column - Results */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Performance Metrics */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg text-center">
+              <div className="text-2xl font-bold text-blue-600">{results.reductionManualEffort}%</div>
+              <div className="text-sm text-gray-600 mt-1">Reduction in Manual Effort</div>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                <div
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${results.reductionManualEffort}%` }}
+                ></div>
+              </div>
+            </div>
 
+            <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg text-center">
+              <div className="text-2xl font-bold text-green-600">{results.efficiencyIncrease}%</div>
+              <div className="text-sm text-gray-600 mt-1">Testing Efficiency Increase</div>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                <div
+                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${results.efficiencyIncrease}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg text-center">
+              <div className="text-2xl font-bold text-purple-600">{results.releaseCycleImprovement}%</div>
+              <div className="text-sm text-gray-600 mt-1">Faster Release Cycles</div>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                <div
+                  className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${results.releaseCycleImprovement}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-lg text-center">
+              <div className="text-2xl font-bold text-orange-600">{results.testingCoverageImprovement}%</div>
+              <div className="text-sm text-gray-600 mt-1">Testing Coverage Improvement</div>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                <div
+                  className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${results.testingCoverageImprovement}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Impact */}
+          <div className="bg-gradient-to-r from-green-500 to-green-600 p-8 rounded-lg text-white text-center">
+            <div className="text-sm uppercase tracking-wider opacity-90">Total Annual Impact</div>
+            <div className="text-4xl font-bold mt-2">${results.totalAnnualSavings.toLocaleString()}</div>
+            <div className="text-lg opacity-90 mt-1">Potential Annual Savings</div>
+            <div className="text-sm opacity-80 mt-2">
+              Equivalent to {Math.round((results.totalAnnualSavings / (inputs.testerSalary * inputs.manualTesters)) * 100)}% of current testing costs
+            </div>
+          </div>
+
+          {/* Savings Breakdown */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">Savings Breakdown</h3>
             <div className="space-y-4">
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Reduction in Manual Effort</span>
-                  <span className="text-2xl font-bold text-green-600">
-                    {results.reductionManualEffort}%
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700">Salary Savings</span>
+                  <span className="text-sm font-semibold text-green-600">
+                    ${results.annualSalarySavings.toLocaleString()}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-green-500 h-2 rounded-full"
-                    style={{ width: `${results.reductionManualEffort}%` }}
+                    style={{ width: `${(results.annualSalarySavings / results.totalAnnualSavings) * 100}%` }}
                   ></div>
                 </div>
               </div>
 
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Increase in Testing Efficiency</span>
-                  <span className="text-2xl font-bold text-blue-600">
-                    {results.efficiencyIncrease}%
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700">Device Cost Savings</span>
+                  <span className="text-sm font-semibold text-blue-600">
+                    ${results.deviceCostSavings.toLocaleString()}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-blue-500 h-2 rounded-full"
-                    style={{ width: `${results.efficiencyIncrease}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded-lg shadow-sm">
-                  <div className="text-sm text-gray-600">Annual Salary Savings</div>
-                  <div className="text-xl font-bold text-green-600">
-                    ${results.annualSalarySavings.toLocaleString()}
-                  </div>
-                </div>
-
-                <div className="bg-white p-4 rounded-lg shadow-sm">
-                  <div className="text-sm text-gray-600">Device Cost Savings</div>
-                  <div className="text-xl font-bold text-green-600">
-                    ${results.deviceCostSavings.toLocaleString()}
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 rounded-lg text-white">
-                <div className="text-sm">Total Annual Savings</div>
-                <div className="text-3xl font-bold">
-                  ${results.totalAnnualSavings.toLocaleString()}
-                </div>
-                <div className="text-sm opacity-90 mt-1">
-                  With MozarkAI Automation
-                </div>
-              </div>
-
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Release Cycle Improvement</span>
-                  <span className="text-2xl font-bold text-purple-600">
-                    {results.releaseCycleImprovement}% Faster
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                  <div
-                    className="bg-purple-500 h-2 rounded-full"
-                    style={{ width: `${results.releaseCycleImprovement}%` }}
+                    style={{ width: `${(results.deviceCostSavings / results.totalAnnualSavings) * 100}%` }}
                   ></div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Key Benefits */}
+          {/* Key Achievements */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">
+                ${Math.round(results.annualSalarySavings / 1000000)}M+
+              </div>
+              <div className="text-sm text-gray-600">Annual Labor Savings</div>
+              <div className="text-xs text-gray-500 mt-1">
+                Reduces manual testing effort by {results.reductionManualEffort}%
+              </div>
+            </div>
+
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">
+                {results.efficiencyIncrease}% Faster
+              </div>
+              <div className="text-sm text-gray-600">Testing Execution</div>
+              <div className="text-xs text-gray-500 mt-1">
+                Parallel testing across multiple devices
+              </div>
+            </div>
+          </div>
+
+          {/* How it works */}
           <div className="bg-gray-50 p-6 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-3">Key Benefits with MozarkAI</h4>
+            <h4 className="font-semibold text-gray-800 mb-3">How it works:</h4>
             <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-center">
-                <span className="text-green-500 mr-2">✓</span>
-                Reduced manual testing effort by 60-90%
+              <li className="flex items-start">
+                <span className="text-green-500 mr-2 mt-1">•</span>
+                Automated testing reduces manual effort by 60-90% through parallel execution
               </li>
-              <li className="flex items-center">
-                <span className="text-green-500 mr-2">✓</span>
-                65% boost in testing efficiency
+              <li className="flex items-start">
+                <span className="text-green-500 mr-2 mt-1">•</span>
+                Each automated test cycle can run 5-10x faster than manual testing
               </li>
-              <li className="flex items-center">
-                <span className="text-green-500 mr-2">✓</span>
-                Significant reduction in device maintenance costs
+              <li className="flex items-start">
+                <span className="text-green-500 mr-2 mt-1">•</span>
+                Reduced device maintenance and cloud infrastructure costs
               </li>
-              <li className="flex items-center">
-                <span className="text-green-500 mr-2">✓</span>
-                Faster time-to-market with automated testing
-              </li>
-              <li className="flex items-center">
-                <span className="text-green-500 mr-2">✓</span>
-                Increased test coverage and consistency
+              <li className="flex items-start">
+                <span className="text-green-500 mr-2 mt-1">•</span>
+                Faster release cycles improve time-to-market and competitive advantage
               </li>
             </ul>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .slider::-webkit-slider-thumb {
+          appearance: none;
+          height: 20px;
+          width: 20px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .slider::-moz-range-thumb {
+          height: 20px;
+          width: 20px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+      `}</style>
     </div>
   );
 };
