@@ -30,6 +30,117 @@ const INDUSTRY_PRESETS = {
   enterprise: { efficiencyMultiplier: 1.1, deviceCost: 600, coverageBoost: 1.15 },
 };
 
+// Gauge Component
+const Gauge: React.FC<{
+  value: number;
+  max?: number;
+  label: string;
+  color: string;
+  size?: 'sm' | 'md' | 'lg';
+}> = ({ value, max = 100, label, color, size = 'md' }) => {
+  const percentage = Math.min((value / max) * 100, 100);
+  const strokeWidth = size === 'lg' ? 10 : size === 'sm' ? 6 : 8;
+  const radius = size === 'lg' ? 45 : size === 'sm' ? 35 : 40; // Reduced radius to prevent clipping
+  const circumference = 2 * Math.PI * radius;
+  const strokeDasharray = circumference;
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+  const sizeClass = size === 'lg' ? 'w-28 h-28' : size === 'sm' ? 'w-20 h-20' : 'w-24 h-24';
+
+  return (
+    <div className="flex flex-col items-center">
+      <div className={`relative ${sizeClass}`}>
+        <svg className="w-full h-full transform -rotate-90" viewBox={`0 0 ${radius * 2 + strokeWidth} ${radius * 2 + strokeWidth}`}>
+          {/* Background circle */}
+          <circle
+            cx={radius + strokeWidth / 2}
+            cy={radius + strokeWidth / 2}
+            r={radius}
+            stroke="#e5e7eb"
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          {/* Value circle */}
+          <circle
+            cx={radius + strokeWidth / 2}
+            cy={radius + strokeWidth / 2}
+            r={radius}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeDasharray={strokeDasharray}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            className="transition-all duration-500"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className={`font-bold ${size === 'lg' ? 'text-xl' : size === 'sm' ? 'text-lg' : 'text-lg'}`}>
+            {value}%
+          </span>
+        </div>
+      </div>
+      <span className="text-xs text-gray-600 mt-2 text-center px-1">{label}</span>
+    </div>
+  );
+};
+
+// Savings Gauge Component - Horizontal layout
+const SavingsGauge: React.FC<{
+  value: number;
+  total: number;
+  label: string;
+  color: string;
+}> = ({ value, total, label, color }) => {
+  const percentage = total > 0 ? (value / total) * 100 : 0;
+  const radius = 30; // Smaller radius for horizontal layout
+  const circumference = 2 * Math.PI * radius;
+
+  const formatCurrency = (amount: number) => {
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(1)}M`;
+    } else if (amount >= 1000) {
+      return `$${(amount / 1000).toFixed(0)}K`;
+    }
+    return `$${amount}`;
+  };
+
+  return (
+    <div className="flex flex-col items-center p-4 bg-gray-50 rounded-lg flex-1 min-w-0">
+      <div className="text-sm font-medium text-gray-700 mb-2 text-center">{label}</div>
+      <div className="relative w-20 h-20 mb-2">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+          <circle
+            cx="40"
+            cy="40"
+            r={radius}
+            stroke="#e5e7eb"
+            strokeWidth={8}
+            fill="none"
+          />
+          <circle
+            cx="40"
+            cy="40"
+            r={radius}
+            stroke={color}
+            strokeWidth={8}
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference - (percentage / 100) * circumference}
+            strokeLinecap="round"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-xs font-bold">{Math.round(percentage)}%</span>
+        </div>
+      </div>
+      <div className="text-lg font-bold text-center" style={{ color }}>
+        {formatCurrency(value)}
+      </div>
+    </div>
+  );
+};
+
 export const ROICalculator: React.FC = () => {
   const [inputs, setInputs] = useState<CalculatorInputs>({
     manualTesters: 5,
@@ -66,7 +177,16 @@ export const ROICalculator: React.FC = () => {
 
   const results = calculateROI();
 
-  // Fixed: Handle both number and string inputs
+  // Format currency with K and M suffixes
+  const formatCurrency = (amount: number) => {
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(1)}M`;
+    } else if (amount >= 1000) {
+      return `$${(amount / 1000).toFixed(0)}K`;
+    }
+    return `$${amount}`;
+  };
+
   const handleInputChange = (field: keyof CalculatorInputs, value: number | string) => {
     setInputs(prev => ({
       ...prev,
@@ -74,7 +194,6 @@ export const ROICalculator: React.FC = () => {
     }));
   };
 
-  // For numeric slider inputs only
   const handleSliderChange = (field: keyof Omit<CalculatorInputs, 'industry'>, value: number) => {
     setInputs(prev => ({
       ...prev,
@@ -117,16 +236,33 @@ export const ROICalculator: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6 bg-white rounded-xl shadow-lg">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Testing Automation ROI Calculator</h2>
-        <p className="text-gray-600 mt-2">
-          Calculate your potential savings by automating manual testing processes
-        </p>
-      </div>
+    <h2 className="text-xl font-bold text-black  mb-6">
+      Financial Modelling
+    </h2>
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Left Column - Inputs */}
+
+
+
         <div className="lg:col-span-1 space-y-8">
+        {/* Industry Selection */}
+        <div className="bg-gray-50 p-6 rounded-lg">
+        {/*   <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Industry Settings</h3> */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-700">Industry Type</label>
+            <select
+              value={inputs.industry}
+              onChange={(e) => handleInputChange('industry', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="general">General Software</option>
+              <option value="banking">Banking/Finance</option>
+              <option value="fintech">FinTech</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+          </div>
+        </div>
           {/* Resource Metrics */}
           <div className="bg-gray-50 p-6 rounded-lg">
             <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Resource Metrics</h3>
@@ -190,117 +326,68 @@ export const ROICalculator: React.FC = () => {
             </div>
           </div>
 
-          {/* Industry Selection */}
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Industry Settings</h3>
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700">Industry Type</label>
-              <select
-                value={inputs.industry}
-                onChange={(e) => handleInputChange('industry', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="general">General Software</option>
-                <option value="banking">Banking/Finance</option>
-                <option value="fintech">FinTech</option>
-                <option value="enterprise">Enterprise</option>
-              </select>
-            </div>
-          </div>
+
         </div>
 
         {/* Right Column - Results */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Performance Metrics */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg text-center">
-              <div className="text-2xl font-bold text-blue-600">{results.reductionManualEffort}%</div>
-              <div className="text-sm text-gray-600 mt-1">Reduction in Manual Effort</div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${results.reductionManualEffort}%` }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg text-center">
-              <div className="text-2xl font-bold text-green-600">{results.efficiencyIncrease}%</div>
-              <div className="text-sm text-gray-600 mt-1">Testing Efficiency Increase</div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${results.efficiencyIncrease}%` }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg text-center">
-              <div className="text-2xl font-bold text-purple-600">{results.releaseCycleImprovement}%</div>
-              <div className="text-sm text-gray-600 mt-1">Faster Release Cycles</div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div
-                  className="bg-purple-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${results.releaseCycleImprovement}%` }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-lg text-center">
-              <div className="text-2xl font-bold text-orange-600">{results.testingCoverageImprovement}%</div>
-              <div className="text-sm text-gray-600 mt-1">Testing Coverage Improvement</div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                <div
-                  className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${results.testingCoverageImprovement}%` }}
-                ></div>
-              </div>
+          {/* Performance Metrics - Now with properly sized Gauges */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-xl font-semibold mb-6 text-gray-800 text-center">Performance Metrics</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 justify-items-center">
+              <Gauge
+                value={results.reductionManualEffort}
+                label="Manual Effort Reduction"
+                color="#3b82f6"
+                size="sm"
+              />
+              <Gauge
+                value={results.efficiencyIncrease}
+                label="Efficiency Increase"
+                color="#10b981"
+                size="sm"
+              />
+              <Gauge
+                value={results.releaseCycleImprovement}
+                label="Faster Releases"
+                color="#8b5cf6"
+                size="sm"
+              />
+              <Gauge
+                value={results.testingCoverageImprovement}
+                label="Coverage Improvement"
+                color="#f59e0b"
+                size="sm"
+              />
             </div>
           </div>
 
           {/* Total Impact */}
           <div className="bg-gradient-to-r from-green-500 to-green-600 p-8 rounded-lg text-white text-center">
             <div className="text-sm uppercase tracking-wider opacity-90">Total Annual Impact</div>
-            <div className="text-4xl font-bold mt-2">${results.totalAnnualSavings.toLocaleString()}</div>
+            <div className="text-4xl font-bold mt-2">{formatCurrency(results.totalAnnualSavings)}</div>
             <div className="text-lg opacity-90 mt-1">Potential Annual Savings</div>
             <div className="text-sm opacity-80 mt-2">
               Equivalent to {Math.round((results.totalAnnualSavings / (inputs.testerSalary * inputs.manualTesters)) * 100)}% of current testing costs
             </div>
           </div>
 
-          {/* Savings Breakdown */}
+          {/* Savings Breakdown - Now in same row */}
           <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800">Savings Breakdown</h3>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-700">Salary Savings</span>
-                  <span className="text-sm font-semibold text-green-600">
-                    ${results.annualSalarySavings.toLocaleString()}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-green-500 h-2 rounded-full"
-                    style={{ width: `${(results.annualSalarySavings / results.totalAnnualSavings) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-700">Device Cost Savings</span>
-                  <span className="text-sm font-semibold text-blue-600">
-                    ${results.deviceCostSavings.toLocaleString()}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full"
-                    style={{ width: `${(results.deviceCostSavings / results.totalAnnualSavings) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
+            <h3 className="text-xl font-semibold mb-6 text-gray-800 text-center">Savings Breakdown</h3>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <SavingsGauge
+                value={results.annualSalarySavings}
+                total={results.totalAnnualSavings}
+                label="Salary Savings"
+                color="#10b981"
+              />
+              <SavingsGauge
+                value={results.deviceCostSavings}
+                total={results.totalAnnualSavings}
+                label="Device Cost Savings"
+                color="#3b82f6"
+              />
             </div>
           </div>
 
@@ -308,7 +395,7 @@ export const ROICalculator: React.FC = () => {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">
-                ${Math.round(results.annualSalarySavings / 1000000)}M+
+                {formatCurrency(results.annualSalarySavings)}
               </div>
               <div className="text-sm text-gray-600">Annual Labor Savings</div>
               <div className="text-xs text-gray-500 mt-1">
