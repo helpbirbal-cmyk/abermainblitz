@@ -1,4 +1,4 @@
-// app/page.tsx
+// src/app/page.tsx
 "use client"
 
 import { useState } from 'react'
@@ -32,7 +32,7 @@ export default function HomePage() {
     <>
       <Navigation openModal={openModal} />
       <HeroSection />
-      
+
       <LogoCloud />
       <IndustrySolutions />
 

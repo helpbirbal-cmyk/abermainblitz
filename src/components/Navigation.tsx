@@ -26,7 +26,7 @@ export default function Navigation({ openModal }: NavigationProps) {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <Image
-                src="/images/aberdeenicon.png" // Make sure the file extension is correct
+                src="/images/aberdeenicon.png"
                 alt="Aberdeen"
                 width={120}
                 height={32}
@@ -34,7 +34,7 @@ export default function Navigation({ openModal }: NavigationProps) {
               /> Mojo
               <span className="text-white">|</span>
               <Image
-                src="/images/mozarkicon.png" // Make sure the file extension is correct
+                src="/images/mozarkicon.png" 
                 alt="MozarkAI"
                 width={150}
                 height={48}

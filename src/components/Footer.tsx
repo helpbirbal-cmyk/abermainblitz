@@ -19,8 +19,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-4">ABERDEEN</h3>
-            <p className="text-gray-400">MozarkAI for BFSI & OTT</p>
+            <h3 className="text-xl font-bold mb-4">AberCXO</h3>
+            <p className="text-gray-400">MozarkAI for Online Apps</p>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Industry Solutions</h4>

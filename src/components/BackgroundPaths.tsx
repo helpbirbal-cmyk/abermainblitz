@@ -93,7 +93,7 @@ export default function BackgroundPaths({
   // Split the title into lines for proper animation
   const titleLines = [
     "ZERO DEFECT",
-    "Your App",
+    "Your Apps",
   ]
 
   return (
