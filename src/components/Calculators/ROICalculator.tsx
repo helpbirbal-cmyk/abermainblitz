@@ -235,8 +235,14 @@ export const ROICalculator: React.FC = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-white rounded-xl shadow-lg">
-    <h2 className="text-xl font-bold text-black  mb-6">
+
+    <div className="space-y-8">
+      {/* Input Form with Clean Layout */}
+      <div className="bg-white dark:bg-gray-800  border-sm rounded-xl shadow-lg p-6">
+
+
+  {/*  <div className="max-w-7xl mx-auto p-6 bg-white rounded-xl shadow-lg"> */}
+    <h2 className="text-xl font-bold text-black dark:text-white  mb-6">
       Financial Modelling
     </h2>
 
@@ -461,6 +467,7 @@ export const ROICalculator: React.FC = () => {
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
       `}</style>
+    </div>
     </div>
   );
 };
