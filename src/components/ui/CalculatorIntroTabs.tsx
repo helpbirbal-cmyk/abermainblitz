@@ -17,19 +17,6 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
       {/* Calculator Type Cards - Compact Version */}
       <div className="flex justify-center gap-0 mx-auto mb-6 rounded-lg border-4 border-white  bg-white w-fit ">
 
-      <button
-        className={`flex items-center gap-2 px-1 py-3 rounded-sm transition-all ${
-          calculatorType === 'agenticaitest'
-            ? "bg-green-600 text-white shadow-md"
-            : "text-black  hover:text-white hover:bg-red-600 dark:hover:bg-white  hover:dark:text-black "
-        }`}
-        onClick={() => setCalculatorType('agenticaitest')}
-      >
-        <span className="text-lg">
-
-        </span>
-        <span className="font-medium text-base">QA Test</span>
-      </button>
 
 
         <button
@@ -45,6 +32,22 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
           </span>
           <span className="font-medium text-base">Payments</span>
         </button>
+
+        <button
+          className={`flex items-center gap-2 px-1 py-3 rounded-sm transition-all ${
+            calculatorType === 'agenticaitest'
+              ? "bg-green-500 text-white shadow-md"
+              : "text-black  hover:text-white hover:bg-red-600 dark:hover:bg-white  hover:dark:text-black "
+          }`}
+          onClick={() => setCalculatorType('agenticaitest')}
+        >
+          <span className="text-lg">
+
+          </span>
+          <span className="font-medium text-base">QA Test</span>
+        </button>
+
+
 
         <button
           className={`flex items-center gap-2 px-1 py-3 rounded-sm transition-all ${
