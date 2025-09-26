@@ -11,14 +11,14 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
       Value Estimator
       </h2>
       <p className="text-md text-black dark:text-white max-w-3xl mx-auto mb-6">
-        Comprehensive financial modeling for OTT Streaming and Online Payment  optimization
+        Comprehensive Financial Modeling Tools
       </p>
 
       {/* Calculator Type Cards - Compact Version */}
-      <div className="flex justify-center gap-0 mx-auto mb-6 rounded-lg border-4 border-white  bg-white w-fit">
+      <div className="flex justify-center gap-0 mx-auto mb-6 rounded-lg border-4 border-white  bg-white w-fit ">
 
       <button
-        className={`flex items-center gap-2 px-3 py-3 rounded-sm transition-all ${
+        className={`flex items-center gap-2 px-1 py-3 rounded-sm transition-all ${
           calculatorType === 'agenticaitest'
             ? "bg-green-600 text-white shadow-md"
             : "text-black  hover:text-white hover:bg-red-600 dark:hover:bg-white  hover:dark:text-black "
@@ -30,12 +30,12 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
               <path fill-rule="evenodd" d="M9 2a1 1 0 0 0-1 1H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2a1 1 0 0 0-1-1H9Zm1 2h4v2h1a1 1 0 1 1 0 2H9a1 1 0 0 1 0-2h1V4Zm5.707 8.707a1 1 0 0 0-1.414-1.414L11 14.586l-1.293-1.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4Z" clip-rule="evenodd"/>
           </svg>
         </span>
-        <span className="font-medium text-sm">Automation</span>
+        <span className="font-medium text-base">General</span>
       </button>
 
 
         <button
-          className={`flex items-center gap-2  px-3 py-3  rounded-sm transition-all ${
+          className={`flex items-center gap-2  px-1 py-3  rounded-sm transition-all ${
             calculatorType === 'payment'
               ? "bg-gradient-finance text-white shadow-md"
               : "text-black   hover:text-white hover:bg-gray-100 dark:hover:bg-white  hover:dark:text-black"
@@ -47,11 +47,11 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8H5m12 0a1 1 0 0 1 1 1v2.6M17 8l-4-4M5 8a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.6M5 8l4-4 4 4m6 4h-4a2 2 0 1 0 0 4h4a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z"/>
             </svg>
           </span>
-          <span className="font-medium text-sm">Payments</span>
+          <span className="font-medium text-base">Payments</span>
         </button>
 
         <button
-          className={`flex items-center gap-2 px-3 py-3 rounded-sm transition-all ${
+          className={`flex items-center gap-2 px-1 py-3 rounded-sm transition-all ${
             calculatorType === 'ott'
               ? "bg-gradient-media text-white shadow-md"
               : "text-black  hover:text-white hover:bg-red-600 dark:hover:bg-white  hover:dark:text-black "
@@ -64,10 +64,8 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
             </svg>
           </span>
 
-          <span className="font-medium text-sm">Streaming</span>
+          <span className="font-medium text-base">Streaming</span>
         </button>
-
-
 
       </div>
     </div>
