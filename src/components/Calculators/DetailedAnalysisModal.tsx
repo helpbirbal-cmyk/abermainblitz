@@ -108,7 +108,7 @@ export default function DetailedAnalysisModal({
 
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name *
+                Name *
               </label>
               <input
                 type="text"
@@ -124,7 +124,7 @@ export default function DetailedAnalysisModal({
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address *
+                Email*
               </label>
               <input
                 type="email"
@@ -140,7 +140,7 @@ export default function DetailedAnalysisModal({
 
             <div>
               <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
-                Company *
+                Company*
               </label>
               <input
                 type="text"
@@ -150,13 +150,13 @@ export default function DetailedAnalysisModal({
                 onChange={handleUserInfoChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your company name"
+                placeholder="Company name"
               />
             </div>
 
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
+                Phone#
               </label>
               <input
                 type="tel"
