@@ -260,14 +260,11 @@ export const ROICalculator: React.FC = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-white rounded-xl shadow-lg">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Financial Modelling </h2>
-        <p className="text-gray-600 mt-2">
-          Estimate potential savings by automating manual testing processes
-        </p>
-      </div>
-
+    <div className="bg-white dark:bg-gray-800  rounded-xl shadow-lg p-6">
+    <h2 className="text-xl font-bold text-dark dark:text-white mb-6">
+      Financial Modelling
+    </h2>
+     Potential savings by automating manual testing processes
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Column 1: Inputs */}
         <div className="space-y-8">
@@ -393,7 +390,7 @@ export const ROICalculator: React.FC = () => {
             </div>
           </div>
 
-          {/* Key Achievements */}
+          {/* Key Achievements
           <div className="space-y-4">
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">
@@ -414,12 +411,12 @@ export const ROICalculator: React.FC = () => {
                 Parallel testing across multiple devices
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Column 3: Impact Estimates */}
         <div className="space-y-8">
-          {/* Total Impact */}
+          {/* Total Impact
           <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 rounded-lg text-white text-center">
             <div className="text-sm uppercase tracking-wider opacity-90">TOTAL ANNUAL IMPACT</div>
             <div className="text-4xl font-bold mt-2">{formatCurrency(results.totalAnnualSavings)}</div>
@@ -427,10 +424,10 @@ export const ROICalculator: React.FC = () => {
             <div className="text-sm opacity-80 mt-2">
               Adds {Math.round((results.totalAnnualSavings / (inputs.testerSalary * inputs.manualTesters)) * 100)}% to your testing efficiency
             </div>
-          </div>
+          </div> */}
 
           {/* Revenue Impact */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-20">
             <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">Impact Estimates</h3>
             <div className="text-center mb-4">
               <div className="text-3xl font-bold text-gray-900">{formatCurrency(results.totalAnnualSavings)}</div>
@@ -456,8 +453,8 @@ export const ROICalculator: React.FC = () => {
           </div>
 
           {/* Key Achievements */}
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-3 text-center">Key Achievements</h4>
+          <div className="bg-gray-50 p-20 rounded-lg">
+            <h3 className="font-bold text-gray-800 mb-3 text-center">Key Achievements</h3>
             <div className="space-y-3">
               <div className="text-center">
                 <div className="text-lg font-bold text-green-600">
@@ -482,8 +479,8 @@ export const ROICalculator: React.FC = () => {
           </div>
 
           {/* How it works */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-800 mb-2">How it works:</h4>
+          <div className="bg-white border border-gray-200 rounded-lg p-20">
+            <h3 className="font-semibold text-gray-800 mb-2">How it works:</h3>
             <ul className="space-y-1 text-xs text-gray-600">
               <li className="flex items-start">
                 <span className="text-green-500 mr-2 mt-1">•</span>

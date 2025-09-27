@@ -12,7 +12,7 @@ export default function CTASection({
   openModal
 }: CtaSectionProps) {
   return (
-    <section className="p-20 bg-white text-black dark:bg-gray-800 dark:text-white border border-blue-400 w-full">
+    <section className="p-20 bg-white text-black dark:bg-gray-800 dark:text-white rounded-l border border-blue-400 w-full m-1">
       <div className="container mx-auto px-4 text-center">
         {/*
           FIX: Change text-6xl to apply only on medium screens and up (md:text-6xl).
