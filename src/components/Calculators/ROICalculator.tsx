@@ -31,7 +31,6 @@ const INDUSTRY_PRESETS = {
 };
 
 // Pie Chart Component for Savings Breakdown
-// Replace just the SavingsPieChart component with this fixed version
 const SavingsPieChart: React.FC<{
   salarySavings: number;
   deviceSavings: number;
@@ -57,7 +56,7 @@ const SavingsPieChart: React.FC<{
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-32 h-32"> {/* Reduced container size */}
+      <div className="relative w-48 h-48"> {/* Reduced container size */}
         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
           {/* Background circle */}
           <circle
@@ -264,13 +263,13 @@ export const ROICalculator: React.FC = () => {
     <h2 className="text-xl font-bold text-dark dark:text-white mb-6">
       Financial Modelling
     </h2>
-     Potential savings by automating manual testing processes
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Column 1: Inputs */}
         <div className="space-y-8">
           {/* Industry Selection */}
           <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Industry Type</h3>
+            <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Industry</h3> Potential savings by automating manual testing processes
+
             <div className="space-y-3">
               <select
                 value={inputs.industry}
@@ -379,7 +378,7 @@ export const ROICalculator: React.FC = () => {
           </div>
 
           {/* Savings Breakdown with Pie Chart */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-20">
             <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">Savings Breakdown</h3>
             <div className="flex justify-center">
               <SavingsPieChart
@@ -427,7 +426,7 @@ export const ROICalculator: React.FC = () => {
           </div> */}
 
           {/* Revenue Impact */}
-          <div className="bg-white border border-gray-200 rounded-lg p-20">
+          <div className="bg-white border border-gray-200 rounded-lg p-23">
             <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">Impact Estimates</h3>
             <div className="text-center mb-4">
               <div className="text-3xl font-bold text-gray-900">{formatCurrency(results.totalAnnualSavings)}</div>
@@ -453,7 +452,7 @@ export const ROICalculator: React.FC = () => {
           </div>
 
           {/* Key Achievements */}
-          <div className="bg-gray-50 p-20 rounded-lg">
+          <div className="bg-gray-50 p-15 rounded-lg">
             <h3 className="font-bold text-gray-800 mb-3 text-center">Key Achievements</h3>
             <div className="space-y-3">
               <div className="text-center">
@@ -479,7 +478,7 @@ export const ROICalculator: React.FC = () => {
           </div>
 
           {/* How it works */}
-          <div className="bg-white border border-gray-200 rounded-lg p-20">
+          <div className="bg-white border border-gray-200 rounded-lg p-15">
             <h3 className="font-semibold text-gray-800 mb-2">How it works:</h3>
             <ul className="space-y-1 text-xs text-gray-600">
               <li className="flex items-start">
