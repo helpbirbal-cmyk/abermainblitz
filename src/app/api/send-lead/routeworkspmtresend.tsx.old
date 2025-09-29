@@ -1,4 +1,4 @@
-// app/api/send-lead/route.ts
+// app/api/send-lead/route.tsx
 
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
@@ -35,8 +35,8 @@ export async function POST(request: Request) {
 
     // Send email to sales team
     const salesEmail = await resend.emails.send({
-      from: emailFrom, // Now this is guaranteed to be a string
-      to: 'absatya@aol.com',
+      from: process.env.EMAIL_FROM,
+      to: 'aberdeenassociate@gmail.com',
       subject: `New ROI Calculator Lead: ${name} from ${company}`,
       html: `
         <h2>New Lead from ROI Calculator</h2>
@@ -52,20 +52,18 @@ export async function POST(request: Request) {
 
     // Send confirmation email to user
     const userEmail = await resend.emails.send({
-      from: emailFrom, // Now this is guaranteed to be a string
+      from: process.env.EMAIL_FROM,
       to: email,
       subject: 'Your Resend Analysis Report',
       html: `
         <h2>Thank you for using our ROI Calculator!</h2>
         <p>Hi ${name},</p>
         <p>We've received your information and will contact you shortly to discuss your personalized ROI analysis.</p>
-        <h3>Your Estimated Results:</h3>
-        <ul>
-          <li>Annual Savings: ${calculatorResults.annualSavings}</li>
-          <li>ROI: ${calculatorResults.roiPercentage}</li>
-          <li>Payback Period: ${calculatorResults.paybackPeriod} months</li>
-        </ul>
-        <p>Our sales team will reach out within 24 hours to discuss these results in detail.</p>
+        <h3>Your Estimated Impact:</h3>
+        <pre>${JSON.stringify(calculatorResults, null, 2)}</pre>
+
+
+        <p>Our sales team may reach out within 24 hours to discuss these results in detail.</p>
         <p>Best regards,<br/>Your Sales Team</p>
       `
     });

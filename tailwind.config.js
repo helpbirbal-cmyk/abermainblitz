@@ -9,4 +9,6 @@ module.exports = {
       }
     }
   }
+  plugins: [require("daisyui")], // Add DaisyUI plugin
+
 }
