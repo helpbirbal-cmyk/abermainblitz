@@ -33,7 +33,7 @@ export default function CostCalculators({ openModal }: CostCalculatorsProps) {
   ) : calculatorType === 'payment' ? (
       <PaymentCalculator onRequestDemo={() => openModal('payment')} />
   ) : calculatorType === 'agenticaitest' ? (
-      <ROICalculator />
+      <ROICalculator onRequestDemo={() => openModal('general')}  />
   ) : null}
       </div>
     </section>
