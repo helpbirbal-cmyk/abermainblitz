@@ -1,6 +1,7 @@
-/* src/app/layout.tsx */
+/* src/app/global.css */
 @import "tailwindcss";
 @import "tw-animate-css";
+/* @import daisyui from 'daisyui' // Import daisyui */
 
 :root {
   --background: oklch(1 0 0);
@@ -149,7 +150,7 @@ html {
 .animate-progress {
   animation: progress 2s ease-in-out;
 }
-/* Custom slider styling */
+/* Custom slider styling
 .slider-thumb::-webkit-slider-thumb {
   appearance: none;
   width: 20px;
@@ -194,7 +195,7 @@ html {
   border: none;
 }
 
-/* Custom range slider styles for compact design */
+/* Custom range slider styles for compact design
 input[type="range"].compact {
   -webkit-appearance: none;
   width: 100%;
@@ -233,6 +234,9 @@ input[type="range"].compact::-moz-range-thumb:hover {
   background: #3a0ca3;
 }
 
+*/
+
+
 
 @layer utilities {
   .text-balance {
@@ -258,4 +262,32 @@ input[type="range"].compact::-moz-range-thumb:hover {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Custom range slider styles for compact design */
+input[type="range"].compact {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px; /* Track thickness */
+  border-radius: 5px;
+  background: #e5e7eb; /* Unfilled track background */
+  outline: none;
+  /* Set the accent color property for the blue fill in modern browsers */
+  accent-color: #3b82f6;
+}
+
+
+input[type="range"].compact::-webkit-slider-thumb {
+    appearance: none;         /* Make sure this is present */
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 0;
+    background: #FFA500 !important; /* ORANGE THUMB COLOR */
+    /*margin-top: 0px !important; /* Final alignment fix */
+}
+
+input[type="range"].compact::-moz-range-thumb {
+    /* ... (size, border: none) ... */
+    background: #FFA500; /* ORANGE THUMB COLOR */
 }

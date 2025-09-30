@@ -50,14 +50,14 @@ export async function POST(request: Request) {
     const userEmail = await resend.emails.send({
       from: emailFrom, // Use the checked variable
       to: email,
-      subject: 'Your Resend Analysis Report',
+      subject: 'Your AberCXO Analysis Report',
       html: `
-        <h2>Thank you for using our ROI Calculator!</h2>
+        <h2>Thanks for using AberCXO Financial Modelling Tool!</h2>
         <p>Hi ${name},</p>
-        <p>We've received your information and will contact you shortly to discuss your personalized ROI analysis.</p>
+        <p>We've received your information and will contact you shortly to discuss your customized analysis.</p>
         <h3>Your Estimated Impact:</h3>
         <pre>${JSON.stringify(calculatorResults, null, 2)}</pre>
-        <p>Our sales team may reach out within 24 hours to discuss these results in detail.</p>
+        <p>Our sales team may reach out within 24 working hours to discuss these results in detail.</p>
         <p>Best regards,<br/>Your Sales Team</p>
       `
     });

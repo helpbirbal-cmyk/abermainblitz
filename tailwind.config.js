@@ -8,7 +8,7 @@ module.exports = {
         'gradient-hero': 'linear-gradient(135deg, #1e40af 0%, #3730a3 100%)',
       }
     }
-  }
+  },
   plugins: [require("daisyui")], // Add DaisyUI plugin
 
 }

@@ -22,29 +22,16 @@ export default function CTASection({
         <p className="text-xl mb-10 max-w-3xl mx-auto">{description}</p>
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
 
-          <button onClick={() => openModal('ott')} className="transition delay-150 duration-300 ease-in-out ring-2 ring-red-500 bg-blue-700 text-white border-2 border-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300 hover:bg-white hover:text-black hover:border-black">
-            Book a Demo
+          <button onClick={() => openModal('ott')} className="transition delay-150 duration-300 ease-in-out ring-2 ring-red-500 bg-blue-700 text-white border-2 border-white px-8 py-3 !rounded-lg font-semibold transition-colors duration-300 hover:bg-white hover:text-black hover:border-black">
+            Book Demo
           </button>
 
         </div>
       </div>
-      <div className="w-full max-w-xs">
-  <input type="range" min={0} max="100" value="25" className="range" step="25" />
-  <div className="flex justify-between px-2.5 mt-2 text-xs">
-    <span>|</span>
-    <span>|</span>
-    <span>|</span>
-    <span>|</span>
-    <span>|</span>
-  </div>
-  <div className="flex justify-between px-2.5 mt-2 text-xs">
-    <span>1</span>
-    <span>2</span>
-    <span>3</span>
-    <span>4</span>
-    <span>5</span>
-  </div>
-</div>
+
+        <input type="range" min={0} max="100" defaultValue="40" className="range text-blue-300 [--range-bg:media] [--range-thumb:media] [--range-fill:0] w-full" />
+        <input type="checkbox" defaultChecked className="toggle" />
+        <input type="range" min="0" max="100" defaultValue="40" className="range text-blue-300 [--range-bg:orange] [--range-thumb:blue] [--range-fill:0] w-full" />
     </section>
   );
 }
