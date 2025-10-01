@@ -1,54 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: Request) {
-  // Environment variables
   const resendApiKey = process.env.RESEND_API_KEY;
   const emailFrom = process.env.EMAIL_FROM;
 
-  // UPDATED: Using server-side keys (without NEXT_PUBLIC_) for secure write operation
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL; // Using your provided URL variable
-  // IMPORTANT: You MUST use the Service Role Key here for server-side writes
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-
   try {
-    // 1. Check for required environment variables
+    // 1. Check for required environment variables first
     if (!resendApiKey || !emailFrom) {
-      console.error('Server configuration error: Missing Resend environment variables');
+      console.error('Server configuration error: Missing required environment variables');
       return NextResponse.json(
-        { error: 'Server configuration error: Missing Resend environment variables' },
+        {
+          error: 'Server configuration error: Missing required environment variables'
+        },
         { status: 500 }
       );
     }
 
-    // NOTE: Checking for SUPABASE_SERVICE_KEY, as the public URL is often available via NEXT_PUBLIC_
-    if (!supabaseServiceKey) {
-      console.error('Server configuration error: Missing Supabase Service Key environment variable (SUPABASE_SERVICE_KEY)');
-      // Allowing the user email to proceed even if Supabase secret key is missing
-    }
-
-    // 2. Initialize Resend and Supabase clients
+    // 2. Initialize Resend here, after validation
     const resend = new Resend(resendApiKey);
-
-    // Initialize Supabase only if keys are present
-    let supabase = null;
-    if (supabaseUrl && supabaseServiceKey) {
-        // Use createClient and the Service Key for elevated write permissions
-        supabase = createClient(supabaseUrl, supabaseServiceKey);
-    }
 
     // 3. Get the request body
     const { name, email, company, phone, calculatorResults } = await request.json();
 
-    // CRITICAL FIX: Safely process calculatorResults into an array of metrics for the user email HTML.
+    // CRITICAL FIX: Safely process calculatorResults into an array of metrics.
     let metrics: { label: string, value: any, isPositive: boolean }[] = [];
 
     if (Array.isArray(calculatorResults)) {
       // Case 1: Already the desired array format (ideal scenario)
       metrics = calculatorResults;
     } else if (calculatorResults && typeof calculatorResults === 'object' && Object.keys(calculatorResults).length > 0) {
-      // Case 2: Received a single object. Convert it to an array.
+      // Case 2: Received a single object (as seen in screenshot). Convert it to an array.
       metrics = Object.entries(calculatorResults).map(([key, value]) => ({
         // Converts camelCase (e.g., annualSalarySavings) to readable text (Annual Salary Savings)
         label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
@@ -56,36 +38,31 @@ export async function POST(request: Request) {
         isPositive: typeof value === 'number' ? value >= 0 : true, // Basic check for positivity if it's a number
       }));
     }
+    // Note: If metrics remains an empty array [], metricsHtml will be an empty string, which is correct.
 
 
-    // 4. Store lead data in Supabase (Replacing sales team email)
-    if (supabase) {
-        const leadData = {
-            name: name,
-            email: email,
-            company: company,
-            phone: phone || null,
-            // --- CHANGE MADE HERE ---
-            // Updated column name to 'calculator_results_data' for better compatibility.
-            calculator_results_data: calculatorResults,
-            created_at: new Date().toISOString(),
-        };
+    // 4. Send email to sales team
+    const salesEmail = await resend.emails.send({
+      from: emailFrom, // Use the checked variable
+      to: 'aberdeenassociate@gmail.com',
+      subject: `New ROI Calculator Lead: ${name} from ${company}`,
+      html: `
+        <h2>New Lead from ROI Calculator</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Company:</strong> ${company}</p>
+        <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+        <h3>Calculator Results Raw Data:</h3>
+        <pre>${JSON.stringify(calculatorResults, null, 2)}</pre>
+        <p><em>Received: ${new Date().toLocaleString()}</em></p>
+      `
+    });
 
-        const { error: supabaseError } = await supabase
-            .from('lead_reports') // Assumes you have a table named 'lead_reports'
-            .insert([leadData]);
-
-        if (supabaseError) {
-            console.error('Supabase insert error:', supabaseError);
-            // Optionally, send a backup email here if the DB insert fails
-        }
-    }
-
-
-    // 5. Send confirmation email to user (remains the same)
+    // 5. Send confirmation email to user
 
     // Pre-process the dynamic metrics part of the email, using the safe 'metrics' array
-    const metricsHtml = metrics.map((metric, index) => {
+    // Displaying ALL metrics generated from the calculatorResults object.
+    const metricsHtml = metrics.map((metric, index) => { // Removed .slice(0, 4)
         const isPositive = typeof metric.isPositive === 'boolean' ? metric.isPositive : true;
         const valueColor = isPositive ? 'green' : 'red';
 
@@ -115,7 +92,7 @@ export async function POST(request: Request) {
 
     // The main email sending function
     const userEmail = await resend.emails.send({
-        from: emailFrom,
+        from: emailFrom, // Use the checked variable
         to: email,
         subject: 'Your AberCXO Analysis Report',
         html: `
@@ -139,12 +116,12 @@ export async function POST(request: Request) {
     // 6. Return success
     return NextResponse.json({
       success: true,
-      message: 'Email sent and lead stored successfully'
+      message: 'Emails sent successfully'
     }, { status: 200 });
 
   } catch (error) {
-    console.error('Error processing lead:', error);
+    console.error('Error sending emails (Resend API likely failed):', error);
     // This 500 status is what the client-side ROICalculator.tsx receives.
-    return NextResponse.json({ error: 'Failed to process lead' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to send emails' }, { status: 500 });
   }
 }

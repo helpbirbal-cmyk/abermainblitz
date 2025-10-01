@@ -204,7 +204,6 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
               <div className="grid grid-cols-2 gap-6">
                 {/* Manual Testers */}
                 <div className="flex flex-col items-center space-y-2">
-                  <label className="text-sm font-medium text-gray-700 text-center">Manual Testers</label>
                   <div className="relative">
                     <Knob
                       value={inputs.manualTesters}
@@ -222,11 +221,12 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
                   <div className="text-xs text-gray-500 text-center">
                     Capacity: {Math.round(testCycleCapacity)} cycles
                   </div>
+                  <label className="text-sm font-medium text-gray-700 text-center">Manual Testers</label>
                 </div>
 
                 {/* Weekly Testing Hours */}
                 <div className="flex flex-col items-center space-y-2">
-                  <label className="text-sm font-medium text-gray-700 text-center">Weekly Hours</label>
+
                   <div className="relative">
                     <Knob
                       value={inputs.weeklyTestingHours}
@@ -244,6 +244,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
                   <div className="text-xs text-gray-500 text-center">
                     Capacity: {Math.round(testCycleCapacity)} cycles
                   </div>
+                <label className="text-sm font-medium text-gray-700 text-center">Weekly Hours</label>
                 </div>
 
                 {/* Tester Salary */}
