@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     }
 
     // 5. Send confirmation email to user
-    const userEmail = await resend.emails.send({
+    const { data: userEmail, error: emailError } = await resend.emails.send({
       from: emailFrom,
       to: email,
       subject: 'Your Assessment Request Has Been Received',
@@ -136,8 +136,16 @@ export async function POST(request: Request) {
       `
     });
 
+    if (emailError) {
+      console.error('Resend email error:', emailError);
+      return NextResponse.json(
+        { error: 'Failed to send confirmation email' },
+        { status: 500 }
+      );
+    }
+
     // 6. Optional: Send internal notification email to your team
-    const internalEmail = await resend.emails.send({
+    await resend.emails.send({
       from: emailFrom,
       to: emailFrom, // Send to yourself/your team
       subject: `New Assessment Lead: ${name} from ${company || 'Unknown Company'}`,
@@ -160,7 +168,8 @@ export async function POST(request: Request) {
       message: 'Assessment request submitted successfully',
       data: {
         supabaseId: supabaseData?.[0]?.id,
-        emailId: userEmail.id
+        // Remove emailId since Resend response structure is different
+        emailSent: !!userEmail
       }
     }, { status: 200 });
 

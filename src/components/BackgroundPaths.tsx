@@ -74,47 +74,44 @@ function AssessmentModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
   })
 
   // Update the handleSubmit function in your AssessmentModal component
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-  try {
-    const response = await fetch('/api/send-assessment-lead', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    })
-
-    const result = await response.json()
-
-    if (response.ok) {
-      // Handle success
-      console.log('Assessment booked successfully!', result)
-      // You can show a success message or redirect
-      alert('Thank you! Your assessment request has been submitted successfully.')
-      onClose()
-
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        company: "",
-        phone: "",
-        projectType: "",
-        timeline: "",
-        message: ""
+    try {
+      const response = await fetch('/api/send-assessment-lead', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       })
-    } else {
-      // Handle API error
-      console.error('Failed to book assessment:', result.error)
-      alert('Sorry, there was an error submitting your request. Please try again.')
+
+      const result = await response.json()
+
+      if (response.ok) {
+        console.log('Assessment booked successfully!', result)
+        alert('Thank you! Your assessment request has been submitted successfully.')
+        onClose()
+
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          company: "",
+          phone: "",
+          projectType: "",
+          timeline: "",
+          message: ""
+        })
+      } else {
+        console.error('Failed to book assessment:', result.error)
+        alert(`Sorry, there was an error: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      alert('Network error. Please check your connection and try again.')
     }
-  } catch (error) {
-    console.error('Error submitting form:', error)
-    alert('Network error. Please check your connection and try again.')
   }
-}
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
