@@ -61,12 +61,247 @@ function FloatingPaths({ position, isMobile }: { position: number; isMobile: boo
   )
 }
 
+// Assessment Modal Component
+function AssessmentModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    company: "",
+    phone: "",
+    projectType: "",
+    timeline: "",
+    message: ""
+  })
+
+  // Update the handleSubmit function in your AssessmentModal component
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+
+  try {
+    const response = await fetch('/api/send-assessment-lead', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    })
+
+    const result = await response.json()
+
+    if (response.ok) {
+      // Handle success
+      console.log('Assessment booked successfully!', result)
+      // You can show a success message or redirect
+      alert('Thank you! Your assessment request has been submitted successfully.')
+      onClose()
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        company: "",
+        phone: "",
+        projectType: "",
+        timeline: "",
+        message: ""
+      })
+    } else {
+      // Handle API error
+      console.error('Failed to book assessment:', result.error)
+      alert('Sorry, there was an error submitting your request. Please try again.')
+    }
+  } catch (error) {
+    console.error('Error submitting form:', error)
+    alert('Network error. Please check your connection and try again.')
+  }
+}
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Book Your Assessment
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Full Name *
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white transition-colors"
+                placeholder="Enter your full name"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Email Address *
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white transition-colors"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="company" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Company
+              </label>
+              <input
+                type="text"
+                id="company"
+                name="company"
+                value={formData.company}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white transition-colors"
+                placeholder="Enter company name"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white transition-colors"
+                placeholder="Enter your phone number"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="projectType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Project Type
+              </label>
+              <select
+                id="projectType"
+                name="projectType"
+                value={formData.projectType}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white transition-colors"
+              >
+                <option value="">Select project type</option>
+                <option value="web-app">Web Application</option>
+                <option value="mobile-app">Mobile Application</option>
+                <option value="ecommerce">E-commerce Platform</option>
+                <option value="enterprise">Enterprise Software</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="timeline" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Expected Timeline
+              </label>
+              <select
+                id="timeline"
+                name="timeline"
+                value={formData.timeline}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white transition-colors"
+              >
+                <option value="">Select timeline</option>
+                <option value="immediate">Immediately</option>
+                <option value="1-month">Within 1 month</option>
+                <option value="3-months">Within 3 months</option>
+                <option value="6-months">Within 6 months</option>
+                <option value="flexible">Flexible</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Additional Information
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                rows={4}
+                value={formData.message}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white transition-colors resize-none"
+                placeholder="Tell us about your project, challenges, or specific requirements..."
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Book Assessment
+              </button>
+            </div>
+          </form>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
 export default function BackgroundPaths({
   title = "Achieve ZERO DEFECTS",
 }: {
   title?: string
 }) {
   const [isMobile, setIsMobile] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
@@ -90,10 +325,18 @@ export default function BackgroundPaths({
     }
   };
 
+  const openAssessmentModal = () => {
+    setIsModalOpen(true)
+  }
+
+  const closeAssessmentModal = () => {
+    setIsModalOpen(false)
+  }
+
   // Split the title into lines for proper animation
   const titleLines = [
-    "ZERO DEFECT",
-    "Your Apps",
+    "LAUNCH FLAWLESS APPS",
+    "ZERO DEFECTS",
   ]
 
   return (
@@ -148,22 +391,37 @@ export default function BackgroundPaths({
             className="flex flex-col items-center space-y-5 mt-6 md:mt-8 px-2 w-full" // Reduced padding on mobile
           >
             <div className="text-md md:text-xl font-medium text-black dark:text-white opacity-90">
-              Know Your App Performance, Before Your Users
+              Uncover App Performance Issues—Before Your Users Ever See Them
             </div>
 
             <div className="text-sm md:text-base text-black dark:text-white opacity-80 max-w-2xl leading-relaxed text-center">
-              AI-powered synthetic testing & monitoring that pinpoints application experience issues in realtime, with root cause analysis
+              AI-powered automated testing on real devices that simulates user journeys, catches defects early, and delivers root cause insights—before you publish
             </div>
 
             <div className="w-full border-t border-gray-300 dark:border-gray-700 my-2"></div>
 
             <motion.button
-              onClick={scrollToEstimator}
+              onClick={openAssessmentModal}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-blue-700 opacity-90 ring-2 ring-red-500 border border-blue-600 text-white font-semibold hover:bg-blue-600 transition-colors duration-300 cursor-pointer"
             >
-              <span className="font-bold">Calculate ROI</span>
+              <span className="font-bold">Book an Assessment</span>
+              <motion.span
+                animate={{ x: [0, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+              >
+                →
+              </motion.span>
+            </motion.button>
+
+            <motion.button
+              onClick={scrollToEstimator}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center space-x-2 px-6 py-3 rounded-lg bg-blue-500 opacity-90 ring-2 ring-blue-700 border border-blue-600 text-white  hover:bg-blue-600 transition-colors duration-300 cursor-pointer"
+            >
+              <span className="font-bold">Calculate Your $200K+ Savings</span>
               <motion.span
                 animate={{ x: [0, 5, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
@@ -183,7 +441,6 @@ export default function BackgroundPaths({
           onClick={scrollToEstimator}
         >
           <span className="text-sm text-black/70 dark:text-white/70 mb-2">
-            Scroll to explore
           </span>
           <motion.div
             animate={{ y: [0, 8, 0] }}
@@ -207,6 +464,9 @@ export default function BackgroundPaths({
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Assessment Modal */}
+      <AssessmentModal isOpen={isModalOpen} onClose={closeAssessmentModal} />
     </div>
   )
 }
