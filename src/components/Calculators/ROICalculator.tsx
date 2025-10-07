@@ -288,7 +288,6 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
           Financial Modelling
         </Typography>
 
-        // In your ROICalculator.tsx, replace the Grid section with this:
       <Grid container spacing={2} justifyContent="center">
         {/* Column 1: Inputs */}
         <Grid size={{ xs: 12, md: 4 }}>
