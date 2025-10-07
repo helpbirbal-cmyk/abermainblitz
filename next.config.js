@@ -11,9 +11,9 @@ module.exports = {
               default-src 'self';
               script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com https://www.googletagmanager.com;
               style-src 'self' 'unsafe-inline' https://assets.calendly.com;
-              img-src 'self' https://assets.calendly.com data:;
+              img-src 'self' https://assets.calendly.com data: https://www.google-analytics.com;
               font-src 'self' https://assets.calendly.com;
-              connect-src 'self' https://api.calendly.com;
+              connect-src 'self' https://api.calendly.com https://www.google-analytics.com https://*.analytics.google.com;
               frame-src 'self' https://calendly.com https://*.calendly.com;
               child-src 'self' https://calendly.com https://*.calendly.com;
             `.replace(/\s{2,}/g, ' ').trim()
