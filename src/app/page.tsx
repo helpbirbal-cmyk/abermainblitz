@@ -13,7 +13,6 @@ import TechnologySection from '@/components/TechnologySection'
 import CTASection from '@/components/CTASection'
 import Footer from '@/components/Footer'
 import DemoModal from '@/components/DemoModal'
-import HalftoneWaves from "@/components/halftonewaves"
 import FloatingPaths from "@/components/BackgroundPaths"
 import { ROICalculator } from '@/components/Calculators/ROICalculator' //new agenticaitest
 import ROITool from '@/components/ROITool';
