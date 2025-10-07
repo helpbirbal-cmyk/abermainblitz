@@ -102,7 +102,6 @@ export default function BackgroundPaths({
 
   // Split the title into lines for proper animation - FIXED for mobile
   const titleLines = [
-    "ACHIEVE",
     "FLAWLESS APPS",
     "ZERO DEFECTS",
   ]
@@ -163,12 +162,12 @@ export default function BackgroundPaths({
           >
             {/* Subtitle - improved for mobile */}
             <div className="text-base sm:text-lg md:text-xl font-medium text-black dark:text-white opacity-90 leading-relaxed px-2">
-              Uncover App Performance Issues—Before Your Users Ever See Them
+              Uncover App Issues, Before Your Users See Them
             </div>
 
             {/* Description - improved text sizing and spacing */}
             <div className="text-xs sm:text-sm md:text-base text-black dark:text-white opacity-80 max-w-2xl leading-relaxed text-center px-2 sm:px-0">
-              AI-powered automated testing on real devices that simulates user journeys, catches defects early, and delivers root cause insights—before you publish
+              AI-powered automated testing on real devices that catches defects early, and delivers root cause insights—before you publish
             </div>
 
             {/* Divider */}

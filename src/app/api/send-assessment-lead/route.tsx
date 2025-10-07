@@ -1,4 +1,4 @@
-// /Users/abhijitbarua/Documents/aberdeena/abermainblitz/src/app/api/send-assessment-lead/route.ts
+// src/app/api/send-assessment-lead/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
@@ -42,7 +42,9 @@ export async function POST(request: Request) {
       phone,
       projectType,
       timeline,
-      message
+      message,
+      source = 'website_modal', // Default source
+      demoType = null // New field for demo requests
     } = await request.json();
 
     // Validate required fields
@@ -62,8 +64,9 @@ export async function POST(request: Request) {
       project_type: projectType || null,
       timeline: timeline || null,
       message: message || null,
+      source: source,
+      demo_type: demoType,
       created_at: new Date().toISOString(),
-      source: 'website_modal'
     };
 
     const { data: supabaseData, error: supabaseError } = await supabase
@@ -76,12 +79,75 @@ export async function POST(request: Request) {
       // Continue with email even if Supabase fails, but log the error
     }
 
-    // 5. Send confirmation email to user
-    const { data: userEmail, error: emailError } = await resend.emails.send({
-      from: emailFrom,
-      to: email,
-      subject: 'Your Assessment Request Has Been Received',
-      html: `
+    // 5. Determine email content based on source
+    const isDemoRequest = source === 'demo_request';
+
+    const userEmailSubject = isDemoRequest
+      ? 'Your Demo Request Has Been Received'
+      : 'Your Assessment Request Has Been Received';
+
+    const userEmailHtml = isDemoRequest
+      ? `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+                .details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea; }
+                .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+                .demo-type { background: #e8f4fd; padding: 15px; border-radius: 6px; margin: 15px 0; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Demo Request Confirmed</h1>
+                </div>
+                <div class="content">
+                    <p>Hi <strong>${name}</strong>,</p>
+
+                    <p>Thank you for requesting a demo with AberCXO! We're excited to show you how we can help transform your digital experience.</p>
+
+                    <div class="details">
+                        <h3>Request Details:</h3>
+                        <p><strong>Name:</strong> ${name}</p>
+                        <p><strong>Email:</strong> ${email}</p>
+                        ${company ? `<p><strong>Company:</strong> ${company}</p>` : ''}
+                        ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
+                        ${demoType ? `
+                        <div class="demo-type">
+                            <p><strong>Demo Type:</strong> ${getDemoTypeDisplayName(demoType)}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <p><strong>What happens next?</strong></p>
+                    <ul>
+                        <li>Our team will contact you within 24 hours to confirm your demo schedule</li>
+                        <li>We'll prepare a personalized demo based on your requirements</li>
+                        <li>During the demo, we'll show you exactly how our solution works for your use case</li>
+                        <li>You'll have plenty of time for Q&A with our experts</li>
+                    </ul>
+
+                    <p>We typically respond within 24 working hours. If you have any urgent questions, please don't hesitate to reply to this email.</p>
+
+                    <p>Looking forward to connecting with you!</p>
+
+                    <p>Best regards,<br>
+                    <strong>Managing Partner</strong><br>
+                    AberCXO</p>
+                </div>
+                <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} AberCXO. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+      `
+      : `
         <!DOCTYPE html>
         <html>
         <head>
@@ -133,7 +199,14 @@ export async function POST(request: Request) {
             </div>
         </body>
         </html>
-      `
+      `;
+
+    // 6. Send confirmation email to user
+    const { data: userEmail, error: emailError } = await resend.emails.send({
+      from: emailFrom,
+      to: email,
+      subject: userEmailSubject,
+      html: userEmailHtml
     });
 
     if (emailError) {
@@ -144,40 +217,62 @@ export async function POST(request: Request) {
       );
     }
 
-    // 6. Optional: Send internal notification email to your team
+    // 7. Send internal notification email to your team
+    const internalSubject = isDemoRequest
+      ? `New Demo Request: ${name} from ${company || 'Unknown Company'}`
+      : `New Assessment Lead: ${name} from ${company || 'Unknown Company'}`;
+
     await resend.emails.send({
       from: emailFrom,
       to: emailFrom, // Send to yourself/your team
-      subject: `New Assessment Lead: ${name} from ${company || 'Unknown Company'}`,
+      subject: internalSubject,
       html: `
-        <h2>New Assessment Lead Received</h2>
+        <h2>${isDemoRequest ? 'New Demo Request' : 'New Assessment Lead'} Received</h2>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Company:</strong> ${company || 'Not provided'}</p>
         <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
-        <p><strong>Project Type:</strong> ${projectType || 'Not specified'}</p>
-        <p><strong>Timeline:</strong> ${timeline || 'Not specified'}</p>
+        ${demoType ? `<p><strong>Demo Type:</strong> ${demoType}</p>` : ''}
+        ${projectType ? `<p><strong>Project Type:</strong> ${projectType}</p>` : ''}
+        ${timeline ? `<p><strong>Timeline:</strong> ${timeline}</p>` : ''}
         ${message ? `<p><strong>Message:</strong> ${message}</p>` : ''}
+        <p><strong>Source:</strong> ${source}</p>
         <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
       `
     });
 
-    // 7. Return success response
+    // 8. Return success response
+    const successMessage = isDemoRequest
+      ? 'Demo request submitted successfully'
+      : 'Assessment request submitted successfully';
+
     return NextResponse.json({
       success: true,
-      message: 'Assessment request submitted successfully',
+      message: successMessage,
       data: {
         supabaseId: supabaseData?.[0]?.id,
-        // Remove emailId since Resend response structure is different
-        emailSent: !!userEmail
+        emailSent: !!userEmail,
+        requestType: isDemoRequest ? 'demo' : 'assessment'
       }
     }, { status: 200 });
 
   } catch (error) {
-    console.error('Error processing assessment request:', error);
+    console.error('Error processing request:', error);
     return NextResponse.json(
-      { error: 'Failed to process assessment request' },
+      { error: 'Failed to process request' },
       { status: 500 }
     );
   }
+}
+
+// Helper function to format demo type for display
+function getDemoTypeDisplayName(demoType: string): string {
+  const demoTypeMap: { [key: string]: string } = {
+    'general': 'General Demo',
+    'bfsi': 'BFSI Solutions Demo',
+    'ott': 'OTT Platform Demo',
+    'payment': 'Payment Solutions Demo'
+  };
+
+  return demoTypeMap[demoType] || demoType;
 }

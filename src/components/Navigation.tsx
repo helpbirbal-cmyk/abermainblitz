@@ -1,8 +1,21 @@
-// components/Navigation.tsx
+// src/components/Navigation.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from 'next/image'
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Button,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  useMediaQuery
+} from '@mui/material'
+import MenuIcon from '@mui/icons-material/Menu'
+import CloseIcon from '@mui/icons-material/Close'
 
 interface NavigationProps {
   openModal: (type?: 'general' | 'bfsi' | 'ott' | 'payment') => void
@@ -10,111 +23,216 @@ interface NavigationProps {
 
 export default function Navigation({ openModal }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const isMobile = useMediaQuery('(max-width:1023px)') // lg breakpoint
+
+  // Detect dark mode from html class
+  useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'))
+    }
+
+    // Initial check
+    checkDarkMode()
+
+    // Watch for theme changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          checkDarkMode()
+        }
+      })
+    })
+
+    observer.observe(document.documentElement, { attributes: true })
+
+    return () => observer.disconnect()
+  }, [])
 
   const navLinks = [
     { href: "#solutions", label: "Solutions" },
-    { href: "#results", label: "Benifits" },
+    { href: "#results", label: "Benefits" },
     { href: "#technology", label: "Tech" },
     { href: "#calculator", label: "ROI Tools" }
   ]
 
+  const handleNavClick = (href: string) => {
+    setIsMobileMenuOpen(false)
+    const element = document.querySelector(href)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   return (
-    <nav className="bg-black shadow-sm fixed top-0 left-0 right-0 z-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between w-full h-16">
-          {/* Logo Section */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Image
-                src="/images/aberdeenicon.png"
-                alt="Aberdeen"
-                width={120}
-                height={32}
-                className="h-8 w-auto"
-              /> Mojo
-              <span className="text-white">|</span>
-              <Image
-                src="/images/mozarkicon.png" 
-                alt="MozarkAI"
-                width={150}
-                height={48}
-                className="h-8 w-auto"
-              />
-            </div>
-          </div>
+    <AppBar
+      position="fixed"
+      sx={{
+        backgroundColor: isDarkMode ? '#000000' : '#ffffff', // bg-gray-900 in dark, white in light
+        color: isDarkMode ? '#ffffff' : '#000000', // text-white in dark, text-black in light
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        zIndex: 1300
+      }}
+    >
+      <Toolbar sx={{ maxWidth: '1200px', mx: 'auto', width: '100%', px: 2 }}>
+        {/* Logo Section */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Image
+              src="/images/aberdeenicon.png"
+              alt="Aberdeen"
+              width={120}
+              height={32}
+              className="h-8 w-auto"
+            />
+            <span style={{
+              color: isDarkMode ? '#ffffff' : '#000000',
+              fontWeight: 500
+            }}>
+              AberCXO |
+            </span>
+            <Image
+              src="/images/mozarkicon.png"
+              alt="MozarkAI"
+              width={150}
+              height={48}
+              className="h-8 w-auto"
+            />
+          </Box>
+        </Box>
 
-          {/* Desktop Navigation Links */}
-          <div className="hidden lg:flex items-center space-x-8">
+        {/* Desktop Navigation Links */}
+        <Box sx={{ display: { xs: 'none', lg: 'flex' }, alignItems: 'center', gap: 4 }}>
+          {navLinks.map((link) => (
+            <Button
+              key={link.href}
+              onClick={() => handleNavClick(link.href)}
+              sx={{
+                color: 'inherit',
+                fontWeight: 500,
+                textTransform: 'none',
+                fontSize: '0.875rem',
+                minWidth: 'auto',
+                px: 1,
+                '&:hover': {
+                  color: '#8A8AFF', // blue-600
+                  backgroundColor: 'transparent',
+                }
+              }}
+            >
+              {link.label}
+            </Button>
+          ))}
+        </Box>
+
+        {/* Desktop Book Demo Button */}
+        <Box sx={{ display: { xs: 'none', lg: 'block' }, ml: 2 }}>
+          <Button
+            variant="contained"
+            onClick={() => openModal('general')}
+            sx={{
+              textTransform: 'none',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              borderRadius: '6px',
+              px: 3,
+              py: 1,
+              backgroundColor: '#2563eb', // blue-600
+              color: 'white',
+              '&:hover': {
+                backgroundColor: '#1d4ed8', // blue-700
+              }
+            }}
+          >
+            Book Demo
+          </Button>
+        </Box>
+
+        {/* Mobile Menu Button */}
+        <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
+          <IconButton
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            sx={{
+              color: 'inherit',
+              '&:hover': {
+                color: '#2563eb',
+                backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+              }
+            }}
+          >
+            {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
+          </IconButton>
+        </Box>
+      </Toolbar>
+
+      {/* Mobile Menu Drawer */}
+      <Drawer
+        anchor="top"
+        open={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        sx={{
+          display: { xs: 'block', lg: 'none' },
+          '& .MuiDrawer-paper': {
+            backgroundColor: isDarkMode ? '#111827' : '#ffffff',
+            color: isDarkMode ? '#ffffff' : '#000000',
+            marginTop: '64px', // Height of AppBar
+            borderTop: '1px solid',
+            borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          }
+        }}
+      >
+        <Box sx={{ width: '100%', py: 2, px: 2 }}>
+          <List sx={{ p: 0 }}>
             {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-white hover:text-blue-600 transition-colors font-medium"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-
-          {/* Desktop Book Demo Button */}
-          <div className="hidden lg:block">
-            <button
-              onClick={() => openModal('general')}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium ring-2 ring-red-500"
-            >
-              Book Demo
-            </button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-white hover:text-blue-600 focus:outline-none focus:text-blue-600"
-            >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isMobileMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12M6 12l12-12"
-                  />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 py-4">
-            <div className="flex flex-col space-y-4">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="text-white hover:text-blue-600 transition-colors px-2 py-1 font-medium"
-                  onClick={() => setIsMobileMenuOpen(false)}
+              <ListItem key={link.href} disablePadding sx={{ mb: 1 }}>
+                <Button
+                  onClick={() => handleNavClick(link.href)}
+                  fullWidth
+                  sx={{
+                    justifyContent: 'flex-start',
+                    color: 'inherit',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    py: 1.5,
+                    px: 2,
+                    borderRadius: '6px',
+                    '&:hover': {
+                      color: '#2563eb',
+                      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+                    }
+                  }}
                 >
                   {link.label}
-                </a>
-              ))}
-              <button
+                </Button>
+              </ListItem>
+            ))}
+            <ListItem disablePadding sx={{ mt: 2 }}>
+              <Button
+                variant="contained"
                 onClick={() => {
                   openModal('general')
                   setIsMobileMenuOpen(false)
                 }}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors w-full mt-2 font-medium"
+                fullWidth
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  borderRadius: '6px',
+                  py: 1.5,
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: '#1d4ed8',
+                  }
+                }}
               >
                 Book Demo
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </nav>
+              </Button>
+            </ListItem>
+          </List>
+        </Box>
+      </Drawer>
+    </AppBar>
   )
 }

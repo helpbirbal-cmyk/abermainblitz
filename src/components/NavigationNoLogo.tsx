@@ -81,15 +81,30 @@ export default function Navigation({ openModal }: NavigationProps) {
                   {link.label}
                 </a>
               ))}
-              <button
-                onClick={() => {
-                  openModal('general')
-                  setIsMobileMenuOpen(false)
-                }}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors w-full mt-2"
-              >
-                Book Demo
-              </button>
+              import Button from '@mui/material/Button'
+
+          // MUI compliant
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              openModal('general')
+              setIsMobileMenuOpen(false)
+            }}
+            sx={{
+              width: '100%',
+              mt: 2,
+              py: 1.5, // Equivalent to py-2
+              fontSize: '0.875rem', // Equivalent to text-sm
+              fontWeight: 700,
+              //textTransform: 'none', // Prevents uppercase transformation
+              '&:hover': {
+                backgroundColor: '#1d4ed8', // Equivalent to hover:bg-blue-700
+              }
+            }}
+          >
+            Book Demo
+          </Button>
             </div>
           </div>
         )}
