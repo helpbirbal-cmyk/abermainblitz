@@ -189,7 +189,7 @@ function Form({ formData, onChange, onSubmit, isSubmitting, onClose }: FormProps
         value={formData.projectType}
         onChange={onChange}
         options={[
-          { value: "", label: "Select project type" },
+          { value: "", label: "" },
           { value: "web-app", label: "Web Application" },
           { value: "mobile-app", label: "Mobile Application" },
           { value: "ecommerce", label: "E-commerce Platform" },
@@ -205,7 +205,7 @@ function Form({ formData, onChange, onSubmit, isSubmitting, onClose }: FormProps
         value={formData.timeline}
         onChange={onChange}
         options={[
-          { value: "", label: "Select timeline" },
+          { value: "", label: "" },
           { value: "immediate", label: "Immediately" },
           { value: "1-month", label: "Within 1 month" },
           { value: "3-months", label: "Within 3 months" },
@@ -220,7 +220,6 @@ function Form({ formData, onChange, onSubmit, isSubmitting, onClose }: FormProps
         name="message"
         value={formData.message}
         onChange={onChange}
-        placeholder="Tell us about your project, challenges, or specific requirements..."
         rows={4}
       />
 
@@ -237,10 +236,9 @@ interface MaterialInputFieldProps {
   value: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   required?: boolean
-  placeholder?: string
 }
 
-function MaterialInputField({ label, id, name, type, value, onChange, required, placeholder }: MaterialInputFieldProps) {
+function MaterialInputField({ label, id, name, type, value, onChange, required }: MaterialInputFieldProps) {
   const isFilled = value.length > 0
 
   return (
@@ -253,7 +251,6 @@ function MaterialInputField({ label, id, name, type, value, onChange, required, 
         value={value}
         onChange={onChange}
         className="peer w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white transition-all duration-200 outline-none"
-        placeholder=" "
       />
       <label
         htmlFor={id}
@@ -326,11 +323,10 @@ interface MaterialTextAreaFieldProps {
   name: string
   value: string
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
-  placeholder?: string
   rows?: number
 }
 
-function MaterialTextAreaField({ label, id, name, value, onChange, placeholder, rows = 4 }: MaterialTextAreaFieldProps) {
+function MaterialTextAreaField({ label, id, name, value, onChange, rows = 4 }: MaterialTextAreaFieldProps) {
   const isFilled = value.length > 0
 
   return (
@@ -343,7 +339,6 @@ function MaterialTextAreaField({ label, id, name, value, onChange, placeholder, 
         onChange={onChange}
         className={`peer w-full px-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white transition-all duration-200 outline-none resize-none
           ${isFilled ? 'pt-5 pb-3' : 'py-3'}`}
-        placeholder=" "
       />
       <label
         htmlFor={id}
@@ -391,7 +386,7 @@ function FormActions({ onClose, isSubmitting }: FormActionsProps) {
             Submitting...
           </>
         ) : (
-          'Book Assessment'
+          'Send Now!'
         )}
       </button>
     </div>

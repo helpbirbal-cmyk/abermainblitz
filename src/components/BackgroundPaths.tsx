@@ -102,7 +102,8 @@ export default function BackgroundPaths({
 
   // Split the title into lines for proper animation - FIXED for mobile
   const titleLines = [
-    "LAUNCH FLAWLESS",
+    "ACHIEVE",
+    "FLAWLESS APPS",
     "ZERO DEFECTS",
   ]
 
@@ -182,7 +183,7 @@ export default function BackgroundPaths({
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center justify-center space-x-2 px-4 py-3 rounded-lg bg-blue-700 opacity-90 ring-2 ring-red-500 border border-blue-600 text-white font-semibold hover:bg-blue-600 transition-colors duration-300 cursor-pointer text-sm sm:text-base whitespace-nowrap flex-1 min-w-0"
               >
-                <span className="font-bold truncate">Book an Assessment</span>
+                <span className="font-bold truncate">Book Assessment</span>
                 <motion.span
                   animate={{ x: [0, 3, 0] }}
                   transition={{ repeat: Infinity, duration: 2 }}
@@ -197,9 +198,9 @@ export default function BackgroundPaths({
                 onClick={scrollToEstimator}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex items-center justify-center space-x-2 px-4 py-3 rounded-lg bg-blue-500 opacity-90 ring-2 ring-blue-700 border border-blue-600 text-white hover:bg-blue-600 transition-colors duration-300 cursor-pointer text-sm sm:text-base whitespace-nowrap flex-1 min-w-0"
+                className="flex items-center justify-center space-x-2 px-4 py-3 rounded-lg bg-gray-800 opacity-90 ring-2 ring-blue-700 border border-blue-600 text-white hover:bg-blue-600 transition-colors duration-300 cursor-pointer text-sm sm:text-base whitespace-nowrap flex-1 min-w-0"
               >
-                <span className="font-bold truncate">Calculate Savings</span>
+                <span className="font truncate">Calculate Savings</span>
                 <motion.span
                   animate={{ x: [0, 3, 0] }}
                   transition={{ repeat: Infinity, duration: 2 }}
@@ -212,35 +213,42 @@ export default function BackgroundPaths({
           </motion.div>
         </motion.div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 0.8 }}
-          className="absolute bottom-6 sm:bottom-10 flex flex-col items-center cursor-pointer"
-          onClick={scrollToEstimator}
-        >
+
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-20">
           <motion.div
-            animate={{ y: [0, 6, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 0.8 }}
+            className="flex flex-col items-center"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              className="text-black/70 dark:text-white/70"
+            <span className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+              Scroll to Explore
+            </span>
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
             >
-              <path
-                d="M12 5V19M12 19L19 12M12 19L5 12"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-gray-600 dark:text-gray-300"
+              >
+                <path
+                  d="M12 5V19M12 19L19 12M12 19L5 12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
+        {/* Scroll indicator */}
+
       </div>
 
       {/* Assessment Modal - Now much cleaner! */}
