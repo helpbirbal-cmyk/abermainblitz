@@ -1,5 +1,13 @@
 // components/TechnologySection.tsx
-import Image from 'next/image';
+'use client'
+
+import {
+  Box,
+  Typography,
+  Paper,
+  useTheme
+} from '@mui/material'
+import Image from 'next/image'
 
 const differentiators = [
   {
@@ -21,48 +29,174 @@ const differentiators = [
 ]
 
 export default function TechnologySection() {
-  return (
-    <section id="technology" className="py-16 bg-white dark:bg-black">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900  dark:text-white mb-4">MozarkAI Technology</h2>
-          <p className="text-xl text-gray-900  dark:text-white">
-            Advanced AI & machine learning capabilities tailored for your industry
-          </p>
-        </div>
+  const theme = useTheme()
+  const isDarkMode = theme.palette.mode === 'dark'
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="bg-white dark:bg-black rounded-xl shadow-sm border border-black dark:border-white p-8">
-            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-8">MozarkAI Differentiators</h3>
-            <div className="space-y-6 ">
+  return (
+    <Box
+      id="technology"
+      component="section"
+      sx={{
+        py: 8,
+        backgroundColor: isDarkMode ? 'black' : 'white',
+        width: '100vw',
+        marginLeft: 'calc(-50vw + 50%)',
+        overflow: 'hidden'
+      }}
+    >
+      <Box
+        sx={{
+          width: '100%',
+          px: { xs: 2, sm: 3, md: 4, lg: 6 },
+          maxWidth: '100%',
+          mx: 'auto'
+        }}
+      >
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
+          <Typography
+            variant="h2"
+            sx={{
+              fontSize: { xs: '2.5rem', md: '3rem', lg: '3.5rem' },
+              fontWeight: 'bold',
+              mb: 2,
+              color: isDarkMode ? 'white' : 'black',
+              background: isDarkMode
+                ? 'linear-gradient(135deg, #ffffff 0%, #94a3b8 100%)'
+                : 'linear-gradient(135deg, #000000 0%, #475569 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
+            MozarkAI Technology
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              fontSize: { xs: '1.125rem', md: '1.25rem' },
+              color: isDarkMode ? 'grey.300' : 'grey.600',
+              fontWeight: 400
+            }}
+          >
+            Advanced AI & machine learning capabilities tailored for your industry
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              lg: '1fr 1fr'
+            },
+            gap: { xs: 4, lg: 6 },
+            alignItems: 'center'
+          }}
+        >
+          {/* Differentiators Card */}
+          <Paper
+            elevation={0}
+            sx={{
+              backgroundColor: isDarkMode ? 'grey.900' : 'white',
+              borderRadius: 2,
+              border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+              boxShadow: 3,
+              p: { xs: 3, md: 4 },
+              transition: 'all 0.3s ease-in-out',
+              '&:hover': {
+                boxShadow: 6
+              }
+            }}
+          >
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 600,
+                color: isDarkMode ? 'white' : 'black',
+                mb: 4,
+                fontSize: { xs: '1.5rem', md: '1.75rem' }
+              }}
+            >
+              MozarkAI Differentiators
+            </Typography>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {differentiators.map((item, index) => (
-                <div key={index} className="flex items-start">
-                  <div
-                    className="bg-green-500 rounded-full flex items-center justify-center  mr-4 flex-shrink-0"
-                    style={{ width: "24px", height: "24px", fontSize: "12px" }}
+                <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <Box
+                    sx={{
+                      backgroundColor: 'success.main',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      mr: 2,
+                      flexShrink: 0,
+                      width: 24,
+                      height: 24,
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold'
+                    }}
                   >
                     ✓
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-black dark:text-white mb-1">{item.title}</h4>
-                    <p className="text-sm text-black dark:text-white">{item.description}</p>
-                  </div>
-                </div>
+                  </Box>
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 600,
+                        color: isDarkMode ? 'white' : 'black',
+                        mb: 0.5,
+                        fontSize: '1rem'
+                      }}
+                    >
+                      {item.title}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: isDarkMode ? 'grey.300' : 'grey.600',
+                        lineHeight: 1.6
+                      }}
+                    >
+                      {item.description}
+                    </Typography>
+                  </Box>
+                </Box>
               ))}
-            </div>
-          </div>
-          {/* Corrected image section */}
-          <div className="relative rounded-3xl overflow-hidden" style={{ height: "640px" }}>
-             <Image
-                src="/images/mozarkarch.jpg"
-                alt="MozarkAI Technology Architecture"
-                fill={true}
-                style={{ objectFit: 'contain' }}
-                sizes="(max-width: 1900px) 100vw, 100vw"
-              />
-          </div>
-        </div>
-      </div>
-    </section>
+            </Box>
+          </Paper>
+
+          {/* Image Section */}
+          <Box
+            sx={{
+              position: 'relative',
+              borderRadius: 2,
+              overflow: 'hidden',
+              height: { xs: '400px', md: '500px', lg: '640px' },
+              border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+              boxShadow: 3,
+              transition: 'all 0.3s ease-in-out',
+              '&:hover': {
+                boxShadow: 6,
+                transform: 'scale(1.02)'
+              }
+            }}
+          >
+            <Image
+              src="/images/mozarkarch.jpg"
+              alt="MozarkAI Technology Architecture"
+              fill={true}
+              style={{
+                objectFit: 'contain',
+                backgroundColor: isDarkMode ? 'grey.900' : 'white'
+              }}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+            />
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   )
 }

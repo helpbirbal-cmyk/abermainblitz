@@ -3,9 +3,21 @@
 
 import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
-import AssessmentModal from "./AssessmentModal"
+import {
+  Box,
+  Button,
+  Typography,
+  useTheme,
+  useMediaQuery,
+  Container
+} from '@mui/material'
+import { useTheme as useNextTheme } from 'next-themes'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 
 function FloatingPaths({ position, isMobile }: { position: number; isMobile: boolean }) {
+  const { resolvedTheme } = useNextTheme()
+  const isDarkMode = resolvedTheme === 'dark'
+
   // Adjust path complexity for mobile devices
   const pathCount = isMobile ? 12 : 36
 
@@ -29,12 +41,13 @@ function FloatingPaths({ position, isMobile }: { position: number; isMobile: boo
   })
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div id="hero"className="absolute inset-0 pointer-events-none overflow-hidden">
       <svg
-        className="w-full h-full text-slate-950 dark:text-white scale-150 md:scale-100"
+        className="w-full h-full scale-150 md:scale-100"
         viewBox="0 0 1200 600"
         fill="none"
         preserveAspectRatio="none"
+        style={{ color: isDarkMode ? 'white' : '#0f172a' }}
       >
         <title>Revolutionize Digital Experience</title>
         {paths.map((path) => (
@@ -62,15 +75,24 @@ function FloatingPaths({ position, isMobile }: { position: number; isMobile: boo
   )
 }
 
-export default function BackgroundPaths({
-  title = "Achieve ZERO DEFECTS",
-}: {
+interface BackgroundPathsProps {
   title?: string
-}) {
+  openAssessmentModal: () => void
+}
+
+export default function BackgroundPaths({
+  title = "MAKE APPS FLAWLESS ZERO DEFECTS",
+  openAssessmentModal
+}: BackgroundPathsProps) {
   const [isMobile, setIsMobile] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const theme = useTheme()
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'))
+  const { resolvedTheme } = useNextTheme()
+  const isDarkMode = resolvedTheme === 'dark'
 
   useEffect(() => {
+    setMounted(true)
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
@@ -92,44 +114,115 @@ export default function BackgroundPaths({
     }
   };
 
-  const openAssessmentModal = () => {
-    setIsModalOpen(true)
-  }
-
-  const closeAssessmentModal = () => {
-    setIsModalOpen(false)
-  }
-
-  // Split the title into lines for proper animation - FIXED for mobile
+  // Split the title into lines for proper animation
   const titleLines = [
-    "FLAWLESS APPS",
-    "ZERO DEFECTS",
+    "ZERO DEFECT",
+    "APP LAUNCH",
   ]
 
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <Box
+        sx={{
+          position: 'relative',
+          minHeight: '100vh',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          backgroundColor: 'background.default'
+        }}
+      />
+    )
+  }
+
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white dark:bg-black overflow-x-hidden">
+    <Box
+      sx={{
+        position: 'relative',
+        minHeight: '100vh',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        backgroundColor: isDarkMode ? 'black' : 'white',
+        overflowX: 'hidden'
+      }}
+    >
       {/* Background container with full width */}
-      <div className="absolute inset-0 flex items-center justify-center -top-10 md:top-0 w-full">
-        <div className="relative w-full h-full">
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          top: { xs: '-40px', md: 0 },
+          width: '100%'
+        }}
+      >
+        <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
           <FloatingPaths position={1} isMobile={isMobile} />
           <FloatingPaths position={-1} isMobile={isMobile} />
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Content container with improved mobile padding and text sizing */}
-      <div className="relative z-10 container mx-auto px-3 sm:px-4 md:px-6 text-center flex flex-col items-center justify-center min-h-screen py-8 w-full">
+      <Container
+        maxWidth={false}
+        sx={{
+          position: 'relative',
+          zIndex: 10,
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          py: 4,
+          width: '100%'
+        }}
+      >
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 2 }}
-          className="max-w-4xl mx-auto w-full px-2 sm:px-4"
+          style={{
+            maxWidth: '1024px',
+            margin: '0 auto',
+            width: '100%',
+            padding: '0 8px'
+          }}
         >
           {/* Improved title with better mobile handling */}
-          <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 tracking-tight leading-tight">
+          <Box
+            component="h1"
+            sx={{
+              fontSize: {
+                xs: '2rem',
+                sm: '2.5rem',
+                md: '3rem',
+                lg: '4rem',
+                xl: '4.5rem'
+              },
+              fontWeight: 'bold',
+              mb: { xs: 2, sm: 3, md: 4 },
+              letterSpacing: 'tight',
+              lineHeight: 'tight'
+            }}
+          >
             {titleLines.map((line, lineIndex) => (
-              <div
+              <Box
                 key={lineIndex}
-                className="block whitespace-nowrap overflow-visible"
+                component="div"
+                sx={{
+                  display: 'block',
+                  whiteSpace: 'nowrap',
+                  overflow: 'visible'
+                }}
               >
                 {line.split("").map((letter, letterIndex) => (
                   <motion.span
@@ -142,116 +235,219 @@ export default function BackgroundPaths({
                       stiffness: 150,
                       damping: 25,
                     }}
-                    className="inline-block text-transparent bg-clip-text
-                                bg-gradient-to-r from-neutral-900 to-neutral-700/80
-                                dark:from-white dark:to-white/80"
+                    style={{
+                      display: 'inline-block',
+                      background: isDarkMode
+                        ? 'linear-gradient(to right, white, rgba(255,255,255,0.8))'
+                        : 'linear-gradient(to right, #0f172a, rgba(15,23,42,0.7))',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text'
+                    }}
                   >
                     {letter === " " ? "\u00A0" : letter}
                   </motion.span>
                 ))}
-              </div>
+              </Box>
             ))}
-          </h1>
+          </Box>
 
           {/* Content section with improved mobile spacing */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.8 }}
-            className="flex flex-col items-center space-y-4 sm:space-y-5 mt-4 sm:mt-6 md:mt-8 px-1 sm:px-2 w-full"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+              marginTop: '16px',
+              width: '100%'
+            }}
           >
-            {/* Subtitle - improved for mobile */}
-            <div className="text-base sm:text-lg md:text-xl font-medium text-black dark:text-white opacity-90 leading-relaxed px-2">
+            {/* Subtitle */}
+            <Typography
+              variant={isSmallScreen ? "h6" : "h5"}
+              sx={{
+                fontWeight: 500,
+                color: isDarkMode ? 'white' : 'black',
+                opacity: 0.9,
+                lineHeight: 'relaxed',
+                px: 1
+              }}
+            >
               Uncover App Issues, Before Your Users See Them
-            </div>
+            </Typography>
 
-            {/* Description - improved text sizing and spacing */}
-            <div className="text-xs sm:text-sm md:text-base text-black dark:text-white opacity-80 max-w-2xl leading-relaxed text-center px-2 sm:px-0">
-              AI-powered automated testing on real devices that catches defects early, and delivers root cause insights—before you publish
-            </div>
+            {/* Description */}
+            <Typography
+              variant={isSmallScreen ? "body2" : "body1"}
+              sx={{
+                color: isDarkMode ? 'white' : 'black',
+                opacity: 0.8,
+                maxWidth: '672px',
+                lineHeight: 'relaxed',
+                textAlign: 'center',
+                px: 1
+              }}
+            >
+              AI-powered automated testing on real devices that catches defects early & delivers root cause insights, before you publish
+            </Typography>
 
             {/* Divider */}
-            <div className="w-full max-w-sm sm:max-w-md border-t border-gray-300 dark:border-gray-700 my-1 sm:my-2"></div>
+            <Box
+              sx={{
+                width: '100%',
+                maxWidth: { xs: '384px', sm: '448px' },
+                borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
+                my: 1
+              }}
+            />
 
-            {/* Buttons - improved for mobile with better text handling */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-sm sm:max-w-md">
+            {/* Buttons - Single Width Layout */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 2,
+                width: '100%',
+                maxWidth: { xs: '384px', sm: '448px' },
+                justifyContent: 'center'
+              }}
+            >
               {/* Book Assessment Button */}
-              <motion.button
-                onClick={openAssessmentModal}
+              <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex items-center justify-center space-x-2 px-4 py-3 rounded-lg bg-blue-700 opacity-90 ring-2 ring-red-500 border border-blue-600 text-white font-semibold hover:bg-blue-600 transition-colors duration-300 cursor-pointer text-sm sm:text-base whitespace-nowrap flex-1 min-w-0"
+                style={{ width: '100%' }}
               >
-                <span className="font-bold truncate">Book Assessment</span>
-                <motion.span
-                  animate={{ x: [0, 3, 0] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                  className="flex-shrink-0"
+                <Button
+                  onClick={openAssessmentModal}
+                  variant="contained"
+                  size="large"
+                  sx={{
+                    py: 1.5,
+                    px: 3,
+                    borderRadius: '8px',
+                    backgroundColor: '#1d4ed8',
+                    opacity: 0.8,
+                    border: '1px solid #2563eb',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '2px',
+                      background: '#ef4444',
+                      animation: 'pulse 2s infinite'
+                    },
+                    '&:hover': {
+                      backgroundColor: '#1e40af',
+                    },
+                    width: '100%',
+                    textTransform: 'none',
+                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                    fontWeight: 600,
+                    minWidth: { xs: '100%', sm: '200px' }
+                  }}
                 >
-                  →
-                </motion.span>
-              </motion.button>
+                  Book an Assessment
+                  <motion.span
+                    animate={{ x: [0, 3, 0] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    style={{ marginLeft: '8px' }}
+                  >
+                    →
+                  </motion.span>
+                </Button>
+              </motion.div>
 
               {/* Savings Calculator Button */}
-              <motion.button
-                onClick={scrollToEstimator}
+              <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex items-center justify-center space-x-2 px-4 py-3 rounded-lg bg-gray-800 opacity-90 ring-2 ring-blue-700 border border-blue-600 text-white hover:bg-blue-600 transition-colors duration-300 cursor-pointer text-sm sm:text-base whitespace-nowrap flex-1 min-w-0"
+                style={{ width: '100%' }}
               >
-                <span className="font truncate">Calculate Savings</span>
-                <motion.span
-                  animate={{ x: [0, 3, 0] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                  className="flex-shrink-0"
+                <Button
+                  onClick={scrollToEstimator}
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    py: 1.5,
+                    px: 3,
+                    borderRadius: '6px',
+                    opacity: 0.9,
+                    //backgroundColor: isDarkMode ? '#374151' : '#111827',
+                    border: `1px solid ${isDarkMode ? '#4b5563' : '#2563eb'}`,
+                    '&:hover': {
+                      //backgroundColor: isDarkMode ? '#4b5563' : '#1e40af',
+                      backgroundColor : isDarkMode ? '#000000' : '#ffffff',
+                      color: isDarkMode ? '#f9fafb' : '#000000',
+                    },
+                    width: '100%',
+                    textTransform: 'none',
+                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                    fontWeight: 500,
+                    minWidth: { xs: '100%', sm: '200px' }
+                  }}
                 >
-                  →
-                </motion.span>
-              </motion.button>
-            </div>
+                  Calculate your Savings
+                  <motion.span
+                    animate={{ x: [0, 3, 0] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    style={{ marginLeft: '8px' }}
+                  >
+                    →
+                  </motion.span>
+                </Button>
+              </motion.div>
+            </Box>
           </motion.div>
         </motion.div>
 
-
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-20">
+        {/* Scroll indicator */}
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 16,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 20
+          }}
+        >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.5, duration: 0.8 }}
-            className="flex flex-col items-center"
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
           >
-            <span className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+            <Typography
+              variant="body2"
+              sx={{
+                color: isDarkMode ? 'grey.400' : 'grey.600',
+                mb: 1
+              }}
+            >
               Scroll to Explore
-            </span>
+            </Typography>
             <motion.div
-              animate={{ y: [0, 10, 0] }}
+              animate={{ y: [0, 8, 0] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
             >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-gray-600 dark:text-gray-300"
-              >
-                <path
-                  d="M12 5V19M12 19L19 12M12 19L5 12"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <ArrowDownwardIcon
+                sx={{
+                  color: isDarkMode ? 'grey.400' : 'grey.600',
+                  fontSize: '1.5rem'
+                }}
+              />
             </motion.div>
           </motion.div>
-        </div>
-        {/* Scroll indicator */}
-
-      </div>
-
-      {/* Assessment Modal - Now much cleaner! */}
-      <AssessmentModal isOpen={isModalOpen} onClose={closeAssessmentModal} />
-    </div>
+        </Box>
+      </Container>
+    </Box>
   )
 }

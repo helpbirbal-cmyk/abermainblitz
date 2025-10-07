@@ -5,6 +5,7 @@ import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from 'next-themes'
+import CustomThemeProvider from '../components/ThemeProvider' // Update path as needed
 
 export const metadata: Metadata = {
   title: "Aberdeen Mozark",
@@ -42,11 +43,13 @@ export default function RootLayout({
         />
 
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <BlitzProvider>
-            {children}
-            <SpeedInsights />
-            <Analytics />
-          </BlitzProvider>
+          <CustomThemeProvider>
+            <BlitzProvider>
+              {children}
+              <SpeedInsights />
+              <Analytics />
+            </BlitzProvider>
+          </CustomThemeProvider>
         </ThemeProvider>
       </body>
     </html>

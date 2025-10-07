@@ -50,6 +50,7 @@ export default function Navigation({ openModal }: NavigationProps) {
   }, [])
 
   const navLinks = [
+    { href: "#hero", label: "Home" },
     { href: "#solutions", label: "Solutions" },
     { href: "#results", label: "Benefits" },
     { href: "#technology", label: "Tech" },

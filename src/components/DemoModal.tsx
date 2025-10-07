@@ -255,9 +255,7 @@ export default function DemoModal({ isOpen, onClose, calculatorType = 'general' 
         Back to Options
       </Button>
 
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-        Request a Demo
-      </Typography>
+
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Share your details and we'll contact you to schedule
       </Typography>
@@ -341,7 +339,7 @@ export default function DemoModal({ isOpen, onClose, calculatorType = 'general' 
           sx={{ flex: 1, py: 1.5 }}
           startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
         >
-          {isSubmitting ? 'Submitting...' : 'Request Demo'}
+          {isSubmitting ? 'Submitting...' : 'Send'}
         </Button>
       </Box>
     </Box>
@@ -365,9 +363,6 @@ export default function DemoModal({ isOpen, onClose, calculatorType = 'general' 
         Back to Options
       </Button>
 
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-        Book Your Demo
-      </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Select a time that works for you
       </Typography>

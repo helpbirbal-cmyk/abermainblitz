@@ -1,4 +1,4 @@
-// components/ui/CalculatorIntro.tsx
+// src/components/ui/CalculatorIntroTabs.tsx
 interface CalculatorIntroProps {
   calculatorType: 'ott' | 'payment' | 'agenticaitest';
   setCalculatorType: (type: 'ott' | 'payment' | 'agenticaitest') => void;
@@ -13,8 +13,6 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
 
       {/* Calculator Type Cards - Compact Version */}
       <div className="flex justify-center gap-0 mx-auto mb-6 rounded-lg border-4 border-white  bg-white w-fit ">
-
-
 
         <button
           className={`flex items-center gap-2  px-1 py-3  rounded-sm transition-all ${
@@ -44,9 +42,6 @@ export default function CalculatorIntro({ calculatorType, setCalculatorType }: C
           </span>
           <span className="font-medium text-base ">QA Testing</span>
         </button>
-
-
-
         <button
           className={`flex items-center gap-2 px-1 py-3 rounded-sm transition-all ${
             calculatorType === 'ott'

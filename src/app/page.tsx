@@ -3,7 +3,8 @@
 
 import { useState } from 'react'
 import Navigation from '@/components/Navigation'
-import HeroSection from '@/components/HeroSection'
+import BackgroundPaths from '../components/BackgroundPaths'
+// import HeroSection from '@/components/HeroSection'
 import LogoCloud from '@/components/LogoCloud'
 import CostCalculators from '@/components/CostCalculators'
 import IndustrySolutions from '@/components/IndustrySolutions'
@@ -15,7 +16,7 @@ import DemoModal from '@/components/DemoModal'
 import HalftoneWaves from "@/components/halftonewaves"
 import FloatingPaths from "@/components/BackgroundPaths"
 import { ROICalculator } from '@/components/Calculators/ROICalculator' //new agenticaitest
-
+import ROITool from '@/components/ROITool';
 
 export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -31,13 +32,11 @@ export default function HomePage() {
   return (
     <>
       <Navigation openModal={openModal} />
-      <HeroSection />
-
+      <BackgroundPaths openAssessmentModal={() => setIsModalOpen(true)} />
       <LogoCloud />
       <IndustrySolutions />
-
       <TechnologySection />
-      <CostCalculators openModal={openModal} />
+      <ROITool openModal={(type) => setIsModalOpen(true)} />
       <CTASection
         title="Revolutionize Your Customer Experience Now"
         description="Get the AI Leverage to Do More, Cut Costs & Scale Profitably"

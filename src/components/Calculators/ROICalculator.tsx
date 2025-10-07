@@ -2,7 +2,28 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Knob } from 'primereact/knob';
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  useTheme,
+  Alert,
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText
+} from '@mui/material';
+import {
+  CheckCircle as CheckCircleIcon,
+} from '@mui/icons-material';
 import DetailedAnalysisModal from './DetailedROIAnalysisModal';
 import {
   CalculatorInputs,
@@ -16,11 +37,89 @@ import { Gauge } from './components/Gauge';
 import { IndustryInfo } from './components/IndustryInfo';
 import { useROICalculations } from './hooks/useROICalculations';
 import { useFormSubmission } from './hooks/useFormSubmission';
-import 'primereact/resources/themes/lara-light-cyan/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
+
+// Custom Knob component replacement using MUI
+interface KnobProps {
+  value: number;
+  onChange: (value: number) => void;
+  min: number;
+  max: number;
+  step?: number;
+  size?: 'small' | 'medium' | 'xsmall';
+  label: string;
+  color?: string;
+}
+
+function CustomKnob({ value, onChange, min, max, step = 1, label, color = 'primary', size = 'medium' }: KnobProps) {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+
+  const knobSize = size === 'xsmall' ? 50 : size === 'small' ? 60 : 80;
+  const fontSize = size === 'xsmall' ? '0.875rem' : size === 'small' ? '1rem' : '1.25rem';
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(Number(event.target.value));
+  };
+
+  const percentage = ((value - min) / (max - min)) * 100;
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+      <Box
+        sx={{
+          position: 'relative',
+          width: knobSize,
+          height: knobSize,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: `conic-gradient(${theme.palette[color].main} 0% ${percentage}%, ${
+            isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+          } ${percentage}% 100%)`,
+          borderRadius: '50%',
+          border: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize,
+            fontWeight: 'bold',
+            color: isDarkMode ? 'white' : 'text.primary'
+          }}
+        >
+          {value}
+        </Typography>
+      </Box>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={handleChange}
+        style={{
+          width: '100%',
+          marginTop: 4
+        }}
+      />
+      <Typography
+        variant="caption"
+        sx={{
+          color: isDarkMode ? 'grey.300' : 'grey.600',
+          textAlign: 'center',
+          fontSize: '0.7rem'
+        }}
+      >
+        {label}
+      </Typography>
+    </Box>
+  );
+}
 
 export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+
   const [inputs, setInputs] = useState<CalculatorInputs>({
     manualTesters: 5,
     weeklyTestingHours: 40,
@@ -72,7 +171,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
     }));
   };
 
-  const handleKnobChange = (field: keyof Omit<CalculatorInputs, 'industry'>, value: number) => {
+  const handleInputChange = (field: keyof Omit<CalculatorInputs, 'industry'>, value: number) => {
     setInputs(prev => ({
       ...prev,
       [field]: value,
@@ -160,300 +259,345 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
     return `$${amount}`;
   };
 
-  // Format value templates as strings
-  const getKnobValueTemplate = (value: number, prefix: string = '', suffix: string = '') => {
-    return `${prefix}${value}${suffix}`;
-  };
-
-  const getSalaryKnobValueTemplate = (value: number) => {
-    return value >= 1000 ? `$${value/1000}K` : `$${value}`;
-  };
-
   return (
-    <div className="space-y-8">
-      {/* Input Form with Clean Layout */}
-      <div className="bg-white dark:bg-gray-800 border-sm rounded-xl shadow-lg p-6">
-        <h2 className="text-xl font-bold text-black dark:text-white mb-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {/* Input Form with Compact Layout */}
+      <Paper
+        elevation={1}
+        sx={{
+          borderRadius: 2,
+          p: 2,
+          backgroundColor: isDarkMode ? 'grey.900' : 'white',
+          border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+        }}
+      >
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 'bold',
+            color: isDarkMode ? 'white' : 'text.primary',
+            mb: 2,
+            textAlign: 'center'
+          }}
+        >
           Financial Modelling
-        </h2>
-
-        <div className="grid lg:grid-cols-3 gap-8">
+        </Typography>
+        <Grid container spacing={2} justifyContent="center">
           {/* Column 1: Inputs */}
-          <div className="space-y-8">
-            {/* Industry Selection */}
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Industry Settings</h3>
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">Industry Type</label>
-                <select
-                  value={inputs.industry}
-                  onChange={(e) => handleIndustryChange(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          <Grid item xs={12} md={3.5}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {/* Industry Selection */}
+              <Card sx={{ backgroundColor: isDarkMode ? 'grey.800' : 'grey.50' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    Industry Settings
+                  </Typography>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Industry Type</InputLabel>
+                    <Select
+                      value={inputs.industry}
+                      onChange={(e) => handleIndustryChange(e.target.value)}
+                      label="Industry Type"
+                    >
+                      {Object.entries(INDUSTRY_BENCHMARKS).map(([key, benchmark]) => (
+                        <MenuItem key={key} value={key}>{benchmark.name}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <IndustryInfo benchmark={currentBenchmark} />
+                </CardContent>
+              </Card>
+
+              {/* Resource Metrics */}
+              <Card sx={{ backgroundColor: isDarkMode ? 'grey.800' : 'grey.50' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
+                    Resource Metrics
+                  </Typography>
+                  <Grid container spacing={1}>
+                    <Grid item xs={6}>
+                      <CustomKnob
+                        value={inputs.manualTesters}
+                        onChange={(value) => handleInputChange('manualTesters', value)}
+                        min={currentBenchmark.typicalTesters[0]}
+                        max={currentBenchmark.typicalTesters[1]}
+                        label="Testers"
+                        color="primary"
+                        size="small"
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <CustomKnob
+                        value={inputs.weeklyTestingHours}
+                        onChange={(value) => handleInputChange('weeklyTestingHours', value)}
+                        min={10}
+                        max={80}
+                        label="Hours/Week"
+                        color="success"
+                        size="small"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sx={{ mt: 1 }}>
+                      <CustomKnob
+                        value={inputs.testerSalary}
+                        onChange={(value) => handleInputChange('testerSalary', value)}
+                        min={currentBenchmark.typicalSalary[0]}
+                        max={currentBenchmark.typicalSalary[1]}
+                        step={5000}
+                        label="Salary"
+                        color="warning"
+                        size="small"
+                      />
+                    </Grid>
+                  </Grid>
+                  <Typography variant="caption" sx={{ textAlign: 'center', display: 'block', mt: 1 }}>
+                    Capacity: {Math.round(testCycleCapacity)} cycles
+                  </Typography>
+                </CardContent>
+              </Card>
+
+              {/* Testing Metrics */}
+              <Card sx={{ backgroundColor: isDarkMode ? 'grey.800' : 'grey.50' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
+                    Testing Metrics
+                  </Typography>
+                  <Grid container spacing={1}>
+                    <Grid item xs={4}>
+                      <CustomKnob
+                        value={inputs.monthlyTestCycles}
+                        onChange={(value) => handleInputChange('monthlyTestCycles', value)}
+                        min={currentBenchmark.typicalTestCycles[0]}
+                        max={currentBenchmark.typicalTestCycles[1]}
+                        label="Cycles"
+                        color="secondary"
+                        size="small"
+                      />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <CustomKnob
+                        value={inputs.devicesUsed}
+                        onChange={(value) => handleInputChange('devicesUsed', value)}
+                        min={currentBenchmark.typicalDevices[0]}
+                        max={currentBenchmark.typicalDevices[1]}
+                        label="Devices"
+                        color="error"
+                        size="small"
+                      />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <CustomKnob
+                        value={inputs.releaseFrequency}
+                        onChange={(value) => handleInputChange('releaseFrequency', value)}
+                        min={currentBenchmark.typicalReleases[0]}
+                        max={currentBenchmark.typicalReleases[1]}
+                        label="Releases"
+                        color="info"
+                        size="small"
+                      />
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Box>
+          </Grid>
+
+          {/* Column 2: Performance & Savings */}
+          <Grid item xs={12} md={4}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {/* Performance Metrics */}
+              <Card>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+                    Performance
+                  </Typography>
+                  <Grid container spacing={1}>
+                    <Grid item xs={6}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+                        <Gauge
+                          value={results.reductionManualEffort}
+                          label="Effort Reduction"
+                          color="#3b82f6"
+                          size="small"
+                        />
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+                        <Gauge
+                          value={results.efficiencyIncrease}
+                          label="Efficiency"
+                          color="#10b981"
+                          size="small"
+                        />
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+                        <Gauge
+                          value={results.releaseCycleImprovement}
+                          label="Release Speed"
+                          color="#8b5cf6"
+                          size="small"
+                        />
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+                        <Gauge
+                          value={results.testingCoverageImprovement}
+                          label="Coverage"
+                          color="#f59e0b"
+                          size="small"
+                        />
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+
+              {/* Savings Breakdown */}
+              <Card>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+                    Savings
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <SavingsPieChart
+                      salarySavings={results.annualSalarySavings}
+                      deviceSavings={results.deviceCostSavings}
+                      totalSavings={results.totalAnnualSavings}
+                      size="small"
+                    />
+                  </Box>
+                </CardContent>
+              </Card>
+
+              {/* How it works */}
+              <Card>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    How it works:
+                  </Typography>
+                  <List dense sx={{ py: 0 }}>
+                    <ListItem sx={{ px: 0 }}>
+                      <ListItemIcon sx={{ minWidth: 24 }}>
+                        <CheckCircleIcon color="success" fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Capacity auto-calculates"
+                        sx={{ '& .MuiListItemText-primary': { fontSize: '0.8rem' } }}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ px: 0 }}>
+                      <ListItemIcon sx={{ minWidth: 24 }}>
+                        <CheckCircleIcon color="success" fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Market-driven device needs"
+                        sx={{ '& .MuiListItemText-primary': { fontSize: '0.8rem' } }}
+                      />
+                    </ListItem>
+                    <ListItem sx={{ px: 0 }}>
+                      <ListItemIcon sx={{ minWidth: 24 }}>
+                        <CheckCircleIcon color="success" fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Industry benchmarks"
+                        sx={{ '& .MuiListItemText-primary': { fontSize: '0.8rem' } }}
+                      />
+                    </ListItem>
+                  </List>
+                </CardContent>
+              </Card>
+            </Box>
+          </Grid>
+
+          {/* Column 3: Impact */}
+          <Grid item xs={12} md={4.5}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {/* Total Impact */}
+              <Card sx={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white' }}>
+                <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                  <Typography variant="overline" sx={{ opacity: 0.9 }}>
+                    ANNUAL SAVINGS
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', my: 1 }}>
+                    {formatCurrency(results.totalAnnualSavings)}
+                  </Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                    Year 1 with automation
+                  </Typography>
+                </CardContent>
+              </Card>
+
+              {/* Key Achievements */}
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Card sx={{ backgroundColor: isDarkMode ? 'blue.900' : 'blue.50' }}>
+                    <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                      <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                        {results.reductionManualEffort}%
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: isDarkMode ? 'grey.300' : 'grey.600' }}>
+                        Less Manual Work
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={6}>
+                  <Card sx={{ backgroundColor: isDarkMode ? 'orange.900' : 'orange.50' }}>
+                    <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                      <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+                        {results.testingCoverageImprovement}%
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: isDarkMode ? 'grey.300' : 'grey.600' }}>
+                        Better Coverage
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+
+              {/* Action Buttons */}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={openModal}
+                  sx={{
+                    borderRadius: 2,
+                    fontWeight: 'bold',
+                    py: 1.5,
+                    fontSize: '1rem'
+                  }}
                 >
-                  {Object.entries(INDUSTRY_BENCHMARKS).map(([key, benchmark]) => (
-                    <option key={key} value={key}>{benchmark.name}</option>
-                  ))}
-                </select>
-                <IndustryInfo benchmark={currentBenchmark} />
-              </div>
-            </div>
-
-            {/* Resource Metrics */}
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Resource Metrics</h3>
-              <div className="grid grid-cols-2 gap-6">
-                {/* Manual Testers */}
-                <div className="flex flex-col items-center space-y-2">
-                  <div className="relative">
-                    <Knob
-                      value={inputs.manualTesters}
-                      onChange={(e) => handleKnobChange('manualTesters', e.value)}
-                      min={currentBenchmark.typicalTesters[0]}
-                      max={currentBenchmark.typicalTesters[1]}
-                      size={80}
-                      valueTemplate={getKnobValueTemplate(inputs.manualTesters)}
-                      strokeWidth={8}
-                      rangeColor="#e5e7eb"
-                      valueColor="#3b82f6"
-                      textColor="#1f2937"
-                    />
-                  </div>
-                  <div className="text-xs text-gray-500 text-center">
-                    Capacity: {Math.round(testCycleCapacity)} cycles
-                  </div>
-                  <label className="text-sm font-medium text-gray-700 text-center">Manual Testers</label>
-                </div>
-
-                {/* Weekly Testing Hours */}
-                <div className="flex flex-col items-center space-y-2">
-
-                  <div className="relative">
-                    <Knob
-                      value={inputs.weeklyTestingHours}
-                      onChange={(e) => handleKnobChange('weeklyTestingHours', e.value)}
-                      min={10}
-                      max={80}
-                      size={80}
-                      valueTemplate={getKnobValueTemplate(inputs.weeklyTestingHours, '', 'h')}
-                      strokeWidth={8}
-                      rangeColor="#e5e7eb"
-                      valueColor="#10b981"
-                      textColor="#1f2937"
-                    />
-                  </div>
-                  <div className="text-xs text-gray-500 text-center">
-                    Capacity: {Math.round(testCycleCapacity)} cycles
-                  </div>
-                <label className="text-sm font-medium text-gray-700 text-center">Weekly Hours</label>
-                </div>
-
-                {/* Tester Salary */}
-                <div className="flex flex-col items-center space-y-2 col-span-2">
-                  <label className="text-sm font-medium text-gray-700 text-center">Tester Salary</label>
-                  <div className="relative">
-                    <Knob
-                      value={inputs.testerSalary}
-                      onChange={(e) => handleKnobChange('testerSalary', e.value)}
-                      min={currentBenchmark.typicalSalary[0]}
-                      max={currentBenchmark.typicalSalary[1]}
-                      step={5000}
-                      size={100}
-                      valueTemplate={getSalaryKnobValueTemplate(inputs.testerSalary)}
-                      strokeWidth={10}
-                      rangeColor="#e5e7eb"
-                      valueColor="#f59e0b"
-                      textColor="#1f2937"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Testing Metrics */}
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Testing Metrics</h3>
-              <div className="grid grid-cols-2 gap-6">
-                {/* Monthly Test Cycles */}
-                <div className="flex flex-col items-center space-y-2">
-                  <label className="text-sm font-medium text-gray-700 text-center">Test Cycles</label>
-                  <div className="relative">
-                    <Knob
-                      value={inputs.monthlyTestCycles}
-                      onChange={(e) => handleKnobChange('monthlyTestCycles', e.value)}
-                      min={currentBenchmark.typicalTestCycles[0]}
-                      max={currentBenchmark.typicalTestCycles[1]}
-                      size={80}
-                      valueTemplate={getKnobValueTemplate(inputs.monthlyTestCycles)}
-                      strokeWidth={8}
-                      rangeColor="#e5e7eb"
-                      valueColor="#8b5cf6"
-                      textColor="#1f2937"
-                    />
-                  </div>
-                </div>
-
-                {/* Devices Used */}
-                <div className="flex flex-col items-center space-y-2">
-                  <label className="text-sm font-medium text-gray-700 text-center">Devices</label>
-                  <div className="relative">
-                    <Knob
-                      value={inputs.devicesUsed}
-                      onChange={(e) => handleKnobChange('devicesUsed', e.value)}
-                      min={currentBenchmark.typicalDevices[0]}
-                      max={currentBenchmark.typicalDevices[1]}
-                      size={80}
-                      valueTemplate={getKnobValueTemplate(inputs.devicesUsed)}
-                      strokeWidth={8}
-                      rangeColor="#e5e7eb"
-                      valueColor="#ef4444"
-                      textColor="#1f2937"
-                    />
-                  </div>
-                </div>
-
-                {/* Releases Per Month */}
-                <div className="flex flex-col items-center space-y-2 col-span-2">
-                  <label className="text-sm font-medium text-gray-700 text-center">Releases/Month</label>
-                  <div className="relative">
-                    <Knob
-                      value={inputs.releaseFrequency}
-                      onChange={(e) => handleKnobChange('releaseFrequency', e.value)}
-                      min={currentBenchmark.typicalReleases[0]}
-                      max={currentBenchmark.typicalReleases[1]}
-                      size={100}
-                      valueTemplate={getKnobValueTemplate(inputs.releaseFrequency)}
-                      strokeWidth={10}
-                      rangeColor="#e5e7eb"
-                      valueColor="#06b6d4"
-                      textColor="#1f2937"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Column 2: Performance Metrics & Savings */}
-          <div className="space-y-8">
-            {/* Performance Metrics */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">Performance Metrics</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <Gauge
-                  value={results.reductionManualEffort}
-                  label="Manual Effort Reduction"
-                  color="#3b82f6"
-                />
-                <Gauge
-                  value={results.efficiencyIncrease}
-                  label="Efficiency Increase"
-                  color="#10b981"
-                />
-                <Gauge
-                  value={results.releaseCycleImprovement}
-                  label="Faster Releases"
-                  color="#8b5cf6"
-                />
-                <Gauge
-                  value={results.testingCoverageImprovement}
-                  label="Test Coverage"
-                  color="#f59e0b"
-                />
-              </div>
-            </div>
-
-            {/* Savings Breakdown with Pie Chart */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800 text-center">Savings Breakdown</h3>
-              <div className="flex justify-center px-4">
-                <SavingsPieChart
-                  salarySavings={results.annualSalarySavings}
-                  deviceSavings={results.deviceCostSavings}
-                  totalSavings={results.totalAnnualSavings}
-                />
-              </div>
-            </div>
-
-            {/* How it works */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-800 mb-2">How it works:</h4>
-              <ul className="space-y-1 text-xs text-gray-600">
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2 mt-1">•</span>
-                  Test cycle capacity auto-calculates based on team size, hours, and release frequency
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2 mt-1">•</span>
-                  Device requirements are market-driven (set based on your target customers)
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2 mt-1">•</span>
-                  Industry selection provides realistic benchmark ranges and multipliers
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2 mt-1">•</span>
-                  Automation reduces manual effort and increases testing efficiency
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Column 3: Impact Estimates */}
-          <div className="space-y-8">
-            {/* Total Impact */}
-            <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 rounded-xl text-white text-center shadow-lg">
-              <div className="text-sm uppercase tracking-wider opacity-90">TOTAL ANNUAL SAVINGS</div>
-              <div className="text-5xl font-extrabold my-2">
-                {formatCurrency(results.totalAnnualSavings)}
-              </div>
-              <div className="text-xs opacity-80">Estimated savings with automation in year 1</div>
-            </div>
-
-            {/* Key Achievements */}
-            <div className="space-y-4">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <div className="text-2xl font-bold text-blue-600">
-                  {results.reductionManualEffort}%
-                </div>
-                <div className="text-sm text-gray-600">Manual Effort Reduced</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Re-allocate {formatCurrency(results.annualSalarySavings)} of labor to strategic work.
-                </div>
-              </div>
-
-              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <div className="text-2xl font-bold text-yellow-600">
-                  {results.testingCoverageImprovement}%
-                </div>
-                <div className="text-sm text-gray-600">Increased Test Coverage</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Catch more defects before production releases.
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-4 pt-4">
-              <button
-                onClick={openModal}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-md"
-              >
-                Get Detailed Analysis
-              </button>
-              <button
-                onClick={onRequestDemo}
-                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-xl transition duration-200"
-              >
-                Request a Demo
-              </button>
+                  Get Detailed Analysis
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={onRequestDemo}
+                  sx={{
+                    borderRadius: 2,
+                    fontWeight: 'bold',
+                    py: 1.5,
+                    fontSize: '1rem'
+                  }}
+                >
+                  Request Demo
+                </Button>
+              </Box>
 
               {submitError && (
-                <p className="text-red-500 text-sm text-center mt-2">{submitError}</p>
+                <Alert severity="error" sx={{ mt: 1 }}>
+                  {submitError}
+                </Alert>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
 
       {/* Detailed Analysis Modal */}
       {isModalOpen && (
@@ -467,11 +611,21 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
 
       {/* Detailed Results Display (After submission) */}
       {showDetailedAnalysis && formSubmitted && (
-        <div className="bg-green-50 p-6 rounded-xl text-center shadow-lg">
-          <h3 className="text-xl font-semibold text-green-700">Analysis Sent!</h3>
-          <p className="text-green-600 mt-1">Check your email for the detailed ROI report.</p>
-        </div>
+        <Alert
+          severity="success"
+          sx={{
+            borderRadius: 2,
+            boxShadow: 2
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            Analysis Sent!
+          </Typography>
+          <Typography variant="body2">
+            Check your email for the detailed ROI report.
+          </Typography>
+        </Alert>
       )}
-    </div>
+    </Box>
   );
 }
