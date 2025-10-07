@@ -4,14 +4,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
-
+import { ThemeProvider } from 'next-themes'
 
 export const metadata: Metadata = {
   title: "Aberdeen Mozark",
   description: "Do More, Cut Costs with AI",
 };
 
-// Add this viewport export
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -23,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         {/* Google Analytics script should remain here */}
         <script
@@ -42,7 +41,13 @@ export default function RootLayout({
           }}
         />
 
-        <BlitzProvider>{children}</BlitzProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <BlitzProvider>
+            {children}
+            <SpeedInsights />
+            <Analytics />
+          </BlitzProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
