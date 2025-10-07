@@ -47,7 +47,7 @@ export default function HomePage() {
       <DemoModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        demoType={demoType}
+        calculatorType={demoType}
       />
     </>
   )
