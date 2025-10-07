@@ -9,7 +9,7 @@ module.exports = {
             key: 'Content-Security-Policy',
             value: `
               default-src 'self';
-              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com;
+              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://assets.calendly.com https://www.googletagmanager.com;
               style-src 'self' 'unsafe-inline' https://assets.calendly.com;
               img-src 'self' https://assets.calendly.com data:;
               font-src 'self' https://assets.calendly.com;
