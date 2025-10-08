@@ -86,10 +86,20 @@ export default function BackgroundPaths({
 }: BackgroundPathsProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [currentTitleIndex, setCurrentTitleIndex] = useState(0)
   const theme = useTheme()
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'))
   const { resolvedTheme } = useNextTheme()
   const isDarkMode = resolvedTheme === 'dark'
+
+  // Define rotating titles
+  const rotatingTitles = [
+    ["ZERO DEFECT", "APP LAUNCH"],
+    ["SHIP FASTER", "NO BUGS"],
+    ["AUTOMATED", "QAT"],
+    ["CATCH DEFECTS", "BEFORE USERS"],
+    ["AI-POWERED", "TESTING"],
+  ]
 
   useEffect(() => {
     setMounted(true)
@@ -103,6 +113,17 @@ export default function BackgroundPaths({
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // Rotate titles every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTitleIndex((prevIndex) =>
+        prevIndex === rotatingTitles.length - 1 ? 0 : prevIndex + 1
+      )
+    }, 10000) // 10 seconds
+
+    return () => clearInterval(interval)
+  }, [rotatingTitles.length])
+
   // Smooth scroll function
   const scrollToEstimator = () => {
     const estimatorSection = document.getElementById('calculator');
@@ -114,11 +135,8 @@ export default function BackgroundPaths({
     }
   };
 
-  // Split the title into lines for proper animation
-  const titleLines = [
-    "ZERO DEFECT",
-    "APP LAUNCH",
-  ]
+  // Get current title lines
+  const currentTitleLines = rotatingTitles[currentTitleIndex]
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
@@ -197,26 +215,30 @@ export default function BackgroundPaths({
             padding: '0 8px'
           }}
         >
-          {/* Improved title with better mobile handling */}
+          {/* Improved title with better mobile handling and rotating titles */}
           <Box
             component="h1"
             sx={{
               fontSize: {
                 xs: '2rem',
-                sm: '2.5rem',
-                md: '3rem',
-                lg: '4rem',
-                xl: '4.5rem'
+                sm: '3rem',
+                md: '6rem',
+                lg: '6rem',
+                xl: '6rem'
               },
               fontWeight: 'bold',
-              mb: { xs: 2, sm: 3, md: 4 },
+              mb: { xs: 1, sm: 2, md: 4 },
               letterSpacing: 'tight',
-              lineHeight: 'tight'
+              lineHeight: 'tight',
+              minHeight: { xs: '120px', sm: '140px', md: '160px' },
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center'
             }}
           >
-            {titleLines.map((line, lineIndex) => (
+            {currentTitleLines.map((line, lineIndex) => (
               <Box
-                key={lineIndex}
+                key={`${currentTitleIndex}-${lineIndex}`}
                 component="div"
                 sx={{
                   display: 'block',
@@ -226,7 +248,7 @@ export default function BackgroundPaths({
               >
                 {line.split("").map((letter, letterIndex) => (
                   <motion.span
-                    key={`${lineIndex}-${letterIndex}`}
+                    key={`${currentTitleIndex}-${lineIndex}-${letterIndex}`}
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{
@@ -277,7 +299,7 @@ export default function BackgroundPaths({
                 px: 1
               }}
             >
-              Uncover App Issues, Before Your Users See Them
+              Uncover App Issues, Before  Users See Them
             </Typography>
 
             {/* Description */}
@@ -381,10 +403,8 @@ export default function BackgroundPaths({
                     px: 3,
                     borderRadius: '6px',
                     opacity: 0.9,
-                    //backgroundColor: isDarkMode ? '#374151' : '#111827',
                     border: `1px solid ${isDarkMode ? '#4b5563' : '#2563eb'}`,
                     '&:hover': {
-                      //backgroundColor: isDarkMode ? '#4b5563' : '#1e40af',
                       backgroundColor : isDarkMode ? '#000000' : '#ffffff',
                       color: isDarkMode ? '#f9fafb' : '#000000',
                     },
