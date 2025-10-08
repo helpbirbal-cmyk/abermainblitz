@@ -1,3 +1,4 @@
+// src/components/Calculators/hooks/useROICalculations.ts
 import { useCallback, useMemo } from 'react';
 import { CalculatorInputs, CalculatorResults, IndustryBenchmark } from '../types/ROITypes';
 import { INDUSTRY_BENCHMARKS } from '../data/industryBenchmarks';

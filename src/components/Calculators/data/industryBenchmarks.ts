@@ -1,3 +1,4 @@
+// src/components/Calculators/data/industryBenchmarks.ts
 import { IndustryBenchmark } from '../types/ROITypes';
 
 export const INDUSTRY_BENCHMARKS: { [key: string]: IndustryBenchmark } = {

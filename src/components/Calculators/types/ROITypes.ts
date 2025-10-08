@@ -1,3 +1,4 @@
+// src/components/Calculators/types/ROITypes.ts
 export interface CalculatorInputs {
   manualTesters: number;
   weeklyTestingHours: number;

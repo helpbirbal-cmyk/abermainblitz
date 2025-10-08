@@ -139,57 +139,62 @@ function CalculatorIntro({ calculatorType, onCalculatorChange, isDarkMode }: Cal
 
       {/* Calculator Type Toggle Buttons */}
       <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-        <ToggleButtonGroup
-          value={calculatorType}
-          exclusive
-          onChange={onCalculatorChange}
-          aria-label="calculator type"
-          sx={{
-            backgroundColor: isDarkMode ? 'grey.800' : 'grey.100',
-            borderRadius: 2,
-            p: 0.5,
-            gap: 0.5,
-            border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
-            '& .MuiToggleButton-root': {
-              px: { xs: 2, sm: 3, md: 4 },
-              py: 1.5,
-              border: 'none',
-              borderRadius: 1,
-              textTransform: 'none',
-              fontWeight: 600,
-              fontSize: { xs: '0.875rem', sm: '1rem' },
-              color: isDarkMode ? 'grey.300' : 'grey.700',
-              transition: 'all 0.2s ease-in-out',
-              minWidth: { xs: '100px', sm: '120px', md: '140px' },
-              '&:hover': {
-                backgroundColor: isDarkMode ? 'grey.700' : 'grey.200',
-                color: isDarkMode ? 'white' : 'black',
-                transform: 'translateY(-1px)',
-              },
-              '&.Mui-selected': {
-                background: isDarkMode
-                  ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
-                  : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                color: 'white',
-                boxShadow: isDarkMode
-                  ? '0 4px 14px 0 rgba(99, 102, 241, 0.3)'
-                  : '0 4px 14px 0 rgba(59, 130, 246, 0.3)',
-                '&:hover': {
-                  background: isDarkMode
-                    ? 'linear-gradient(135deg, #5858e6 0%, #7c3aed 100%)'
-                    : 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
-                  transform: 'translateY(-1px)',
-                  boxShadow: isDarkMode
-                    ? '0 6px 20px 0 rgba(99, 102, 241, 0.4)'
-                    : '0 6px 20px 0 rgba(59, 130, 246, 0.4)',
-                }
-              }
-            }
-          }}
-        >
+      <ToggleButtonGroup
+       value={calculatorType}
+       exclusive
+       onChange={onCalculatorChange}
+       aria-label="calculator type"
+       sx={{
+           backgroundColor: isDarkMode ? 'grey.800' : 'grey.100',
+           borderRadius: 2,
+           p: 0.5,
+           gap: 0.5,
+           border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
+           '& .MuiToggleButton-root': {
+               //px: { xs: 2, sm: 3, md: 4 },
+               py: 1.5,
+               border: 'none',
+               borderRadius: 1,
+               textTransform: 'none',
+               fontWeight: 600,
+
+               // 👇 UPDATED FOR RESPONSIVENESS
+               fontSize: {
+                   xs: '0.5rem',
+                   sm: '0.5rem',
+                   md: '0.5rem'
+               },
+               color: isDarkMode ? 'grey.300' : 'grey.700',
+               transition: 'all 0.2s ease-in-out',
+               '&:hover': {
+                   backgroundColor: isDarkMode ? 'grey.700' : 'grey.200',
+                   color: isDarkMode ? 'white' : 'black',
+                   transform: 'translateY(-1px)',
+               },
+               '&.Mui-selected': {
+                   background: isDarkMode
+                       ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+                       : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                   color: 'white',
+                   boxShadow: isDarkMode
+                       ? '0 4px 14px 0 rgba(99, 102, 241, 0.3)'
+                       : '0 4px 14px 0 rgba(59, 130, 246, 0.3)',
+                   '&:hover': {
+                       background: isDarkMode
+                           ? 'linear-gradient(135deg, #5858e6 0%, #7c3aed 100%)'
+                           : 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+                       transform: 'translateY(-1px)',
+                       boxShadow: isDarkMode
+                           ? '0 6px 20px 0 rgba(99, 102, 241, 0.4)'
+                           : '0 6px 20px 0 rgba(59, 130, 246, 0.4)',
+                   }
+               }
+         }
+     }}
+ >
           <ToggleButton value="payment" aria-label="payments calculator">
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="button" sx={{ fontWeight: 600 }}>
+              <Typography variant="button" sx={{ fontWeight: 600 , fontSize: { xs: '0.5rem', sm: '1rem', md: '1rem' } }}>
                 Payments
               </Typography>
             </Box>
@@ -197,15 +202,15 @@ function CalculatorIntro({ calculatorType, onCalculatorChange, isDarkMode }: Cal
 
           <ToggleButton value="agenticaitest" aria-label="qa testing calculator">
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="button" sx={{ fontWeight: 600 }}>
-                QA Testing
+              <Typography variant="button" sx={{ fontWeight: 600 , fontSize: { xs: '0.5rem', sm: '1rem', md: '1rem' }}}>
+                QAT
               </Typography>
             </Box>
           </ToggleButton>
 
           <ToggleButton value="ott" aria-label="streaming calculator">
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="button" sx={{ fontWeight: 600 }}>
+              <Typography variant="button" sx={{ fontWeight: 600 , fontSize: { xs: '0.5rem', sm: '1rem', md: '1rem' }}}>
                 Streaming
               </Typography>
             </Box>
