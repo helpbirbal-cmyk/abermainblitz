@@ -370,7 +370,7 @@ export default function BackgroundPaths({
                     '&:hover': {
                       backgroundColor: '#1e40af',
                       fontWeight: 800,
-                      border: '3px solid
+                      border: '3px solid'
                     },
                     width: '100%',
                     textTransform: 'none',
