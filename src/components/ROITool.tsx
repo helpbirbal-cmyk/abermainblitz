@@ -55,7 +55,7 @@ export default function ROITool({ openModal }: ROIToolProps) {
       <Box
         sx={{
           width: '100%',
-          px: { xs: 2, sm: 3, md: 4, lg: 6 }, // Responsive horizontal padding
+          //px: { xs: 2, sm: 3, md: 4, lg: 6 }, // Responsive horizontal padding
           maxWidth: '100%',
           mx: 'auto'
         }}
@@ -67,7 +67,7 @@ export default function ROITool({ openModal }: ROIToolProps) {
             backgroundColor: isDarkMode ? 'black' : 'white',
             borderRadius: 2,
             boxShadow: 3,
-            
+
             width: '100%',
             maxWidth: '100%'
           }}

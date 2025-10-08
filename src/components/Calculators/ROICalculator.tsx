@@ -290,7 +290,6 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
           Financial Modelling
         </Typography>
 
-        // Replace the entire Grid container section with this optimized version:
     <Grid container spacing={2} justifyContent="center" alignItems="stretch"> {/* Added alignItems stretch */}
       {/* Column 1: Inputs */}
       <Grid size={{ xs: 12, md: 4 }}>
@@ -361,7 +360,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
                     min={currentBenchmark.typicalSalary[0]}
                     max={currentBenchmark.typicalSalary[1]}
                     step={5000}
-                    label="Salary"
+                    label="Salary US$"
                     color="warning"
                     size="small"
                   />
@@ -665,8 +664,6 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
           </Typography>
         </Alert>
       )}
-
-
     </Box>
   );
 }
