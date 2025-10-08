@@ -278,17 +278,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
           border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
         }}
       >
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 'bold',
-            color: isDarkMode ? 'white' : 'text.primary',
-            mb: 3,
-            textAlign: 'center'
-          }}
-        >
-          Financial Modelling
-        </Typography>
+
 
     <Grid container spacing={2} justifyContent="center" alignItems="stretch"> {/* Added alignItems stretch */}
     {/* Column 1: Inputs */}
@@ -570,7 +560,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
           <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
-                Key Achievements
+                Key Takeaways
               </Typography>
               <Grid container spacing={1}>
                 <Grid size={{ xs: 6 }}>
