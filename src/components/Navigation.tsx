@@ -116,7 +116,7 @@ export default function Navigation({ openModal }: NavigationProps) {
                 minWidth: 'auto',
                 px: 1,
                 '&:hover': {
-                  color: '#8A8AFF', // blue-600
+                  color:  isDarkMode? '#ffe599' :'#076EFF', // blue-600
                   backgroundColor: 'transparent',
                 }
               }}

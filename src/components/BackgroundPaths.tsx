@@ -94,10 +94,10 @@ export default function BackgroundPaths({
 
   // Define rotating titles
   const rotatingTitles = [
-    ["ZERO DEFECT", "APP LAUNCH"],
-    ["SHIP FASTER", "NO BUGS"],
-    ["AUTOMATED", "QAT"],
-    ["CATCH DEFECTS", "BEFORE USERS"],
+    ["LAUNCH APPS,", "ZERO DEFECT"],
+    ["SHIP FASTER,", "NO BUGS"],
+    ["AI AUTOMATED", "QAT"],
+    ["CATCH DEFECTS,", "BEFORE USERS"],
     ["AI-POWERED", "TESTING"],
   ]
 
@@ -369,6 +369,8 @@ export default function BackgroundPaths({
                     },
                     '&:hover': {
                       backgroundColor: '#1e40af',
+                      fontWeight: 800,
+                      border: '3px solid
                     },
                     width: '100%',
                     textTransform: 'none',
@@ -403,10 +405,12 @@ export default function BackgroundPaths({
                     px: 3,
                     borderRadius: '6px',
                     opacity: 0.9,
-                    border: `1px solid ${isDarkMode ? '#4b5563' : '#2563eb'}`,
+                    color: isDarkMode ? '#ffffff' : '#000000',
+                    border: `1px solid ${isDarkMode ? '#ffffff' : '#2563eb'}`,
                     '&:hover': {
-                      backgroundColor : isDarkMode ? '#000000' : '#ffffff',
-                      color: isDarkMode ? '#f9fafb' : '#000000',
+                      backgroundColor : isDarkMode ? '#ff0000' : '#ffffff',
+                      color: isDarkMode ? '#ffffff' : '#000000',
+                      border: '3px solid', fontWeight: 700
                     },
                     width: '100%',
                     textTransform: 'none',
