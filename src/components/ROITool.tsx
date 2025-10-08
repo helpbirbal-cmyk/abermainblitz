@@ -64,12 +64,10 @@ export default function ROITool({ openModal }: ROIToolProps) {
           elevation={0}
           sx={{
             p: { xs: 2, sm: 3, md: 4 },
-            backgroundColor: isDarkMode ? 'grey.900' : 'blue.50',
+            backgroundColor: isDarkMode ? 'black' : 'white',
             borderRadius: 2,
             boxShadow: 3,
-            background: isDarkMode
-              ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
-              : 'linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)',
+            
             width: '100%',
             maxWidth: '100%'
           }}

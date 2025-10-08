@@ -37,6 +37,8 @@ import { Gauge } from './components/Gauge';
 import { IndustryInfo } from './components/IndustryInfo';
 import { useROICalculations } from './hooks/useROICalculations';
 import { useFormSubmission } from './hooks/useFormSubmission';
+import SendIcon from '@mui/icons-material/Send';
+
 
 // Define valid MUI color names
 type MuiColor = 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
@@ -272,7 +274,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
         sx={{
           borderRadius: 2,
           p: 3,
-          backgroundColor: isDarkMode ? 'grey.900' : 'white',
+          backgroundColor: isDarkMode ? 'black' : 'white',
           border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
         }}
       >
@@ -288,136 +290,156 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
           Financial Modelling
         </Typography>
 
-      <Grid container spacing={2} justifyContent="center">
-        {/* Column 1: Inputs */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Industry Selection */}
-            <Card sx={{ backgroundColor: isDarkMode ? 'grey.800' : 'grey.50' }}>
-              <CardContent sx={{ p: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                  Industry Settings
-                </Typography>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Industry Type</InputLabel>
-                  <Select
-                    value={inputs.industry}
-                    onChange={(e) => handleIndustryChange(e.target.value)}
-                    label="Industry Type"
-                  >
-                    {Object.entries(INDUSTRY_BENCHMARKS).map(([key, benchmark]) => (
-                      <MenuItem key={key} value={key}>{benchmark.name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <IndustryInfo benchmark={currentBenchmark} />
-              </CardContent>
-            </Card>
+        // Replace the entire Grid container section with this optimized version:
+    <Grid container spacing={2} justifyContent="center" alignItems="stretch"> {/* Added alignItems stretch */}
+      {/* Column 1: Inputs */}
+      <Grid size={{ xs: 12, md: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+          {/* Industry Selection - Fixed height */}
+          <Card sx={{
+            backgroundColor: isDarkMode ? 'grey.900' : 'grey.50',
+            height: 'fit-content'
+          }}>
+            <CardContent sx={{ p: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                Industry Settings
+              </Typography>
+              <FormControl fullWidth size="small">
+                <InputLabel>Industry Type</InputLabel>
+                <Select
+                  value={inputs.industry}
+                  onChange={(e) => handleIndustryChange(e.target.value)}
+                  label="Industry Type"
+                >
+                  {Object.entries(INDUSTRY_BENCHMARKS).map(([key, benchmark]) => (
+                    <MenuItem key={key} value={key}>{benchmark.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <IndustryInfo benchmark={currentBenchmark} />
+            </CardContent>
+          </Card>
 
-            {/* Resource Metrics */}
-            <Card sx={{ backgroundColor: isDarkMode ? 'grey.800' : 'grey.50' }}>
-              <CardContent sx={{ p: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  Resource Metrics
-                </Typography>
-                <Grid container spacing={1}>
-                  <Grid size={{ xs: 6 }}>
-                    <CustomKnob
-                      value={inputs.manualTesters}
-                      onChange={(value) => handleInputChange('manualTesters', value)}
-                      min={currentBenchmark.typicalTesters[0]}
-                      max={currentBenchmark.typicalTesters[1]}
-                      label="Testers"
-                      color="primary"
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 6 }}>
-                    <CustomKnob
-                      value={inputs.weeklyTestingHours}
-                      onChange={(value) => handleInputChange('weeklyTestingHours', value)}
-                      min={10}
-                      max={80}
-                      label="Hours/Week"
-                      color="success"
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12 }} sx={{ mt: 1 }}>
-                    <CustomKnob
-                      value={inputs.testerSalary}
-                      onChange={(value) => handleInputChange('testerSalary', value)}
-                      min={currentBenchmark.typicalSalary[0]}
-                      max={currentBenchmark.typicalSalary[1]}
-                      step={5000}
-                      label="Salary"
-                      color="warning"
-                      size="small"
-                    />
-                  </Grid>
+          {/* Resource Metrics - Fixed height */}
+          <Card sx={{
+            backgroundColor: isDarkMode ? 'grey.800' : 'grey.50',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <CardContent sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
+                Resource Metrics
+              </Typography>
+              <Grid container spacing={1} sx={{ flex: 1 }}>
+                <Grid size={{ xs: 6 }}>
+                  <CustomKnob
+                    value={inputs.manualTesters}
+                    onChange={(value) => handleInputChange('manualTesters', value)}
+                    min={currentBenchmark.typicalTesters[0]}
+                    max={currentBenchmark.typicalTesters[1]}
+                    label="Testers"
+                    color="primary"
+                    size="small"
+                  />
                 </Grid>
-                <Typography variant="caption" sx={{ textAlign: 'center', display: 'block', mt: 1 }}>
-                  Capacity: {Math.round(testCycleCapacity)} cycles
-                </Typography>
-              </CardContent>
-            </Card>
-
-            {/* Testing Metrics */}
-            <Card sx={{ backgroundColor: isDarkMode ? 'grey.800' : 'grey.50' }}>
-              <CardContent sx={{ p: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  Testing Metrics
-                </Typography>
-                <Grid container spacing={1}>
-                  <Grid size={{ xs: 4 }}>
-                    <CustomKnob
-                      value={inputs.monthlyTestCycles}
-                      onChange={(value) => handleInputChange('monthlyTestCycles', value)}
-                      min={currentBenchmark.typicalTestCycles[0]}
-                      max={currentBenchmark.typicalTestCycles[1]}
-                      label="Cycles"
-                      color="secondary"
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 4 }}>
-                    <CustomKnob
-                      value={inputs.devicesUsed}
-                      onChange={(value) => handleInputChange('devicesUsed', value)}
-                      min={currentBenchmark.typicalDevices[0]}
-                      max={currentBenchmark.typicalDevices[1]}
-                      label="Devices"
-                      color="error"
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 4 }}>
-                    <CustomKnob
-                      value={inputs.releaseFrequency}
-                      onChange={(value) => handleInputChange('releaseFrequency', value)}
-                      min={currentBenchmark.typicalReleases[0]}
-                      max={currentBenchmark.typicalReleases[1]}
-                      label="Releases"
-                      color="info"
-                      size="small"
-                    />
-                  </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <CustomKnob
+                    value={inputs.weeklyTestingHours}
+                    onChange={(value) => handleInputChange('weeklyTestingHours', value)}
+                    min={10}
+                    max={80}
+                    label="Hours/Week"
+                    color="success"
+                    size="small"
+                  />
                 </Grid>
-              </CardContent>
-            </Card>
-          </Box>
-        </Grid>
+                <Grid size={{ xs: 12 }} sx={{ mt: 1 }}>
+                  <CustomKnob
+                    value={inputs.testerSalary}
+                    onChange={(value) => handleInputChange('testerSalary', value)}
+                    min={currentBenchmark.typicalSalary[0]}
+                    max={currentBenchmark.typicalSalary[1]}
+                    step={5000}
+                    label="Salary"
+                    color="warning"
+                    size="small"
+                  />
+                </Grid>
+              </Grid>
+              <Typography variant="caption" sx={{ textAlign: 'center', display: 'block', mt: 1 }}>
+                Capacity: {Math.round(testCycleCapacity)} cycles
+              </Typography>
+            </CardContent>
+          </Card>
 
-        {/* Column 2: Performance & Savings */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Performance Metrics */}
-            <Card>
-              <CardContent sx={{ p: 2 }}>
+          {/* Testing Metrics - Fixed height */}
+          <Card sx={{
+            backgroundColor: isDarkMode ? 'grey.800' : 'grey.50',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <CardContent sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
+                Testing Metrics
+              </Typography>
+              <Grid container spacing={1} sx={{ flex: 1 }}>
+                <Grid size={{ xs: 4 }}>
+                  <CustomKnob
+                    value={inputs.monthlyTestCycles}
+                    onChange={(value) => handleInputChange('monthlyTestCycles', value)}
+                    min={currentBenchmark.typicalTestCycles[0]}
+                    max={currentBenchmark.typicalTestCycles[1]}
+                    label="Cycles"
+                    color="secondary"
+                    size="small"
+                  />
+                </Grid>
+                <Grid size={{ xs: 4 }}>
+                  <CustomKnob
+                    value={inputs.devicesUsed}
+                    onChange={(value) => handleInputChange('devicesUsed', value)}
+                    min={currentBenchmark.typicalDevices[0]}
+                    max={currentBenchmark.typicalDevices[1]}
+                    label="Devices"
+                    color="error"
+                    size="small"
+                  />
+                </Grid>
+                <Grid size={{ xs: 4 }}>
+                  <CustomKnob
+                    value={inputs.releaseFrequency}
+                    onChange={(value) => handleInputChange('releaseFrequency', value)}
+                    min={currentBenchmark.typicalReleases[0]}
+                    max={currentBenchmark.typicalReleases[1]}
+                    label="Releases"
+                    color="info"
+                    size="small"
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Box>
+      </Grid>
+
+      {/* Column 2: Integrated Performance & Savings */}
+      <Grid size={{ xs: 12, md: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+          {/* Combined Performance & Savings Card */}
+          <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
+                Performance & Savings Summary
+              </Typography>
+
+              {/* Performance Metrics Grid */}
+              <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
-                  Performance
+                  Key Metrics
                 </Typography>
-                <Grid container spacing={1}>
+                <Grid container spacing={2}>
                   <Grid size={{ xs: 6 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
                       <Gauge
@@ -455,14 +477,12 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
                     </Box>
                   </Grid>
                 </Grid>
-              </CardContent>
-            </Card>
+              </Box>
 
-            {/* Savings Breakdown */}
-            <Card>
-              <CardContent sx={{ p: 2 }}>
+              {/* Savings Visualization */}
+              <Box sx={{ mt: 'auto' }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
-                  Savings
+                  Savings Breakdown
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                   <SavingsPieChart
@@ -471,133 +491,151 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
                     totalSavings={results.totalAnnualSavings}
                   />
                 </Box>
-              </CardContent>
-            </Card>
+              </Box>
+            </CardContent>
+          </Card>
 
-            {/* How it works */}
-            <Card>
-              <CardContent sx={{ p: 2 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                  How it works:
-                </Typography>
-                <List dense sx={{ py: 0 }}>
-                  <ListItem sx={{ px: 0 }}>
-                    <ListItemIcon sx={{ minWidth: 24 }}>
-                      <CheckCircleIcon color="success" fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Capacity auto-calculates"
-                      sx={{ '& .MuiListItemText-primary': { fontSize: '0.8rem' } }}
-                    />
-                  </ListItem>
-                  <ListItem sx={{ px: 0 }}>
-                    <ListItemIcon sx={{ minWidth: 24 }}>
-                      <CheckCircleIcon color="success" fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Market-driven device needs"
-                      sx={{ '& .MuiListItemText-primary': { fontSize: '0.8rem' } }}
-                    />
-                  </ListItem>
-                  <ListItem sx={{ px: 0 }}>
-                    <ListItemIcon sx={{ minWidth: 24 }}>
-                      <CheckCircleIcon color="success" fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Industry benchmarks"
-                      sx={{ '& .MuiListItemText-primary': { fontSize: '0.8rem' } }}
-                    />
-                  </ListItem>
-                </List>
-              </CardContent>
-            </Card>
-          </Box>
-        </Grid>
+          {/* How it works - Moved here for better balance */}
+          <Card>
+            <CardContent sx={{ p: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                How this Financial Modelling works:
+              </Typography>
+              <List dense sx={{ py: 0 }}>
+                <ListItem sx={{ px: 0 }}>
+                  <ListItemIcon sx={{ minWidth: 24 }}>
+                    <CheckCircleIcon color="success" fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Capacity auto-calculates"
+                    sx={{ '& .MuiListItemText-primary': { fontSize: '0.8rem' } }}
+                  />
+                </ListItem>
+                <ListItem sx={{ px: 0 }}>
+                  <ListItemIcon sx={{ minWidth: 24 }}>
+                    <CheckCircleIcon color="success" fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Market-driven device needs"
+                    sx={{ '& .MuiListItemText-primary': { fontSize: '0.8rem' } }}
+                  />
+                </ListItem>
+                <ListItem sx={{ px: 0 }}>
+                  <ListItemIcon sx={{ minWidth: 24 }}>
+                    <CheckCircleIcon color="success" fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Industry benchmarks"
+                    sx={{ '& .MuiListItemText-primary': { fontSize: '0.8rem' } }}
+                  />
+                </ListItem>
+              </List>
+            </CardContent>
+          </Card>
+        </Box>
+      </Grid>
 
-        {/* Column 3: Impact */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Total Impact */}
-            <Card sx={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white' }}>
-              <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                <Typography variant="overline" sx={{ opacity: 0.9 }}>
-                  ANNUAL SAVINGS
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 'bold', my: 1 }}>
-                  {formatCurrency(results.totalAnnualSavings)}
-                </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                  Year 1 with automation
-                </Typography>
-              </CardContent>
-            </Card>
+      {/* Column 3: Impact & Actions */}
+      <Grid size={{ xs: 12, md: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+          {/* Total Impact - More prominent */}
+          <Card sx={{
+            background: isDarkMode
+              ? 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)'
+              : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+            color: 'white',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <CardContent sx={{
+              p: 3,
+              textAlign: 'center',
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center'
+            }}>
+              <Typography variant="h5" sx={{ fontWeight: 'bold', opacity: 0.9, mb: 1 }}>
+                ANNUAL SAVINGS
+              </Typography>
+              <Typography variant="h3" sx={{ fontWeight: 'bold', my: 2 }}>
+                {formatCurrency(results.totalAnnualSavings)}
+              </Typography>
+              <Typography variant="body1" sx={{ opacity: 0.8 }}>
+                Year 1 with automation
+              </Typography>
+            </CardContent>
+          </Card>
 
-            {/* Key Achievements */}
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 6 }}>
-                <Card sx={{ backgroundColor: isDarkMode ? 'blue.900' : 'blue.50' }}>
-                  <CardContent sx={{ p: 2, textAlign: 'center' }}>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+          {/* Key Achievements - More compact */}
+          <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+                Key Achievements
+              </Typography>
+              <Grid container spacing={1}>
+                <Grid size={{ xs: 6 }}>
+                  <Box sx={{ textAlign: 'center', p: 1 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 0.5 }}>
                       {results.reductionManualEffort}%
                     </Typography>
-                    <Typography variant="body2" sx={{ color: isDarkMode ? 'grey.300' : 'grey.600' }}>
-                      Less Manual Work
+                    <Typography variant="caption" sx={{ color: isDarkMode ? 'grey.300' : 'grey.600' }}>
+                      Manual Effort Reduced
                     </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid size={{ xs: 6 }}>
-                <Card sx={{ backgroundColor: isDarkMode ? 'orange.900' : 'orange.50' }}>
-                  <CardContent sx={{ p: 2, textAlign: 'center' }}>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+                  </Box>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <Box sx={{ textAlign: 'center', p: 1 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.main', mb: 0.5 }}>
                       {results.testingCoverageImprovement}%
                     </Typography>
-                    <Typography variant="body2" sx={{ color: isDarkMode ? 'grey.300' : 'grey.600' }}>
-                      Better Coverage
+                    <Typography variant="caption" sx={{ color: isDarkMode ? 'grey.300' : 'grey.600' }}>
+                      Test Coverage Improved
                     </Typography>
-                  </CardContent>
-                </Card>
+                  </Box>
+                </Grid>
               </Grid>
-            </Grid>
+            </CardContent>
+          </Card>
 
-            {/* Action Buttons */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Button
-                variant="contained"
-                size="large"
-                onClick={openModal}
-                sx={{
-                  borderRadius: 2,
-                  fontWeight: 'bold',
-                  py: 1.5,
-                  fontSize: '1rem'
-                }}
-              >
-                Get Detailed Analysis
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                onClick={onRequestDemo}
-                sx={{
-                  borderRadius: 2,
-                  fontWeight: 'bold',
-                  py: 1.5,
-                  fontSize: '1rem'
-                }}
-              >
-                Request Demo
-              </Button>
-            </Box>
+          {/* Action Buttons - Better spacing */}
+          <Card>
+            <CardContent sx={{ p: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+                Next Steps
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Button
+                  variant="contained"
+                  size="medium"
+                  onClick={openModal}
+                  endIcon={<SendIcon />}
+                  sx={{ borderRadius: 1, fontWeight: 'bold' }}
+                >
+                  Get Detailed Analysis
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  onClick={onRequestDemo}
+                  endIcon={<SendIcon />}
+                  sx={{ borderRadius: 1, fontWeight: 'bold' }}
+                >
+                  Request Demo
+                </Button>
+              </Box>
 
-            {submitError && (
-              <Alert severity="error" sx={{ mt: 1 }}>
-                {submitError}
-              </Alert>
-            )}
-          </Box>
-        </Grid>
+              {submitError && (
+                <Alert severity="error" sx={{ mt: 1 }}>
+                  {submitError}
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        </Box>
       </Grid>
+    </Grid>
       </Paper>
 
       {/* Detailed Analysis Modal */}
@@ -627,6 +665,8 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
           </Typography>
         </Alert>
       )}
+
+
     </Box>
   );
 }
