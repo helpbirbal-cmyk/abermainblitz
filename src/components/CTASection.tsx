@@ -30,11 +30,11 @@ export default function CTASection({
         p: { xs: 6, md: 10, lg: 15 }, // Responsive padding: 48px, 80px, 120px
         backgroundColor: isDarkMode ? 'grey.900' : 'white',
         color: isDarkMode ? 'white' : 'black',
-        border: '2px solid',
+        border: '1px solid',
         borderColor: 'primary.main', // Uses your theme's primary color (#2563eb)
         borderRadius: 2,
         width: '100%',
-        m: 0.5, // Equivalent to m-1 (4px)
+        mx: 'auto', // Equivalent to m-1 (4px)
         boxShadow: 3
       }}
     >
@@ -48,7 +48,7 @@ export default function CTASection({
         <Typography
           variant="h2"
           sx={{
-            fontSize: { xs: '2.25rem', sm: '3rem', md: '3.75rem' }, // text-4xl, text-5xl, text-6xl
+            fontSize: { xs: '3rem', sm: '4rem', md: '5rem' }, // text-4xl, text-5xl, text-6xl
             fontWeight: 'bold',
             mb: 3, // 24px
             color: isDarkMode ? 'white' : 'black',

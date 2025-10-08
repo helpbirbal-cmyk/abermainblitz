@@ -37,7 +37,7 @@ export default function HomePage() {
       <TechnologySection />
       <ROITool openModal={(type) => setIsModalOpen(true)} />
       <CTASection
-        title="Revolutionize Your Customer Experience Now"
+        title="ZERO DEFECT YOUR APPS NOW"
         description="Get the AI Leverage to Do More, Cut Costs & Scale Profitably"
         openModal={openModal} />
         <Footer />

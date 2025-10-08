@@ -126,9 +126,9 @@ export async function POST(request: Request) {
 
                     <p><strong>What happens next?</strong></p>
                     <ul>
-                        <li>Our team will contact you within 24 hours to confirm your demo schedule</li>
-                        <li>We'll prepare a personalized demo based on your requirements</li>
-                        <li>During the demo, we'll show you exactly how our solution works for your use case</li>
+                        <li>Our team will contact you within 24 hours to confirm your session schedule</li>
+                        <li>We'll prepare a personalized session based on your requirements</li>
+                        <li>During the session, we'll show you exactly how our solution works for your use case</li>
                         <li>You'll have plenty of time for Q&A with our experts</li>
                     </ul>
 

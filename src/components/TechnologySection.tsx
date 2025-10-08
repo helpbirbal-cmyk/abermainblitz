@@ -68,7 +68,7 @@ export default function TechnologySection() {
               WebkitTextFillColor: 'transparent'
             }}
           >
-            MozarkAI Technology
+            Cutting Edge Technology
           </Typography>
           <Typography
             variant="h6"
@@ -78,7 +78,7 @@ export default function TechnologySection() {
               fontWeight: 400
             }}
           >
-            Advanced AI & machine learning capabilities tailored for your industry
+            Advanced AI & machine learning capabilities tailored for your needs
           </Typography>
         </Box>
 

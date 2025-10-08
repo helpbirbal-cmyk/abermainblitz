@@ -232,7 +232,7 @@ export default function DemoModal({ isOpen, onClose, calculatorType = 'general' 
       </Box>
 
       <Typography variant="caption" color="text.secondary" sx={{ mt: 3, display: 'block' }}>
-        Both options include a personalized demo tailored to your needs
+        Both options include a personalized session tailored to your needs
       </Typography>
     </Box>
   );
