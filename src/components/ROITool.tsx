@@ -14,6 +14,8 @@ import {
 import OTTCalculator from './OTTCalculator';
 import PaymentCalculator from './PaymentCalculator';
 import { ROICalculator } from '@/components/Calculators/ROICalculator';
+import Tooltip from '@mui/material/Tooltip';
+
 
 type CalculatorType = 'ott' | 'payment' | 'agenticaitest';
 
@@ -200,13 +202,15 @@ function CalculatorIntro({ calculatorType, onCalculatorChange, isDarkMode }: Cal
             </Box>
           </ToggleButton>
 
-          <ToggleButton value="agenticaitest" aria-label="qa testing calculator">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="button" sx={{ fontWeight: 600 , fontSize: { xs: '0.5rem', sm: '1rem', md: '1rem' }}}>
-                QAT
-              </Typography>
-            </Box>
-          </ToggleButton>
+          <Tooltip title="QA Testing Automation Savings $200K+" placement="top-start">
+            <ToggleButton value="agenticaitest" aria-label="qa testing calculator">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="button" sx={{ fontWeight: 600 , fontSize: { xs: '0.5rem', sm: '1rem', md: '1rem' }}}>
+                  QAT
+                </Typography>
+              </Box>
+            </ToggleButton>
+          </Tooltip>
 
           <ToggleButton value="ott" aria-label="streaming calculator">
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

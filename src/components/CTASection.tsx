@@ -28,14 +28,17 @@ export default function CTASection({
       component="section"
       sx={{
         p: { xs: 6, md: 10, lg: 15 }, // Responsive padding: 48px, 80px, 120px
-        backgroundColor: isDarkMode ? 'grey.900' : 'white',
-        color: isDarkMode ? 'white' : 'black',
+        //backgroundColor: isDarkMode ? 'grey.900' : 'white',
+        //backgroundColor: 'primary.main',
+        backgroundColor: '#1f2937',
+        //color: isDarkMode ? 'white' : 'black',
+        color: 'white',
         border: '1px solid',
         borderColor: 'primary.main', // Uses your theme's primary color (#2563eb)
         borderRadius: 2,
         width: '100%',
         mx: 'auto', // Equivalent to m-1 (4px)
-        boxShadow: 3
+        //boxShadow: 3
       }}
     >
       <Container
@@ -51,13 +54,14 @@ export default function CTASection({
             fontSize: { xs: '3rem', sm: '4rem', md: '5rem' }, // text-4xl, text-5xl, text-6xl
             fontWeight: 'bold',
             mb: 3, // 24px
-            color: isDarkMode ? 'white' : 'black',
-            background: isDarkMode
-              ? 'linear-gradient(135deg, #ffffff 0%, #94a3b8 100%)'
-              : 'linear-gradient(135deg, #000000 0%, #475569 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
+            //color: isDarkMode ? 'white' : 'black',
+            color: 'white',
+            //background: isDarkMode
+            //  ? 'linear-gradient(135deg, #ffffff 0%, #94a3b8 100%)'
+            //  : 'linear-gradient(135deg, #000000 0%, #475569 100%)',
+            //backgroundClip: 'text',
+            //WebkitBackgroundClip: 'text',
+            //WebkitTextFillColor: 'transparent',
             lineHeight: 1.2
           }}
         >
@@ -71,7 +75,8 @@ export default function CTASection({
             mb: 5, // 40px
             maxWidth: '672px', // max-w-3xl
             mx: 'auto',
-            color: isDarkMode ? 'gray.300' : 'gray.700',
+            //color: isDarkMode ? 'gray.300' : 'gray.700',
+            color: 'white',
             lineHeight: 1.6,
             fontWeight: 400
           }}
@@ -92,7 +97,6 @@ export default function CTASection({
             onClick={() => openModal('ott')}
             variant="contained"
             size="large"
-
           >
             Book Demo
           </Button>

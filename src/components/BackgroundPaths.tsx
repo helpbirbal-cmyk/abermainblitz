@@ -96,7 +96,7 @@ export default function BackgroundPaths({
   const rotatingTitles = [
     ["LAUNCH APPS,", "ZERO DEFECT"],
     ["SHIP FASTER,", "NO BUGS"],
-    ["AI AUTOMATED", "QAT"],
+    ["AI AUTOMATED", "QA TESTS"],
     ["CATCH DEFECTS,", "BEFORE USERS"],
     ["AI-POWERED", "TESTING"],
   ]
@@ -408,9 +408,10 @@ export default function BackgroundPaths({
                     color: isDarkMode ? '#ffffff' : '#000000',
                     border: `1px solid ${isDarkMode ? '#ffffff' : '#2563eb'}`,
                     '&:hover': {
-                      backgroundColor : isDarkMode ? '#ff0000' : '#ffffff',
-                      color: isDarkMode ? '#ffffff' : '#000000',
-                      border: '3px solid', fontWeight: 700
+                      backgroundColor : isDarkMode ? '#999999' : '#ffffff',
+                      color: isDarkMode ? '#000000' : '#000000',
+                      border: '3px solid',
+                      fontWeight: 700
                     },
                     width: '100%',
                     textTransform: 'none',
