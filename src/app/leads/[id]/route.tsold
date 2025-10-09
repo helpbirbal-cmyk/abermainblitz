@@ -1,0 +1,29 @@
+import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from 'next/server';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!;
+
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: lead, error } = await supabase
+      .from('lead_assessment_reports')
+      .select('*')
+      .eq('id', params.id)
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({ lead });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Lead not found' },
+      { status: 404 }
+    );
+  }
+}
