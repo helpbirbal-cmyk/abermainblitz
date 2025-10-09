@@ -152,7 +152,7 @@ export default function Navigation({ openModal }: NavigationProps) {
           </Button>
           <Button
               onClick={() => router.push('/leads')}
-              variant="outline"
+              variant="outlined"
               sx={{ py: 2,fontSize: '0.875rem',
               fontWeight: 300, }}
              >
@@ -243,7 +243,7 @@ export default function Navigation({ openModal }: NavigationProps) {
               </Button>
               <Button
                   onClick={() => router.push('/leads')}
-                  variant="contained"
+                  variant="outlined"
                   sx={{ mt: 2 }}
                  >
                   CRM
