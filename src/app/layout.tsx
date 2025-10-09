@@ -1,15 +1,15 @@
-// src/app/layout.tsx
 import { BlitzProvider } from "../blitz-client";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from 'next-themes'
-import CustomThemeProvider from '../components/ThemeProvider' // Update path as needed
+import CustomThemeProvider from '../components/ThemeProvider'
+import CRMNavigation from '../components/CRMNavigation' // Add this import
 
 export const metadata: Metadata = {
-  title: "Aberdeen Mozark",
-  description: "Do More, Cut Costs with AI",
+  title: "AberCXO Moz",
+  description: "Flawless, Defect Free App Launches",
 };
 
 export const viewport: Viewport = {
@@ -45,6 +45,8 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <CustomThemeProvider>
             <BlitzProvider>
+              {/* Add CRM Navigation - it will only show on CRM pages */}
+              <CRMNavigation />
               {children}
               <SpeedInsights />
               <Analytics />

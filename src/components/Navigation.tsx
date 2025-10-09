@@ -147,6 +147,14 @@ export default function Navigation({ openModal }: NavigationProps) {
           >
             Book Demo
           </Button>
+          <Button
+              onClick={() => router.push('/leads')}
+              variant="outline"
+              sx={{ py: 2,fontSize: '0.875rem',
+              fontWeight: 300, }}
+             >
+              CLM
+          </Button>
         </Box>
 
         {/* Mobile Menu Button */}
@@ -229,6 +237,13 @@ export default function Navigation({ openModal }: NavigationProps) {
                 }}
               >
                 Book Demo
+              </Button>
+              <Button
+                  onClick={() => router.push('/leads')}
+                  variant="contained"
+                  sx={{ mt: 2 }}
+                 >
+                  CRM
               </Button>
             </ListItem>
           </List>

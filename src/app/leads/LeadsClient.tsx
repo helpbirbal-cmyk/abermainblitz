@@ -1,6 +1,7 @@
 // src/app/leads/LeadsClient.tsx
 'use client';
 
+import { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -12,8 +13,16 @@ import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 // Icons
+import SearchIcon from '@mui/icons-material/Search';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import EmailIcon from '@mui/icons-material/Email';
 import BusinessIcon from '@mui/icons-material/Business';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -32,6 +41,7 @@ interface Lead {
   message: string;
   source: string;
   demoType: string;
+  status: string;
   created_at?: string;
 }
 
@@ -40,6 +50,36 @@ interface LeadsClientProps {
 }
 
 export function LeadsClient({ leads }: LeadsClientProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [timelineFilter, setTimelineFilter] = useState('all');
+
+  // Filter leads based on search and filters
+  const filteredLeads = useMemo(() => {
+    return leads.filter((lead) => {
+      const matchesSearch =
+        lead.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.projectType?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+      const matchesTimeline = timelineFilter === 'all' || lead.timeline === timelineFilter;
+
+      return matchesSearch && matchesStatus && matchesTimeline;
+    });
+  }, [leads, searchTerm, statusFilter, timelineFilter]);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'New': return 'default';
+      case 'Contacted': return 'primary';
+      case 'Qualified': return 'secondary';
+      case 'Customer': return 'success';
+      default: return 'default';
+    }
+  };
+
   const getTimelineColor = (timeline: string) => {
     switch (timeline?.toLowerCase()) {
       case 'urgent': return 'error';
@@ -66,14 +106,74 @@ export function LeadsClient({ leads }: LeadsClientProps) {
         <Typography variant="h3" component="h1" fontWeight="bold" gutterBottom>
           Lead Management
         </Typography>
+        
         <Typography variant="h6" color="text.secondary">
-          Total {leads.length} leads
+          Total {leads.length} leads • Showing {filteredLeads.length}
         </Typography>
       </Box>
 
+      {/* Search and Filters */}
+      <Card sx={{ mb: 4, p: 3 }}>
+        <Grid container spacing={3} alignItems="center">
+          <Grid size={{ xs: 12, md: 4 }}>
+            <TextField
+              fullWidth
+              placeholder="Search by name, email, company, project..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 4 }}>
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={statusFilter}
+                label="Status"
+                onChange={(e) => setStatusFilter(e.target.value)}
+                startAdornment={
+                  <InputAdornment position="start">
+                    <FilterListIcon fontSize="small" />
+                  </InputAdornment>
+                }
+              >
+                <MenuItem value="all">All Statuses</MenuItem>
+                <MenuItem value="New">New</MenuItem>
+                <MenuItem value="Contacted">Contacted</MenuItem>
+                <MenuItem value="Qualified">Qualified</MenuItem>
+                <MenuItem value="Customer">Customer</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 4 }}>
+            <FormControl fullWidth>
+              <InputLabel>Timeline</InputLabel>
+              <Select
+                value={timelineFilter}
+                label="Timeline"
+                onChange={(e) => setTimelineFilter(e.target.value)}
+              >
+                <MenuItem value="all">All Timelines</MenuItem>
+                <MenuItem value="urgent">Urgent</MenuItem>
+                <MenuItem value="soon">Soon</MenuItem>
+                <MenuItem value="flexible">Flexible</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </Card>
+
       {/* Leads Grid */}
       <Grid container spacing={3}>
-        {leads.map((lead) => (
+        {filteredLeads.map((lead) => (
           <Grid size={{ xs: 12, md: 6, lg: 4 }} key={lead.id}>
             <Card
               sx={{
@@ -109,11 +209,19 @@ export function LeadsClient({ leads }: LeadsClientProps) {
                       </Typography>
                     </Box>
                   </Box>
-                  <Chip
-                    label={lead.timeline || 'No timeline'}
-                    color={getTimelineColor(lead.timeline)}
-                    size="small"
-                  />
+                  <Stack spacing={0.5} alignItems="flex-end">
+                    <Chip
+                      label={lead.status || 'New'}
+                      color={getStatusColor(lead.status)}
+                      size="small"
+                    />
+                    <Chip
+                      label={lead.timeline || 'No timeline'}
+                      color={getTimelineColor(lead.timeline)}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Stack>
                 </Box>
 
                 {/* Contact Info */}
@@ -216,13 +324,15 @@ export function LeadsClient({ leads }: LeadsClientProps) {
       </Grid>
 
       {/* Empty State */}
-      {leads.length === 0 && (
+      {filteredLeads.length === 0 && (
         <Paper sx={{ p: 12, textAlign: 'center' }}>
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No leads found
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Leads from your website will appear here.
+            {searchTerm || statusFilter !== 'all' || timelineFilter !== 'all'
+              ? 'Try adjusting your search or filters'
+              : 'Leads from your website will appear here.'}
           </Typography>
         </Paper>
       )}

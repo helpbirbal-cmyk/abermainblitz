@@ -1,0 +1,66 @@
+import { createClient } from '@supabase/supabase-js';
+import { LeadDetailClient } from './LeadDetailClient';
+import { notFound } from 'next/navigation';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!;
+
+interface Lead {
+  id: string;
+  name: string;
+  email: string;
+  company: string;
+  projectType: string;
+  timeline: string;
+  message: string;
+  source: string;
+  demoType: string;
+  status: string;
+  created_at: string;
+}
+
+interface Interaction {
+  id: string;
+  interaction_type: string;
+  interaction_date: string;
+  description: string;
+  notes: string;
+}
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function LeadDetailPage({ params }: PageProps) {
+  const { id } = await params;
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  try {
+    // Fetch lead data
+    const { data: lead, error: leadError } = await supabase
+      .from('lead_assessment_reports')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (leadError || !lead) {
+      notFound();
+    }
+
+    // Fetch interactions for this lead
+    const { data: interactions, error: interactionsError } = await supabase
+      .from('lead_interactions')
+      .select('*')
+      .eq('lead_id', id)
+      .order('interaction_date', { ascending: false });
+
+    // If interactions table doesn't exist yet, return empty array
+    const safeInteractions = interactionsError ? [] : (interactions || []);
+
+    return <LeadDetailClient lead={lead} interactions={safeInteractions} />;
+
+  } catch (error) {
+    notFound();
+  }
+}
