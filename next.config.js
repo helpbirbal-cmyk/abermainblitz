@@ -13,7 +13,7 @@ module.exports = {
               style-src 'self' 'unsafe-inline' https://assets.calendly.com;
               img-src 'self' https://assets.calendly.com data: https://www.google-analytics.com;
               font-src 'self' https://assets.calendly.com;
-              connect-src 'self' https://api.calendly.com https://www.google-analytics.com https://*.analytics.google.com;
+              connect-src 'self' https://api.calendly.com https://www.google-analytics.com https://*.analytics.google.com https://lysvjmkxlwiajaidpxko.supabase.co;
               frame-src 'self' https://calendly.com https://*.calendly.com;
               child-src 'self' https://calendly.com https://*.calendly.com;
             `.replace(/\s{2,}/g, ' ').trim()
