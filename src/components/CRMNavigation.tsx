@@ -17,6 +17,7 @@ import {
   Home
 } from '@mui/icons-material';
 
+
 export default function CRMNavigation() {
   const pathname = usePathname();
   const isCRM = pathname?.startsWith('/leads') || pathname?.startsWith('/analytics');
@@ -99,6 +100,14 @@ export default function CRMNavigation() {
             >
               Analytics
             </Button>
+            <Button
+  component={Link}
+  href="/customers"
+  className={`normal-case ${pathname.startsWith('/customers') ? 'text-blue-600 font-semibold' : 'text-gray-700'}`}
+  //startIcon={<PeopleIcon />}
+>
+  Customers
+</Button>
           </Box>
 
           {/* Optional: User menu or actions */}
