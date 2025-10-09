@@ -1,19 +1,49 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState, useMemo } from 'react';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Chip,
+  Grid,
+  Container,
+  Paper,
+  Avatar,
+  Stack,
+  Button,
+  TextField,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import {
+  Search as SearchIcon,
+  FilterList as FilterListIcon,
+  Email as EmailIcon,
+  Business as BusinessIcon,
+  Description as DescriptionIcon,
+  Visibility as VisibilityIcon,
+  CalendarToday as CalendarTodayIcon,
+  Add as AddIcon
+} from '@mui/icons-material';
 
 interface Customer {
   id: string;
   name: string;
   email: string;
-  phone: string;
   company: string;
-  industry: string;
+  projectType: string;
+  timeline: string;
+  message: string;
+  source: string;
   status: string;
-  customer_type: string;
-  created_at: string;
-  contacts_count: number;
+  created_at?: string;
 }
 
 interface CustomersClientProps {
@@ -21,182 +51,351 @@ interface CustomersClientProps {
 }
 
 export function CustomersClient({ customers }: CustomersClientProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [timelineFilter, setTimelineFilter] = useState('all');
 
-  const filteredCustomers = customers.filter(customer => {
-    const matchesSearch =
-      customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.industry?.toLowerCase().includes(searchTerm.toLowerCase());
+  // Filter customers based on search and filters
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((customer) => {
+      const matchesSearch =
+        customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.projectType?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = statusFilter === 'all' || customer.status === statusFilter;
+      const matchesStatus = statusFilter === 'all' || customer.status === statusFilter;
+      const matchesTimeline = timelineFilter === 'all' || customer.timeline === timelineFilter;
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus && matchesTimeline;
+    });
+  }, [customers, searchTerm, statusFilter, timelineFilter]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-gray-100 text-gray-800';
-      case 'prospect': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'New': return 'default';
+      case 'Contacted': return 'primary';
+      case 'Qualified': return 'secondary';
+      case 'Customer': return 'success';
+      default: return 'default';
     }
   };
 
-  const getTypeColor = (type: string) => {
-    return type === 'business'
-      ? 'bg-purple-100 text-purple-800'
-      : 'bg-orange-100 text-orange-800';
+  const getTimelineColor = (timeline: string) => {
+    switch (timeline?.toLowerCase()) {
+      case 'urgent': return 'error';
+      case 'soon': return 'warning';
+      case 'flexible': return 'success';
+      default: return 'default';
+    }
+  };
+
+  const getProjectTypeColor = (projectType: string) => {
+    switch (projectType?.toLowerCase()) {
+      case 'web development': return 'primary';
+      case 'mobile app': return 'secondary';
+      case 'e-commerce': return 'success';
+      case 'consulting': return 'info';
+      default: return 'default';
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
-              <p className="text-lg text-gray-600 mt-2">
-                Manage your customer relationships
-              </p>
-            </div>
-            <div className="mt-4 md:mt-0 flex gap-3">
-              <Link
-                href="/customers/upload"
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                Import CSV
-              </Link>
-              <Link
-                href="/customers/new"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Add Customer
-              </Link>
-            </div>
-          </div>
-        </div>
+    <Container maxWidth="xl" sx={{ py: 8 }}>
+      {/* Header */}
+      <Box sx={{ mb: 8 }}>
+        <Typography
+          variant="h3"
+          component="h1"
+          fontWeight="bold"
+          gutterBottom
+          color="text.primary"
+        >
+          Customer Management
+        </Typography>
+        <Typography variant="h6" color="text.secondary">
+          Total {customers.length} customers • Showing {filteredCustomers.length}
+        </Typography>
+      </Box>
 
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <input
-                type="text"
-                placeholder="Search customers by name, email, company..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <select
+      {/* Search and Filters */}
+      <Card
+        sx={{
+          mb: 4,
+          p: 3,
+          backgroundColor: 'background.paper',
+          border: `1px solid ${theme.palette.divider}`
+        }}
+      >
+        <Grid container spacing={3} alignItems="center">
+          <Grid size={{ xs: 12, md: 4 }}>
+            <TextField
+              fullWidth
+              placeholder="Search by name, email, company, project..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: theme.palette.background.default,
+                }
+              }}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 4 }}>
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
                 value={statusFilter}
+                label="Status"
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                startAdornment={
+                  <InputAdornment position="start">
+                    <FilterListIcon fontSize="small" />
+                  </InputAdornment>
+                }
               >
-                <option value="all">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="prospect">Prospect</option>
-              </select>
-            </div>
-          </div>
-        </div>
+                <MenuItem value="all">All Statuses</MenuItem>
+                <MenuItem value="New">New</MenuItem>
+                <MenuItem value="Contacted">Contacted</MenuItem>
+                <MenuItem value="Qualified">Qualified</MenuItem>
+                <MenuItem value="Customer">Customer</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
 
-        {/* Customers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCustomers.map((customer) => (
-            <div key={customer.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{customer.name}</h3>
-                  <p className="text-gray-600">{customer.company}</p>
-                </div>
-                <div className="flex flex-col gap-1 items-end">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(customer.status)}`}>
-                    {customer.status}
-                  </span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(customer.customer_type)}`}>
-                    {customer.customer_type}
-                  </span>
-                </div>
-              </div>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <FormControl fullWidth>
+              <InputLabel>Timeline</InputLabel>
+              <Select
+                value={timelineFilter}
+                label="Timeline"
+                onChange={(e) => setTimelineFilter(e.target.value)}
+              >
+                <MenuItem value="all">All Timelines</MenuItem>
+                <MenuItem value="urgent">Urgent</MenuItem>
+                <MenuItem value="soon">Soon</MenuItem>
+                <MenuItem value="flexible">Flexible</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </Card>
 
-              <div className="space-y-2 mb-4">
-                {customer.email && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    {customer.email}
-                  </div>
-                )}
-                {customer.phone && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    {customer.phone}
-                  </div>
-                )}
-                {customer.industry && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                    {customer.industry}
-                  </div>
-                )}
-              </div>
+      {/* Add Customer Button */}
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          sx={{
+            textTransform: 'none',
+            borderRadius: 2
+          }}
+        >
+          Add New Customer
+        </Button>
+      </Box>
 
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>{customer.contacts_count} contacts</span>
-                <span>{new Date(customer.created_at).toLocaleDateString()}</span>
-              </div>
-
-              <div className="flex gap-2 mt-4">
-                <Link
-                  href={`/customers/${customer.id}`}
-                  className="flex-1 text-center px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  View
-                </Link>
-                <Link
-                  href={`/customers/${customer.id}/edit`}
-                  className="flex-1 text-center px-3 py-2 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Edit
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {filteredCustomers.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-            <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No customers found</h3>
-            <p className="text-gray-500 mb-4">
-              {searchTerm || statusFilter !== 'all'
-                ? 'Try adjusting your search or filters'
-                : 'Get started by adding your first customer'}
-            </p>
-            <Link
-              href="/customers/new"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+      {/* Customers Grid */}
+      <Grid container spacing={3}>
+        {filteredCustomers.map((customer) => (
+          <Grid size={{ xs: 12, md: 6, lg: 4 }} key={customer.id}>
+            <Card
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'all 0.3s ease-in-out',
+                backgroundColor: 'background.paper',
+                border: `1px solid ${theme.palette.divider}`,
+                '&:hover': {
+                  boxShadow: theme.shadows[8],
+                  transform: 'translateY(-4px)',
+                  borderColor: theme.palette.primary.main
+                }
+              }}
             >
-              Add Customer
-            </Link>
-          </div>
-        )}
-      </div>
-    </div>
+              <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                {/* Header with Avatar and Name */}
+                <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={2}>
+                  <Box display="flex" alignItems="center" gap={2}>
+                    <Avatar
+                      sx={{
+                        bgcolor: 'primary.main',
+                        width: 40,
+                        height: 40,
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      {customer.name?.charAt(0)?.toUpperCase() || 'C'}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="h6" fontWeight="600" color="text.primary">
+                        {customer.name || 'No Name'}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {customer.company || 'No Company'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Stack spacing={0.5} alignItems="flex-end">
+                    <Chip
+                      label={customer.status || 'New'}
+                      color={getStatusColor(customer.status)}
+                      size="small"
+                    />
+                    <Chip
+                      label={customer.timeline || 'No timeline'}
+                      color={getTimelineColor(customer.timeline)}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Stack>
+                </Box>
+
+                {/* Contact Info */}
+                <Stack spacing={1.5} mb={2}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <EmailIcon fontSize="small" color="action" />
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      noWrap
+                      sx={{ flex: 1 }}
+                    >
+                      {customer.email}
+                    </Typography>
+                  </Box>
+
+                  {customer.projectType && (
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <BusinessIcon fontSize="small" color="action" />
+                      <Typography variant="body2" color="text.secondary">
+                        {customer.projectType}
+                      </Typography>
+                    </Box>
+                  )}
+                </Stack>
+
+                {/* Project Details */}
+                <Box mb={2}>
+                  <Chip
+                    label={customer.projectType || 'No project type'}
+                    color={getProjectTypeColor(customer.projectType)}
+                    variant="outlined"
+                    sx={{ mb: 1 }}
+                  />
+
+                  {customer.source && (
+                    <Box display="flex" alignItems="center" gap={1} mt={1}>
+                      <Typography variant="body2" color="text.secondary">
+                        Source: {customer.source}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Message Preview */}
+                {customer.message && (
+                  <Paper
+                    sx={{
+                      p: 2,
+                      bgcolor: 'action.hover',
+                      mb: 2,
+                      flexGrow: 1,
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}
+                  >
+                    <Box display="flex" alignItems="flex-start" gap={1}>
+                      <DescriptionIcon fontSize="small" color="action" sx={{ mt: 0.25 }} />
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        {customer.message}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                )}
+
+                {/* Footer with Date and Action */}
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  pt={2}
+                  sx={{
+                    borderTop: 1,
+                    borderColor: 'divider',
+                    mt: 'auto'
+                  }}
+                >
+                  <Box display="flex" alignItems="center" gap={0.5}>
+                    <CalendarTodayIcon fontSize="small" color="action" />
+                    <Typography variant="caption" color="text.secondary">
+                      {customer.created_at ? new Date(customer.created_at).toLocaleDateString() : 'No date'}
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<VisibilityIcon />}
+                    href={`/customers/${customer.id}`}
+                    sx={{
+                      textTransform: 'none',
+                      borderColor: 'primary.main',
+                      color: 'primary.main',
+                      '&:hover': {
+                        backgroundColor: 'primary.main',
+                        color: 'primary.contrastText'
+                      }
+                    }}
+                  >
+                    View Details
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Empty State */}
+      {filteredCustomers.length === 0 && (
+        <Paper
+          sx={{
+            p: 12,
+            textAlign: 'center',
+            backgroundColor: 'background.paper',
+            border: `1px solid ${theme.palette.divider}`
+          }}
+        >
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No customers found
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {searchTerm || statusFilter !== 'all' || timelineFilter !== 'all'
+              ? 'Try adjusting your search or filters'
+              : 'Customers will appear here.'}
+          </Typography>
+        </Paper>
+      )}
+    </Container>
   );
 }
