@@ -1,79 +1,100 @@
-// src/components/ThemeProvider.tsx
-'use client'
+'use client';
 
-import { ThemeProvider as MUIThemeProvider, createTheme } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
-import { useTheme as useNextTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
+import { ThemeProvider as MUIThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { useTheme } from 'next-themes';
 
-export default function CustomThemeProvider({ children }: { children: React.ReactNode }) {
-  const { resolvedTheme } = useNextTheme()
-  const [mounted, setMounted] = useState(false)
-  const [currentTheme, setCurrentTheme] = useState(createTheme())
+// Create MUI themes
+const lightTheme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1976d2',
+      contrastText: '#ffffff',
+    },
+    background: {
+      default: '#f8fafc',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#1e293b',
+      secondary: '#64748b',
+    },
+  },
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#ffffff',
+          color: '#1e293b',
+        },
+      },
+    },
+  },
+});
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#90caf9',
+      contrastText: '#000000',
+    },
+    background: {
+      default: '#0f172a',
+      paper: '#1e293b',
+    },
+    text: {
+      primary: '#f1f5f9',
+      secondary: '#94a3b8',
+    },
+  },
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1e293b',
+          color: '#f1f5f9',
+        },
+      },
+    },
+  },
+});
+
+export default function CustomThemeProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { theme, systemTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
-  useEffect(() => {
-    if (resolvedTheme) {
-      const theme = createTheme({
-        palette: {
-          mode: resolvedTheme as 'light' | 'dark',
-          primary: {
-            main: '#2563eb', // blue-600
-          },
-          ...(resolvedTheme === 'dark'
-            ? {
-                // Dark theme colors
-                background: {
-                  default: '#000000',
-                  paper: '#111827',
-                },
-                text: {
-                  primary: '#ffffff',
-                  secondary: '#9ca3af',
-                },
-              }
-            : {
-                // Light theme colors
-                background: {
-                  default: '#ffffff',
-                  paper: '#f8fafc',
-                },
-                text: {
-                  primary: '#000000',
-                  secondary: '#4b5563',
-                },
-              }),
-        },
-        components: {
-          MuiTextField: {
-            styleOverrides: {
-              root: {
-                '& .MuiOutlinedInput-root': {
-                  '&:hover fieldset': {
-                    borderColor: '#2563eb',
-                  },
-                },
-              },
-            },
-          },
-        },
-      })
-      setCurrentTheme(theme)
-    }
-  }, [resolvedTheme])
+  // Determine which theme to use
+  const currentTheme = theme === 'system' ? systemTheme : theme;
+  const muiTheme = currentTheme === 'dark' ? darkTheme : lightTheme;
 
-  // Prevent hydration mismatch
   if (!mounted) {
-    return <>{children}</>
+    return (
+      <MUIThemeProvider theme={lightTheme}>
+        <CssBaseline />
+        <div style={{ visibility: 'hidden' }}>{children}</div>
+      </MUIThemeProvider>
+    );
   }
 
   return (
-    <MUIThemeProvider theme={currentTheme}>
+    <MUIThemeProvider theme={muiTheme}>
       <CssBaseline />
-      {children}
+      <div className={`min-h-screen transition-colors duration-200 ${
+        currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'
+      }`}>
+        {children}
+      </div>
     </MUIThemeProvider>
-  )
+  );
 }

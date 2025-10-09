@@ -5,11 +5,11 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from 'next-themes'
 import CustomThemeProvider from '../components/ThemeProvider'
-import ResponsiveCRMNavigation from '../components/CRMNavigation' // Using Tailwind version
+import CRMNavigation from '../components/CRMNavigation'
 
 export const metadata: Metadata = {
-  title: "AberCXO Moz",
-  description: "Flawless, Zero Defect App Launches",
+  title: "AberCXO CRM",
+  description: "Customer Relationship Management - Manage leads, customers, and analytics",
 };
 
 export const viewport: Viewport = {
@@ -24,11 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Preload critical resources */}
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
-      </head>
-      <body className="min-h-screen bg-gray-50">
+      <body>
         {/* Google Analytics */}
         <script
           async
@@ -49,15 +45,8 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <CustomThemeProvider>
             <BlitzProvider>
-              {/* Responsive Navigation - Only shows on CRM pages */}
-              <ResponsiveCRMNavigation />
-
-              {/* Main Content */}
-              <main className="min-h-screen">
-                {children}
-              </main>
-
-              {/* Vercel Analytics */}
+              <CRMNavigation />
+              {children}
               <SpeedInsights />
               <Analytics />
             </BlitzProvider>

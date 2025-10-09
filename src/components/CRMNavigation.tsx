@@ -16,7 +16,9 @@ import {
   ListItem,
   ListItemText,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Switch,
+  FormControlLabel
 } from '@mui/material';
 import {
   Dashboard,
@@ -24,13 +26,17 @@ import {
   Analytics,
   Home,
   Menu,
-  Close
+  Close,
+  Brightness4,
+  Brightness7
 } from '@mui/icons-material';
+import { useTheme as useNextTheme } from 'next-themes';
 
 export default function CRMNavigation() {
   const pathname = usePathname();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const muiTheme = useTheme();
+  const { theme, setTheme } = useNextTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const isCRM = pathname?.startsWith('/leads') || pathname?.startsWith('/analytics') || pathname?.startsWith('/customers');
@@ -40,28 +46,32 @@ export default function CRMNavigation() {
   }
 
   const navigationItems = [
-    { href: '/', label: 'Home', icon: <Home sx={{ color: 'inherit' }} /> },
-    { href: '/leads', label: 'Leads', icon: <People sx={{ color: 'inherit' }} /> },
-    { href: '/customers', label: 'Customers', icon: <People sx={{ color: 'inherit' }} /> },
-    { href: '/analytics', label: 'Analytics', icon: <Analytics sx={{ color: 'inherit' }} /> },
+    { href: '/', label: 'Home', icon: <Home /> },
+    { href: '/leads', label: 'Leads', icon: <People /> },
+    { href: '/customers', label: 'Customers', icon: <People /> },
+    { href: '/analytics', label: 'Analytics', icon: <Analytics /> },
   ];
 
   const toggleDrawer = (open: boolean) => () => {
     setDrawerOpen(open);
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
   // Mobile Drawer Content
   const drawerContent = (
-    <Box sx={{ width: 280, p: 2, bgcolor: 'white', color: '#1f2937' }}>
+    <Box sx={{ width: 280, p: 2, height: '100%', bgcolor: 'background.paper' }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Dashboard sx={{ color: '#3b82f6' }} />
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1f2937' }}>
-            AberCLM
+          <Dashboard sx={{ color: 'primary.main' }} />
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+            AberCXO
           </Typography>
         </Box>
-        <IconButton onClick={toggleDrawer(false)} sx={{ color: '#1f2937' }}>
+        <IconButton onClick={toggleDrawer(false)} sx={{ color: 'text.primary' }}>
           <Close />
         </IconButton>
       </Box>
@@ -77,11 +87,10 @@ export default function CRMNavigation() {
             sx={{
               borderRadius: 1,
               mb: 1,
-              backgroundColor: pathname === item.href ? '#dbeafe' : 'transparent',
-              color: pathname === item.href ? '#1d4ed8' : '#1f2937',
+              backgroundColor: pathname === item.href ? 'primary.main' : 'transparent',
+              color: pathname === item.href ? 'primary.contrastText' : 'text.primary',
               '&:hover': {
-                backgroundColor: '#f3f4f6',
-                color: '#1f2937'
+                backgroundColor: pathname === item.href ? 'primary.dark' : 'action.hover',
               },
               textDecoration: 'none'
             }}
@@ -102,6 +111,22 @@ export default function CRMNavigation() {
         ))}
       </List>
 
+      {/* Theme Toggle in Mobile */}
+      <Box sx={{ mt: 2, p: 2, border: 1, borderColor: 'divider', borderRadius: 1 }}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={theme === 'dark'}
+              onChange={toggleTheme}
+              icon={<Brightness7 />}
+              checkedIcon={<Brightness4 />}
+            />
+          }
+          label={theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+          sx={{ color: 'text.primary' }}
+        />
+      </Box>
+
       {/* Add Lead Button */}
       <Button
         variant="contained"
@@ -111,10 +136,9 @@ export default function CRMNavigation() {
         sx={{
           mt: 2,
           textTransform: 'none',
-          backgroundColor: '#3b82f6',
-          color: 'white',
+          bgcolor: 'primary.main',
           '&:hover': {
-            backgroundColor: '#2563eb',
+            bgcolor: 'primary.dark'
           }
         }}
       >
@@ -127,41 +151,37 @@ export default function CRMNavigation() {
     <AppBar
       position="static"
       sx={{
-        backgroundColor: 'white',
-        color: '#1f2937',
+        backgroundColor: 'background.paper',
+        color: 'text.primary',
         borderBottom: 1,
-        borderColor: '#e5e7eb',
+        borderColor: 'divider',
         boxShadow: 'none'
       }}
     >
       <Container maxWidth="xl">
-        <Toolbar sx={{
-          px: { xs: 1, sm: 2, md: 0 },
-          py: 1,
-          color: '#1f2937'
-        }}>
+        <Toolbar sx={{ px: { xs: 1, sm: 2, md: 0 }, py: 1 }}>
           {/* Logo/Brand */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
-            <Dashboard sx={{ color: '#3b82f6' }} />
+            <Dashboard sx={{ color: 'primary.main' }} />
             <Typography
               variant="h6"
               sx={{
                 fontWeight: 'bold',
-                color: '#1f2937',
+                color: 'text.primary',
                 display: { xs: 'none', sm: 'block' }
               }}
             >
-              AberCLM
+              AberCXO CRM
             </Typography>
             <Typography
               variant="h6"
               sx={{
                 fontWeight: 'bold',
-                color: '#1f2937',
+                color: 'text.primary',
                 display: { xs: 'block', sm: 'none' }
               }}
             >
-              AberCLM
+              AberCXO
             </Typography>
           </Box>
 
@@ -177,11 +197,12 @@ export default function CRMNavigation() {
                     startIcon={item.icon}
                     sx={{
                       textTransform: 'none',
-                      color: pathname === item.href ? '#1d4ed8' : '#1f2937',
+                      color: pathname === item.href ? 'primary.contrastText' : 'text.primary',
+                      backgroundColor: pathname === item.href ? 'primary.main' : 'transparent',
                       fontWeight: pathname === item.href ? 600 : 400,
                       '&:hover': {
-                        backgroundColor: '#f3f4f6',
-                        color: '#1f2937'
+                        backgroundColor: pathname === item.href ? 'primary.dark' : 'action.hover',
+                        color: pathname === item.href ? 'primary.contrastText' : 'text.primary'
                       }
                     }}
                   >
@@ -191,17 +212,29 @@ export default function CRMNavigation() {
               </Box>
 
               {/* Desktop Actions */}
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                {/* Theme Toggle */}
+                <IconButton
+                  onClick={toggleTheme}
+                  sx={{
+                    color: 'text.primary',
+                    '&:hover': {
+                      backgroundColor: 'action.hover'
+                    }
+                  }}
+                >
+                  {theme === 'dark' ? <Brightness7 /> : <Brightness4 />}
+                </IconButton>
+
                 <Button
                   variant="contained"
                   component={Link}
                   href="/leads"
                   sx={{
                     textTransform: 'none',
-                    backgroundColor: '#3b82f6',
-                    color: 'white',
+                    bgcolor: 'primary.main',
                     '&:hover': {
-                      backgroundColor: '#2563eb',
+                      bgcolor: 'primary.dark'
                     }
                   }}
                 >
@@ -213,14 +246,32 @@ export default function CRMNavigation() {
 
           {/* Mobile Menu Button */}
           {isMobile && (
-            <IconButton
-              onClick={toggleDrawer(true)}
-              sx={{
-                color: '#1f2937'
-              }}
-            >
-              <Menu />
-            </IconButton>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              {/* Theme Toggle for Mobile */}
+              <IconButton
+                onClick={toggleTheme}
+                sx={{
+                  color: 'text.primary',
+                  '&:hover': {
+                    backgroundColor: 'action.hover'
+                  }
+                }}
+              >
+                {theme === 'dark' ? <Brightness7 /> : <Brightness4 />}
+              </IconButton>
+
+              <IconButton
+                onClick={toggleDrawer(true)}
+                sx={{
+                  color: 'text.primary',
+                  '&:hover': {
+                    backgroundColor: 'action.hover'
+                  }
+                }}
+              >
+                <Menu />
+              </IconButton>
+            </Box>
           )}
         </Toolbar>
       </Container>
@@ -232,8 +283,8 @@ export default function CRMNavigation() {
         onClose={toggleDrawer(false)}
         sx={{
           '& .MuiDrawer-paper': {
-            backgroundColor: 'white',
-            color: '#1f2937'
+            backgroundColor: 'background.paper',
+            color: 'text.primary',
           },
         }}
       >
