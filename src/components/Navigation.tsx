@@ -151,7 +151,7 @@ export default function Navigation({ openModal }: NavigationProps) {
             Book Demo
           </Button>
           <Button
-              onClick={() => router.push('/leads')}
+              onClick={() => router.push('/analytics')}
               variant="outlined"
               sx={{ py: 2,fontSize: '0.875rem',
               fontWeight: 300, }}
@@ -242,7 +242,7 @@ export default function Navigation({ openModal }: NavigationProps) {
                 Book Demo
               </Button>
               <Button
-                  onClick={() => router.push('/leads')}
+                  onClick={() => router.push('/analytics')}
                   variant="outlined"
                   sx={{ mt: 2 }}
                  >

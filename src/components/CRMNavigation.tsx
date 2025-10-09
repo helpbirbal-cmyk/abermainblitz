@@ -40,10 +40,10 @@ export default function CRMNavigation() {
   }
 
   const navigationItems = [
-    { href: '/', label: 'Home', icon: <Home /> },
-    { href: '/leads', label: 'Leads', icon: <People /> },
-    { href: '/customers', label: 'Customers', icon: <People /> },
-    { href: '/analytics', label: 'Analytics', icon: <Analytics /> },
+    { href: '/', label: 'Home', icon: <Home sx={{ color: 'inherit' }} /> },
+    { href: '/leads', label: 'Leads', icon: <People sx={{ color: 'inherit' }} /> },
+    { href: '/customers', label: 'Customers', icon: <People sx={{ color: 'inherit' }} /> },
+    { href: '/analytics', label: 'Analytics', icon: <Analytics sx={{ color: 'inherit' }} /> },
   ];
 
   const toggleDrawer = (open: boolean) => () => {
@@ -52,16 +52,16 @@ export default function CRMNavigation() {
 
   // Mobile Drawer Content
   const drawerContent = (
-    <Box sx={{ width: 280, p: 2 }}>
+    <Box sx={{ width: 280, p: 2, bgcolor: 'white', color: '#1f2937' }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Dashboard sx={{ color: 'primary.main' }} />
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+          <Dashboard sx={{ color: '#3b82f6' }} />
+          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1f2937' }}>
             AberCLM
           </Typography>
         </Box>
-        <IconButton onClick={toggleDrawer(false)}>
+        <IconButton onClick={toggleDrawer(false)} sx={{ color: '#1f2937' }}>
           <Close />
         </IconButton>
       </Box>
@@ -77,11 +77,13 @@ export default function CRMNavigation() {
             sx={{
               borderRadius: 1,
               mb: 1,
-              backgroundColor: pathname === item.href ? 'primary.light' : 'transparent',
-              color: pathname === item.href ? 'primary.main' : 'text.secondary',
+              backgroundColor: pathname === item.href ? '#dbeafe' : 'transparent',
+              color: pathname === item.href ? '#1d4ed8' : '#1f2937',
               '&:hover': {
-                backgroundColor: 'action.hover',
-              }
+                backgroundColor: '#f3f4f6',
+                color: '#1f2937'
+              },
+              textDecoration: 'none'
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -91,6 +93,7 @@ export default function CRMNavigation() {
                 sx={{
                   '& .MuiListItemText-primary': {
                     fontWeight: pathname === item.href ? 600 : 400,
+                    color: 'inherit'
                   }
                 }}
               />
@@ -101,18 +104,17 @@ export default function CRMNavigation() {
 
       {/* Add Lead Button */}
       <Button
-        variant="outlined"
+        variant="contained"
         fullWidth
         component={Link}
         href="/leads"
         sx={{
           mt: 2,
           textTransform: 'none',
-          borderColor: 'primary.main',
-          color: 'primary.main',
+          backgroundColor: '#3b82f6',
+          color: 'white',
           '&:hover': {
-            backgroundColor: 'primary.main',
-            color: 'white'
+            backgroundColor: '#2563eb',
           }
         }}
       >
@@ -124,24 +126,28 @@ export default function CRMNavigation() {
   return (
     <AppBar
       position="static"
-      color="default"
-      elevation={1}
       sx={{
         backgroundColor: 'white',
+        color: '#1f2937',
         borderBottom: 1,
-        borderColor: 'grey.200'
+        borderColor: '#e5e7eb',
+        boxShadow: 'none'
       }}
     >
       <Container maxWidth="xl">
-        <Toolbar sx={{ px: { xs: 1, sm: 2, md: 0 }, py: 1 }}>
+        <Toolbar sx={{
+          px: { xs: 1, sm: 2, md: 0 },
+          py: 1,
+          color: '#1f2937'
+        }}>
           {/* Logo/Brand */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
-            <Dashboard color="primary" />
+            <Dashboard sx={{ color: '#3b82f6' }} />
             <Typography
               variant="h6"
               sx={{
                 fontWeight: 'bold',
-                color: 'text.primary',
+                color: '#1f2937',
                 display: { xs: 'none', sm: 'block' }
               }}
             >
@@ -151,11 +157,11 @@ export default function CRMNavigation() {
               variant="h6"
               sx={{
                 fontWeight: 'bold',
-                color: 'text.primary',
+                color: '#1f2937',
                 display: { xs: 'block', sm: 'none' }
               }}
             >
-            AberCLM
+              AberCLM
             </Typography>
           </Box>
 
@@ -171,10 +177,11 @@ export default function CRMNavigation() {
                     startIcon={item.icon}
                     sx={{
                       textTransform: 'none',
-                      color: pathname === item.href ? 'primary.main' : 'text.secondary',
+                      color: pathname === item.href ? '#1d4ed8' : '#1f2937',
                       fontWeight: pathname === item.href ? 600 : 400,
                       '&:hover': {
-                        backgroundColor: 'action.hover'
+                        backgroundColor: '#f3f4f6',
+                        color: '#1f2937'
                       }
                     }}
                   >
@@ -186,16 +193,15 @@ export default function CRMNavigation() {
               {/* Desktop Actions */}
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   component={Link}
                   href="/leads"
                   sx={{
                     textTransform: 'none',
-                    borderColor: 'primary.main',
-                    color: 'primary.main',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
                     '&:hover': {
-                      backgroundColor: 'primary.main',
-                      color: 'white'
+                      backgroundColor: '#2563eb',
                     }
                   }}
                 >
@@ -210,7 +216,7 @@ export default function CRMNavigation() {
             <IconButton
               onClick={toggleDrawer(true)}
               sx={{
-                color: 'text.primary'
+                color: '#1f2937'
               }}
             >
               <Menu />
@@ -226,7 +232,8 @@ export default function CRMNavigation() {
         onClose={toggleDrawer(false)}
         sx={{
           '& .MuiDrawer-paper': {
-            backgroundColor: 'background.paper',
+            backgroundColor: 'white',
+            color: '#1f2937'
           },
         }}
       >
