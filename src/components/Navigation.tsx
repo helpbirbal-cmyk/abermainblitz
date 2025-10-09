@@ -2,6 +2,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import {
   AppBar,
@@ -25,6 +26,8 @@ export default function Navigation({ openModal }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const isMobile = useMediaQuery('(max-width:1023px)') // lg breakpoint
+  const router = useRouter();
+
 
   // Detect dark mode from html class
   useEffect(() => {
