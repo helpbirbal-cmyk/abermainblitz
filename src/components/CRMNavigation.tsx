@@ -118,7 +118,7 @@ export default function CRMNavigation() {
                 mx: 1,
                 borderRadius: 1,
                 '&.Mui-selected': {
-                  backgroundColor: 'primary.light',
+                  backgroundColor: 'primary.dark',
                   color: 'primary.main',
                   '&:hover': {
                     backgroundColor: 'primary.light',

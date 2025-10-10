@@ -268,14 +268,14 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           <AnalyticsIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
           <Box>
             <Typography variant="h3" component="h1" fontWeight="bold">
-              Lead Analytics
+              Analytics
             </Typography>
             <Typography variant="h6" color="text.secondary">
-              Advanced Lead Performance & Business Insights
+              Lead & Business Insights
             </Typography>
           </Box>
         </Box>
