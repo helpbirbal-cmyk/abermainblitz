@@ -37,13 +37,13 @@ interface Customer {
   id: string;
   name: string;
   email: string;
+  phone: string;
   company: string;
-  projectType: string;
-  timeline: string;
-  message: string;
-  source: string;
+  industry: string;
   status: string;
+  customer_type: string;
   created_at?: string;
+  contacts_count?: number;
 }
 
 interface CustomersClientProps {
@@ -113,7 +113,7 @@ export function CustomersClient({ customers }: CustomersClientProps) {
           gutterBottom
           color="text.primary"
         >
-          Customer Management
+          AberCRM Customers
         </Typography>
         <Typography variant="h6" color="text.secondary">
           Total {customers.length} customers • Showing {filteredCustomers.length}
@@ -353,22 +353,22 @@ export function CustomersClient({ customers }: CustomersClientProps) {
                     </Typography>
                   </Box>
                   <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<VisibilityIcon />}
-                    href={`/customers/${customer.id}`}
-                    sx={{
-                      textTransform: 'none',
-                      borderColor: 'primary.main',
-                      color: 'primary.main',
-                      '&:hover': {
-                        backgroundColor: 'primary.main',
-                        color: 'primary.contrastText'
-                      }
-                    }}
-                  >
-                    View Details
-                  </Button>
+      variant="outlined"
+      size="small"
+      startIcon={<VisibilityIcon />}
+      href={`/customers/${customer.id}`}  // This should now work
+      sx={{
+        textTransform: 'none',
+        borderColor: 'primary.main',
+        color: 'primary.main',
+        '&:hover': {
+          backgroundColor: 'primary.main',
+          color: 'primary.contrastText'
+        }
+      }}
+    >
+      View Details
+    </Button>
                 </Box>
               </CardContent>
             </Card>

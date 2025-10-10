@@ -357,6 +357,7 @@ export default function BackgroundPaths({
                     border: '1px solid #2563eb',
                     position: 'relative',
                     overflow: 'hidden',
+                    color: 'white',
                     '&::before': {
                       content: '""',
                       position: 'absolute',

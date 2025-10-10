@@ -1,5 +1,8 @@
+// src/app/customers/page.tsx
 import { createClient } from '@supabase/supabase-js';
 import { CustomersClient } from './CustomersClient';
+import { requireAuth } from '@/lib/auth';
+
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!;
@@ -18,6 +21,10 @@ interface Customer {
 }
 
 export default async function CustomersPage() {
+
+   // This will redirect to login if not authenticated
+   await requireAuth();
+
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   const { data: customers, error } = await supabase

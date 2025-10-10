@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   AppBar,
   Toolbar,
@@ -10,34 +9,42 @@ import {
   Button,
   Box,
   Container,
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  useMediaQuery,
-  useTheme,
-  Switch,
-  FormControlLabel
+  Menu,
+  MenuItem,
+  Avatar,
+  IconButton
 } from '@mui/material';
 import {
   Dashboard,
   People,
   Analytics,
   Home,
-  Menu,
-  Close,
-  Brightness4,
-  Brightness7
+  AccountCircle,
+  Logout
 } from '@mui/icons-material';
-import { useTheme as useNextTheme } from 'next-themes';
+import { createClient } from '@/lib/supabase/client';
+import { useEffect, useState } from 'react';
+
+interface User {
+  email: string;
+}
 
 export default function CRMNavigation() {
   const pathname = usePathname();
-  const muiTheme = useTheme();
-  const { theme, setTheme } = useNextTheme();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUser({ email: user.email! });
+      }
+    };
+    getUser();
+  }, []);
 
   const isCRM = pathname?.startsWith('/leads') || pathname?.startsWith('/analytics') || pathname?.startsWith('/customers');
 
@@ -45,251 +52,108 @@ export default function CRMNavigation() {
     return null;
   }
 
-  const navigationItems = [
-    { href: '/', label: 'Home', icon: <Home /> },
-    { href: '/leads', label: 'Leads', icon: <People /> },
-    { href: '/customers', label: 'Customers', icon: <People /> },
-    { href: '/analytics', label: 'Analytics', icon: <Analytics /> },
-  ];
-
-  const toggleDrawer = (open: boolean) => () => {
-    setDrawerOpen(open);
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+  const handleClose = () => {
+    setAnchorEl(null);
   };
 
-  // Mobile Drawer Content
-  const drawerContent = (
-    <Box sx={{ width: 280, p: 2, height: '100%', bgcolor: 'background.paper' }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Dashboard sx={{ color: 'primary.main' }} />
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-            AberCXO
-          </Typography>
-        </Box>
-        <IconButton onClick={toggleDrawer(false)} sx={{ color: 'text.primary' }}>
-          <Close />
-        </IconButton>
-      </Box>
-
-      {/* Navigation Links */}
-      <List>
-        {navigationItems.map((item) => (
-          <ListItem
-            key={item.href}
-            component={Link}
-            href={item.href}
-            onClick={toggleDrawer(false)}
-            sx={{
-              borderRadius: 1,
-              mb: 1,
-              backgroundColor: pathname === item.href ? 'primary.main' : 'transparent',
-              color: pathname === item.href ? 'primary.contrastText' : 'text.primary',
-              '&:hover': {
-                backgroundColor: pathname === item.href ? 'primary.dark' : 'action.hover',
-              },
-              textDecoration: 'none'
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {item.icon}
-              <ListItemText
-                primary={item.label}
-                sx={{
-                  '& .MuiListItemText-primary': {
-                    fontWeight: pathname === item.href ? 600 : 400,
-                    color: 'inherit'
-                  }
-                }}
-              />
-            </Box>
-          </ListItem>
-        ))}
-      </List>
-
-      {/* Theme Toggle in Mobile */}
-      <Box sx={{ mt: 2, p: 2, border: 1, borderColor: 'divider', borderRadius: 1 }}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={theme === 'dark'}
-              onChange={toggleTheme}
-              icon={<Brightness7 />}
-              checkedIcon={<Brightness4 />}
-            />
-          }
-          label={theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
-          sx={{ color: 'text.primary' }}
-        />
-      </Box>
-
-      {/* Add Lead Button */}
-      <Button
-        variant="contained"
-        fullWidth
-        component={Link}
-        href="/leads"
-        sx={{
-          mt: 2,
-          textTransform: 'none',
-          bgcolor: 'primary.main',
-          '&:hover': {
-            bgcolor: 'primary.dark'
-          }
-        }}
-      >
-        Add Lead
-      </Button>
-    </Box>
-  );
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    handleClose();
+    router.push('/');
+    router.refresh();
+  };
 
   return (
-    <AppBar
-      position="static"
-      sx={{
-        backgroundColor: 'background.paper',
-        color: 'text.primary',
-        borderBottom: 1,
-        borderColor: 'divider',
-        boxShadow: 'none'
-      }}
-    >
+    <AppBar position="static" color="default" elevation={1}>
       <Container maxWidth="xl">
-        <Toolbar sx={{ px: { xs: 1, sm: 2, md: 0 }, py: 1 }}>
+        <Toolbar sx={{ px: { xs: 2, md: 0 } }}>
           {/* Logo/Brand */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
-            <Dashboard sx={{ color: 'primary.main' }} />
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 'bold',
-                color: 'text.primary',
-                display: { xs: 'none', sm: 'block' }
-              }}
-            >
-              AberCXO CRM
-            </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 'bold',
-                color: 'text.primary',
-                display: { xs: 'block', sm: 'none' }
-              }}
-            >
-              AberCXO
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Dashboard color="primary" />
+            <Typography variant="h6" fontWeight="bold" color="text.primary">
+              AberCRM
             </Typography>
           </Box>
 
-          {/* Desktop Navigation */}
-          {!isMobile && (
-            <>
-              <Box sx={{ display: 'flex', gap: 1, mx: 2 }}>
-                {navigationItems.map((item) => (
-                  <Button
-                    key={item.href}
-                    component={Link}
-                    href={item.href}
-                    startIcon={item.icon}
-                    sx={{
-                      textTransform: 'none',
-                      color: pathname === item.href ? 'primary.contrastText' : 'text.primary',
-                      backgroundColor: pathname === item.href ? 'primary.main' : 'transparent',
-                      fontWeight: pathname === item.href ? 600 : 400,
-                      '&:hover': {
-                        backgroundColor: pathname === item.href ? 'primary.dark' : 'action.hover',
-                        color: pathname === item.href ? 'primary.contrastText' : 'text.primary'
-                      }
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                ))}
-              </Box>
+          {/* Navigation Links */}
+          <Box sx={{ ml: 4, display: 'flex', gap: 1 }}>
+            <Button
+              component={Link}
+              href="/leads"
+              startIcon={<People />}
+              color={pathname.startsWith('/leads') ? 'primary' : 'inherit'}
+              sx={{ textTransform: 'none' }}
+            >
+              Leads
+            </Button>
+            <Button
+              component={Link}
+              href="/customers"
+              startIcon={<People />}
+              color={pathname.startsWith('/customers') ? 'primary' : 'inherit'}
+              sx={{ textTransform: 'none' }}
+            >
+              Customers
+            </Button>
+            <Button
+              component={Link}
+              href="/analytics"
+              startIcon={<Analytics />}
+              color={pathname.startsWith('/analytics') ? 'primary' : 'inherit'}
+              sx={{ textTransform: 'none' }}
+            >
+              Analytics
+            </Button>
+          </Box>
 
-              {/* Desktop Actions */}
-              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                {/* Theme Toggle */}
+          {/* User Menu */}
+          <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 2 }}>
+            {user ? (
+              <>
                 <IconButton
-                  onClick={toggleTheme}
-                  sx={{
-                    color: 'text.primary',
-                    '&:hover': {
-                      backgroundColor: 'action.hover'
-                    }
-                  }}
+                  onClick={handleMenu}
+                  size="small"
+                  sx={{ ml: 2 }}
+                  aria-haspopup="true"
                 >
-                  {theme === 'dark' ? <Brightness7 /> : <Brightness4 />}
+                  <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+                    {user.email?.charAt(0).toUpperCase()}
+                  </Avatar>
                 </IconButton>
-
-                <Button
-                  variant="contained"
-                  component={Link}
-                  href="/leads"
-                  sx={{
-                    textTransform: 'none',
-                    bgcolor: 'primary.main',
-                    '&:hover': {
-                      bgcolor: 'primary.dark'
-                    }
-                  }}
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleClose}
                 >
-                  Add Lead
-                </Button>
-              </Box>
-            </>
-          )}
-
-          {/* Mobile Menu Button */}
-          {isMobile && (
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              {/* Theme Toggle for Mobile */}
-              <IconButton
-                onClick={toggleTheme}
-                sx={{
-                  color: 'text.primary',
-                  '&:hover': {
-                    backgroundColor: 'action.hover'
-                  }
-                }}
+                  <MenuItem disabled>
+                    <AccountCircle sx={{ mr: 1 }} />
+                    {user.email}
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout}>
+                    <Logout sx={{ mr: 1 }} />
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </>
+            ) : (
+              <Button
+                component={Link}
+                href="/auth/login"
+                variant="outlined"
+                sx={{ textTransform: 'none' }}
               >
-                {theme === 'dark' ? <Brightness7 /> : <Brightness4 />}
-              </IconButton>
-
-              <IconButton
-                onClick={toggleDrawer(true)}
-                sx={{
-                  color: 'text.primary',
-                  '&:hover': {
-                    backgroundColor: 'action.hover'
-                  }
-                }}
-              >
-                <Menu />
-              </IconButton>
-            </Box>
-          )}
+                Login
+              </Button>
+            )}
+          </Box>
         </Toolbar>
       </Container>
-
-      {/* Mobile Drawer */}
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={toggleDrawer(false)}
-        sx={{
-          '& .MuiDrawer-paper': {
-            backgroundColor: 'background.paper',
-            color: 'text.primary',
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
     </AppBar>
   );
 }

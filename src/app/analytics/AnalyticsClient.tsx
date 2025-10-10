@@ -104,7 +104,7 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
   return (
     <Container maxWidth="xl" sx={{ py: 8 }}>
       <Typography variant="h3" component="h1" fontWeight="bold" gutterBottom>
-        Analytics Dashboard
+        AberCRM Analytics
       </Typography>
       <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
         Lead Performance & Insights

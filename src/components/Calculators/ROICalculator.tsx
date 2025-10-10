@@ -38,7 +38,6 @@ import { IndustryInfo } from './components/IndustryInfo';
 import { useROICalculations } from './hooks/useROICalculations';
 import { useFormSubmission } from './hooks/useFormSubmission';
 import SendIcon from '@mui/icons-material/Send';
-import Tooltip from '@mui/material/Tooltip';
 
 // Define valid MUI color names
 type MuiColor = 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';

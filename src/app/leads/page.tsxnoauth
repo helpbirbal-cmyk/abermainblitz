@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 import { LeadsClient } from './LeadsClient';
-import { requireAuth } from '@/lib/auth';
 
 // Server-side only - uses service role key
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -16,14 +15,10 @@ interface Lead {
   message: string;
   source: string;
   demoType: string;
-  status: string;
   created_at?: string;
 }
 
 export default async function LeadsPage() {
-  // This will redirect to login if not authenticated
-  await requireAuth();
-
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   const { data: leads, error } = await supabase
