@@ -23,7 +23,7 @@ interface Customer {
 export default async function CustomersPage() {
 
    // This will redirect to login if not authenticated
-   await requireAuth();
+  await requireAuth();
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 

@@ -39,7 +39,11 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
-  Radar
+  Radar,
+  ScatterChart,
+  Scatter,
+  ComposedChart,
+  ZAxis
 } from 'recharts';
 import {
   TrendingUp,
@@ -48,7 +52,10 @@ import {
   Schedule,
   Source,
   Analytics as AnalyticsIcon,
-  CalendarMonth
+  CalendarMonth,
+  Visibility,
+  TableChart,
+  Speed
 } from '@mui/icons-material';
 
 interface Lead {
@@ -114,10 +121,8 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
     const customers = filteredLeads.filter(lead => lead.status === 'Customer').length;
     const totalInteractions = interactions.length;
 
-    // Conversion rate
     const conversionRate = totalLeads > 0 ? (customers / totalLeads) * 100 : 0;
 
-    // Average lead value (estimated based on status)
     const getEstimatedValue = (status: string) => {
       switch (status) {
         case 'Customer': return 10;
@@ -131,8 +136,14 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
       ? filteredLeads.reduce((sum, lead) => sum + getEstimatedValue(lead.status), 0) / totalLeads
       : 0;
 
-    // Interaction rate
-    const interactionRate = totalLeads > 0 ? (totalInteractions / totalLeads) : 0;
+    // Additional detailed metrics
+    const highValueLeads = filteredLeads.filter(lead =>
+      ['Customer', 'Qualified'].includes(lead.status)
+    ).length;
+
+    const responseRate = totalLeads > 0 ?
+      (interactions.filter(i => i.interaction_type === 'Email' || i.interaction_type === 'Call').length / totalLeads) * 100
+      : 0;
 
     return {
       totalLeads,
@@ -141,7 +152,8 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
       totalInteractions,
       conversionRate: Math.round(conversionRate * 100) / 100,
       averageLeadValue: Math.round(averageLeadValue),
-      interactionRate: Math.round(interactionRate * 100) / 100
+      highValueLeads,
+      responseRate: Math.round(responseRate * 100) / 100
     };
   }, [filteredLeads, interactions]);
 
@@ -185,7 +197,7 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
     return Object.entries(interactionCount).map(([name, value]) => ({ name, value }));
   }, [interactions]);
 
-  // Enhanced monthly lead growth with trends
+  // Monthly lead growth
   const monthlyData = useMemo(() => {
     const monthlyCount = filteredLeads.reduce((acc, lead) => {
       const month = new Date(lead.created_at).toLocaleDateString('en-US', {
@@ -200,18 +212,17 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
       .map(([name, leads]) => ({
         name,
         leads,
-        // Estimated revenue based on lead count and average value
-        revenue: leads * metrics.averageLeadValue
+        revenue: leads * metrics.averageLeadValue,
+        target: Math.max(10, leads * 1.2) // Add target line for performance view
       }))
       .sort((a, b) => new Date(a.name).getTime() - new Date(b.name).getTime());
 
-    // Return last 6 months for better visibility
     return data.slice(-6);
   }, [filteredLeads, metrics.averageLeadValue]);
 
   // Weekly performance data
   const weeklyPerformance = useMemo(() => {
-    const weeklyData: { week: string; leads: number; interactions: number }[] = [];
+    const weeklyData: { week: string; leads: number; interactions: number; conversions: number }[] = [];
     const now = new Date();
 
     for (let i = 7; i >= 0; i--) {
@@ -229,19 +240,47 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
         return interactionDate.toDateString() === date.toDateString();
       }).length;
 
+      const dayConversions = filteredLeads.filter(lead => {
+        const leadDate = new Date(lead.created_at);
+        return leadDate.toDateString() === date.toDateString() && lead.status === 'Customer';
+      }).length;
+
       weeklyData.push({
         week: weekLabel,
         leads: dayLeads,
-        interactions: dayInteractions
+        interactions: dayInteractions,
+        conversions: dayConversions
       });
     }
 
     return weeklyData;
   }, [filteredLeads, interactions]);
 
-  // Source effectiveness (based on conversion potential)
+  // Detailed funnel data for detailed view
+  const funnelData = useMemo(() => {
+    const stages = [
+      { name: 'New Leads', value: metrics.newLeads },
+      { name: 'Contacted', value: Math.floor(metrics.newLeads * 0.7) }, // Estimated
+      { name: 'Qualified', value: Math.floor(metrics.newLeads * 0.4) }, // Estimated
+      { name: 'Proposal', value: Math.floor(metrics.newLeads * 0.2) }, // Estimated
+      { name: 'Customers', value: metrics.customers }
+    ];
+    return stages;
+  }, [metrics]);
+
+  // Performance metrics for performance view
+  const performanceMetrics = useMemo(() => {
+    return [
+      { metric: 'Conversion Rate', value: metrics.conversionRate, target: 15, unit: '%' },
+      { metric: 'Response Rate', value: metrics.responseRate, target: 60, unit: '%' },
+      { metric: 'Avg Lead Value', value: metrics.averageLeadValue, target: 2500, unit: '$' },
+      { metric: 'High Value Leads', value: metrics.highValueLeads, target: Math.floor(metrics.totalLeads * 0.3), unit: '' }
+    ];
+  }, [metrics]);
+
+  // Source effectiveness data - MOVED OUTSIDE CONDITIONAL RENDERING
   const sourceEffectiveness = useMemo(() => {
-    return sourceData.map(source => {
+    return sourceData.slice(0, 6).map(source => {
       // Estimate effectiveness based on source (you can customize this logic)
       const getSourceEfficiency = (sourceName: string) => {
         const efficiencyMap: Record<string, number> = {
@@ -264,18 +303,271 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
     });
   }, [sourceData]);
 
+  // Conditional rendering based on view mode
+  const renderOverviewView = () => (
+    <>
+      {/* Lead Status Distribution */}
+      <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Lead Status Distribution
+            </Typography>
+            <Box sx={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value} leads`, 'Count']} />
+                </PieChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Lead Sources */}
+      <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Lead Sources
+            </Typography>
+            <Box sx={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <BarChart data={sourceData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis type="category" dataKey="name" width={80} />
+                  <Tooltip formatter={(value) => [`${value} leads`, 'Count']} />
+                  <Bar dataKey="value" fill="#8884d8" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Weekly Performance */}
+      <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Weekly Performance
+            </Typography>
+            <Box sx={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <AreaChart data={weeklyPerformance}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="week" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="leads" stackId="1" stroke="#8884d8" fill="#8884d8" />
+                  <Area type="monotone" dataKey="interactions" stackId="2" stroke="#82ca9d" fill="#82ca9d" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+    </>
+  );
+
+  const renderDetailedView = () => (
+    <>
+      {/* Sales Funnel */}
+      <Grid size={{ xs: 12, md: 6 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Sales Funnel
+            </Typography>
+            <Box sx={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <BarChart data={funnelData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis type="category" dataKey="name" />
+                  <Tooltip formatter={(value) => [`${value} leads`, 'Count']} />
+                  <Bar dataKey="value" fill="#8884d8" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Interaction Types Detailed */}
+      <Grid size={{ xs: 12, md: 6 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Interaction Analysis
+            </Typography>
+            <Box sx={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <ComposedChart data={interactionData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#FF8042" />
+                  <Line type="monotone" dataKey="value" stroke="#ff7300" />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Timeline Distribution */}
+      <Grid size={{ xs: 12, md: 6 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Timeline Distribution
+            </Typography>
+            <Box sx={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <BarChart data={timelineData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => [`${value} leads`, 'Count']} />
+                  <Bar dataKey="value" fill="#00C49F" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Source Effectiveness - NOW USING THE PROPERLY DEFINED sourceEffectiveness */}
+      <Grid size={{ xs: 12, md: 6 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Source Effectiveness
+            </Typography>
+            <Box sx={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <RadarChart data={sourceEffectiveness}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="subject" />
+                  <PolarRadiusAxis />
+                  <Radar name="Efficiency" dataKey="efficiency" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                  <Tooltip formatter={(value) => [`${Math.round(Number(value))}%`, 'Efficiency']} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+    </>
+  );
+
+  const renderPerformanceView = () => (
+    <>
+      {/* Performance vs Targets */}
+      <Grid size={{ xs: 12, md: 8 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Performance vs Targets
+            </Typography>
+            <Box sx={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <BarChart data={performanceMetrics}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="metric" />
+                  <YAxis />
+                  <Tooltip formatter={(value, name) => [
+                    typeof value === 'number' ? `${value}${name === 'value' ? performanceMetrics.find(m => m.metric === name)?.unit || '' : ''}` : value,
+                    name === 'value' ? 'Actual' : 'Target'
+                  ]} />
+                  <Bar dataKey="value" fill="#8884d8" name="value" />
+                  <Bar dataKey="target" fill="#82ca9d" name="target" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Monthly Growth with Targets */}
+      <Grid size={{ xs: 12, md: 4 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Monthly Growth vs Target
+            </Typography>
+            <Box sx={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <LineChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="leads" stroke="#8884d8" strokeWidth={2} name="Actual" />
+                  <Line type="monotone" dataKey="target" stroke="#82ca9d" strokeDasharray="5 5" name="Target" />
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Conversion Metrics */}
+      <Grid size={{ xs: 12 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Conversion Metrics
+            </Typography>
+            <Box sx={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
+                <ScatterChart data={weeklyPerformance}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="leads" name="Leads" unit="" />
+                  <YAxis dataKey="conversions" name="Conversions" unit="" />
+                  <ZAxis range={[100, 100]} />
+                  <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                  <Scatter name="Weekly Performance" data={weeklyPerformance} fill="#8884d8" />
+                </ScatterChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+    </>
+  );
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <AnalyticsIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
           <Box>
             <Typography variant="h3" component="h1" fontWeight="bold">
               Analytics
             </Typography>
             <Typography variant="h6" color="text.secondary">
-              Lead & Business Insights
+              {chartView === 'overview' && 'High-Level Business Insights'}
+              {chartView === 'detailed' && 'Detailed Analysis & Funnel Metrics'}
+              {chartView === 'performance' && 'Performance Tracking & Goals'}
             </Typography>
           </Box>
         </Box>
@@ -297,16 +589,25 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
             exclusive
             onChange={handleChartViewChange}
             size="small"
+            color="primary"
           >
-            <ToggleButton value="overview">Overview</ToggleButton>
-            <ToggleButton value="detailed">Detailed</ToggleButton>
-            <ToggleButton value="performance">Performance</ToggleButton>
+            <ToggleButton value="overview">
+              <Visibility sx={{ mr: 1 }} />
+              Overview
+            </ToggleButton>
+            <ToggleButton value="detailed">
+              <TableChart sx={{ mr: 1 }} />
+              Detailed
+            </ToggleButton>
+            <ToggleButton value="performance">
+              <Speed sx={{ mr: 1 }} />
+              Performance
+            </ToggleButton>
           </ToggleButtonGroup>
 
           <Typography
             variant="body2"
             sx={{
-              ml: 2,
               p: 1,
               backgroundColor: metrics.conversionRate > 10 ? 'success.light' : 'warning.light',
               color: 'white',
@@ -318,7 +619,7 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
         </Box>
       </Box>
 
-      {/* Key Metrics Grid */}
+      {/* Key Metrics Grid - Always visible */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 6, md: 2.4 }}>
           <Card sx={{ background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`, color: 'white' }}>
@@ -381,206 +682,21 @@ export function AnalyticsClient({ leads, interactions }: AnalyticsClientProps) {
             <CardContent>
               <AnalyticsIcon sx={{ mb: 1 }} />
               <Typography variant="h4" fontWeight="bold">
-                {metrics.averageLeadValue} X
+                {metrics.averageLeadValue}
               </Typography>
               <Typography variant="body2">
-                Avg Lead Value
+                Avg Lead Factor
               </Typography>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
+      {/* Dynamic Chart Content Based on View */}
       <Grid container spacing={3}>
-        {/* Lead Status Distribution */}
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                <People sx={{ mr: 1, fontSize: 20 }} />
-                Lead Status Distribution
-              </Typography>
-              <Box sx={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
-                  <PieChart>
-                    <Pie
-                      data={statusData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => [`${value} leads`, 'Count']} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Lead Sources Performance */}
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                <Source sx={{ mr: 1, fontSize: 20 }} />
-                Lead Sources Performance
-              </Typography>
-              <Box sx={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
-                  <BarChart data={sourceData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis type="category" dataKey="name" width={80} />
-                    <Tooltip formatter={(value) => [`${value} leads`, 'Count']} />
-                    <Bar dataKey="value" fill="#8884d8" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Weekly Performance */}
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                <CalendarMonth sx={{ mr: 1, fontSize: 20 }} />
-                Weekly Performance
-              </Typography>
-              <Box sx={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
-                  <AreaChart data={weeklyPerformance}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="week" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="leads" stackId="1" stroke="#8884d8" fill="#8884d8" />
-                    <Area type="monotone" dataKey="interactions" stackId="2" stroke="#82ca9d" fill="#82ca9d" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Monthly Lead Growth */}
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Monthly Lead Growth & Revenue Trend
-              </Typography>
-              <Box sx={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
-                  <LineChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis yAxisId="left" />
-                    <YAxis yAxisId="right" orientation="right" />
-                    <Tooltip
-                      formatter={(value, name) => [
-                        name === 'leads' ? `${value} leads` : `$${value}`,
-                        name === 'leads' ? 'Leads' : 'Revenue'
-                      ]}
-                    />
-                    <Legend />
-                    <Line
-                      yAxisId="left"
-                      type="monotone"
-                      dataKey="leads"
-                      stroke="#8884d8"
-                      strokeWidth={3}
-                      activeDot={{ r: 8 }}
-                    />
-                    <Line
-                      yAxisId="right"
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke="#82ca9d"
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Source Effectiveness Radar */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Source Effectiveness
-              </Typography>
-              <Box sx={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
-                  <RadarChart data={sourceEffectiveness}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="subject" />
-                    <PolarRadiusAxis />
-                    <Radar name="Efficiency" dataKey="efficiency" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                    <Tooltip formatter={(value) => [`${Math.round(Number(value))}%`, 'Efficiency']} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Timeline Distribution */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Timeline Distribution
-              </Typography>
-              <Box sx={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
-                  <BarChart data={timelineData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [`${value} leads`, 'Count']} />
-                    <Bar dataKey="value" fill="#00C49F" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Interaction Types */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Interaction Types
-              </Typography>
-              <Box sx={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
-                  <BarChart data={interactionData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [`${value} interactions`, 'Count']} />
-                    <Bar dataKey="value" fill="#FF8042" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+        {chartView === 'overview' && renderOverviewView()}
+        {chartView === 'detailed' && renderDetailedView()}
+        {chartView === 'performance' && renderPerformanceView()}
       </Grid>
     </Container>
   );
