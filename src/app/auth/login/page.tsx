@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   Box,
   Card,
@@ -22,8 +22,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirectTo') || '/leads';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +41,7 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        router.push(redirectTo);
+        router.push('/leads');
         router.refresh();
       }
     } catch (err: any) {
@@ -67,10 +65,10 @@ export default function LoginPage() {
           <CardContent>
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <Typography component="h1" variant="h4" gutterBottom>
-                leadCRM Login
+                CRM Login
               </Typography>
               <Typography color="text.secondary">
-                Sign in to access the AberCXO's system
+                Sign in to access the lead management system
               </Typography>
             </Box>
 

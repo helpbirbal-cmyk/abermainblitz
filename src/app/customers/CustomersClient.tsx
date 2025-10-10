@@ -27,10 +27,11 @@ import {
   FilterList as FilterListIcon,
   Email as EmailIcon,
   Business as BusinessIcon,
-  Description as DescriptionIcon,
+  Phone as PhoneIcon,
   Visibility as VisibilityIcon,
   CalendarToday as CalendarTodayIcon,
-  Add as AddIcon
+  Add as AddIcon,
+  Group as GroupIcon
 } from '@mui/icons-material';
 
 interface Customer {
@@ -55,7 +56,7 @@ export function CustomersClient({ customers }: CustomersClientProps) {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [timelineFilter, setTimelineFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
 
   // Filter customers based on search and filters
   const filteredCustomers = useMemo(() => {
@@ -64,40 +65,43 @@ export function CustomersClient({ customers }: CustomersClientProps) {
         customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.projectType?.toLowerCase().includes(searchTerm.toLowerCase());
+        customer.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.phone?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus = statusFilter === 'all' || customer.status === statusFilter;
-      const matchesTimeline = timelineFilter === 'all' || customer.timeline === timelineFilter;
+      const matchesType = typeFilter === 'all' || customer.customer_type === typeFilter;
 
-      return matchesSearch && matchesStatus && matchesTimeline;
+      return matchesSearch && matchesStatus && matchesType;
     });
-  }, [customers, searchTerm, statusFilter, timelineFilter]);
+  }, [customers, searchTerm, statusFilter, typeFilter]);
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'New': return 'default';
-      case 'Contacted': return 'primary';
-      case 'Qualified': return 'secondary';
-      case 'Customer': return 'success';
+    switch (status?.toLowerCase()) {
+      case 'active': return 'success';
+      case 'inactive': return 'error';
+      case 'prospect': return 'warning';
+      case 'lead': return 'info';
       default: return 'default';
     }
   };
 
-  const getTimelineColor = (timeline: string) => {
-    switch (timeline?.toLowerCase()) {
-      case 'urgent': return 'error';
-      case 'soon': return 'warning';
-      case 'flexible': return 'success';
+  const getCustomerTypeColor = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case 'enterprise': return 'primary';
+      case 'sme': return 'secondary';
+      case 'startup': return 'success';
+      case 'individual': return 'warning';
       default: return 'default';
     }
   };
 
-  const getProjectTypeColor = (projectType: string) => {
-    switch (projectType?.toLowerCase()) {
-      case 'web development': return 'primary';
-      case 'mobile app': return 'secondary';
-      case 'e-commerce': return 'success';
-      case 'consulting': return 'info';
+  const getIndustryColor = (industry: string) => {
+    switch (industry?.toLowerCase()) {
+      case 'technology': return 'primary';
+      case 'healthcare': return 'secondary';
+      case 'finance': return 'success';
+      case 'retail': return 'warning';
+      case 'manufacturing': return 'info';
       default: return 'default';
     }
   };
@@ -133,7 +137,7 @@ export function CustomersClient({ customers }: CustomersClientProps) {
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               fullWidth
-              placeholder="Search by name, email, company, project..."
+              placeholder="Search by name, email, company, industry, phone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
@@ -165,26 +169,27 @@ export function CustomersClient({ customers }: CustomersClientProps) {
                 }
               >
                 <MenuItem value="all">All Statuses</MenuItem>
-                <MenuItem value="New">New</MenuItem>
-                <MenuItem value="Contacted">Contacted</MenuItem>
-                <MenuItem value="Qualified">Qualified</MenuItem>
-                <MenuItem value="Customer">Customer</MenuItem>
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="inactive">Inactive</MenuItem>
+                <MenuItem value="prospect">Prospect</MenuItem>
+                <MenuItem value="lead">Lead</MenuItem>
               </Select>
             </FormControl>
           </Grid>
 
           <Grid size={{ xs: 12, md: 4 }}>
             <FormControl fullWidth>
-              <InputLabel>Timeline</InputLabel>
+              <InputLabel>Customer Type</InputLabel>
               <Select
-                value={timelineFilter}
-                label="Timeline"
-                onChange={(e) => setTimelineFilter(e.target.value)}
+                value={typeFilter}
+                label="Customer Type"
+                onChange={(e) => setTypeFilter(e.target.value)}
               >
-                <MenuItem value="all">All Timelines</MenuItem>
-                <MenuItem value="urgent">Urgent</MenuItem>
-                <MenuItem value="soon">Soon</MenuItem>
-                <MenuItem value="flexible">Flexible</MenuItem>
+                <MenuItem value="all">All Types</MenuItem>
+                <MenuItem value="enterprise">Enterprise</MenuItem>
+                <MenuItem value="sme">SME</MenuItem>
+                <MenuItem value="startup">Startup</MenuItem>
+                <MenuItem value="individual">Individual</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -249,13 +254,13 @@ export function CustomersClient({ customers }: CustomersClientProps) {
                   </Box>
                   <Stack spacing={0.5} alignItems="flex-end">
                     <Chip
-                      label={customer.status || 'New'}
+                      label={customer.status || 'Active'}
                       color={getStatusColor(customer.status)}
                       size="small"
                     />
                     <Chip
-                      label={customer.timeline || 'No timeline'}
-                      color={getTimelineColor(customer.timeline)}
+                      label={customer.customer_type || 'SME'}
+                      color={getCustomerTypeColor(customer.customer_type)}
                       size="small"
                       variant="outlined"
                     />
@@ -264,75 +269,59 @@ export function CustomersClient({ customers }: CustomersClientProps) {
 
                 {/* Contact Info */}
                 <Stack spacing={1.5} mb={2}>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <EmailIcon fontSize="small" color="action" />
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      noWrap
-                      sx={{ flex: 1 }}
-                    >
-                      {customer.email}
-                    </Typography>
-                  </Box>
+                  {customer.email && (
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <EmailIcon fontSize="small" color="action" />
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        noWrap
+                        sx={{ flex: 1 }}
+                      >
+                        {customer.email}
+                      </Typography>
+                    </Box>
+                  )}
 
-                  {customer.projectType && (
+                  {customer.phone && (
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <PhoneIcon fontSize="small" color="action" />
+                      <Typography variant="body2" color="text.secondary">
+                        {customer.phone}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {customer.industry && (
                     <Box display="flex" alignItems="center" gap={1}>
                       <BusinessIcon fontSize="small" color="action" />
                       <Typography variant="body2" color="text.secondary">
-                        {customer.projectType}
+                        {customer.industry}
                       </Typography>
                     </Box>
                   )}
                 </Stack>
 
-                {/* Project Details */}
+                {/* Customer Details */}
                 <Box mb={2}>
-                  <Chip
-                    label={customer.projectType || 'No project type'}
-                    color={getProjectTypeColor(customer.projectType)}
-                    variant="outlined"
-                    sx={{ mb: 1 }}
-                  />
+                  {customer.industry && (
+                    <Chip
+                      label={customer.industry}
+                      color={getIndustryColor(customer.industry)}
+                      variant="outlined"
+                      sx={{ mb: 1 }}
+                    />
+                  )}
 
-                  {customer.source && (
+                  {customer.contacts_count !== undefined && (
                     <Box display="flex" alignItems="center" gap={1} mt={1}>
+                      <GroupIcon fontSize="small" color="action" />
                       <Typography variant="body2" color="text.secondary">
-                        Source: {customer.source}
+                        {customer.contacts_count} contact{customer.contacts_count !== 1 ? 's' : ''}
                       </Typography>
                     </Box>
                   )}
                 </Box>
-
-                {/* Message Preview */}
-                {customer.message && (
-                  <Paper
-                    sx={{
-                      p: 2,
-                      bgcolor: 'action.hover',
-                      mb: 2,
-                      flexGrow: 1,
-                      display: 'flex',
-                      flexDirection: 'column'
-                    }}
-                  >
-                    <Box display="flex" alignItems="flex-start" gap={1}>
-                      <DescriptionIcon fontSize="small" color="action" sx={{ mt: 0.25 }} />
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden'
-                        }}
-                      >
-                        {customer.message}
-                      </Typography>
-                    </Box>
-                  </Paper>
-                )}
 
                 {/* Footer with Date and Action */}
                 <Box
@@ -353,22 +342,22 @@ export function CustomersClient({ customers }: CustomersClientProps) {
                     </Typography>
                   </Box>
                   <Button
-      variant="outlined"
-      size="small"
-      startIcon={<VisibilityIcon />}
-      href={`/customers/${customer.id}`}  // This should now work
-      sx={{
-        textTransform: 'none',
-        borderColor: 'primary.main',
-        color: 'primary.main',
-        '&:hover': {
-          backgroundColor: 'primary.main',
-          color: 'primary.contrastText'
-        }
-      }}
-    >
-      View Details
-    </Button>
+                    variant="outlined"
+                    size="small"
+                    startIcon={<VisibilityIcon />}
+                    href={`/customers/${customer.id}`}
+                    sx={{
+                      textTransform: 'none',
+                      borderColor: 'primary.main',
+                      color: 'primary.main',
+                      '&:hover': {
+                        backgroundColor: 'primary.main',
+                        color: 'primary.contrastText'
+                      }
+                    }}
+                  >
+                    View Details
+                  </Button>
                 </Box>
               </CardContent>
             </Card>
@@ -390,7 +379,7 @@ export function CustomersClient({ customers }: CustomersClientProps) {
             No customers found
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {searchTerm || statusFilter !== 'all' || timelineFilter !== 'all'
+            {searchTerm || statusFilter !== 'all' || typeFilter !== 'all'
               ? 'Try adjusting your search or filters'
               : 'Customers will appear here.'}
           </Typography>
