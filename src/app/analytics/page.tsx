@@ -3,29 +3,31 @@ import { createClient } from '@supabase/supabase-js';
 import { AnalyticsClient } from './AnalyticsClient';
 import { requireAuth } from '@/lib/auth';
 
-
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!;
 
 export default async function AnalyticsPage() {
-
   // This will redirect to login if not authenticated
-   await requireAuth();
-
+  await requireAuth();
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   // Get leads data for analytics
   const { data: leads } = await supabase
     .from('lead_assessment_reports')
-    .select('status, timeline, source, created_at');
+    .select('status, timeline, source, created_at')
+    .order('created_at', { ascending: false });
 
   // Get interactions data
   const { data: interactions } = await supabase
     .from('lead_interactions')
     .select('interaction_type, interaction_date')
     .order('interaction_date', { ascending: false })
-    .limit(100);
+    .limit(500);
+
+    //console.log('Fetched leads:', leads);
+    //console.log('Fetched Interactions:', interactions);
+
 
   return <AnalyticsClient leads={leads || []} interactions={interactions || []} />;
 }

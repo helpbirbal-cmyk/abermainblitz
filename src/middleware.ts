@@ -32,13 +32,12 @@ export async function middleware(request: NextRequest) {
 
   // Define protected routes
   const isCRMRoute = request.nextUrl.pathname.startsWith('/leads') ||
-                     request.nextUrl.pathname.startsWith('/analytics')
+                     request.nextUrl.pathname.startsWith('/analytics') ||
+                     request.nextUrl.pathname.startsWith('/customers')
 
   // Redirect to login if accessing CRM without session
   if (isCRMRoute && !session) {
-    const redirectUrl = new URL('/auth/login', request.url)
-    redirectUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
+    return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
   // Redirect to CRM if accessing login with session

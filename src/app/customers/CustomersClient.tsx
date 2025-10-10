@@ -117,7 +117,7 @@ export function CustomersClient({ customers }: CustomersClientProps) {
           gutterBottom
           color="text.primary"
         >
-          AberCRM Customers
+          Customers
         </Typography>
         <Typography variant="h6" color="text.secondary">
           Total {customers.length} customers • Showing {filteredCustomers.length}
@@ -201,6 +201,7 @@ export function CustomersClient({ customers }: CustomersClientProps) {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
+          href={'/customers/new'}
           sx={{
             textTransform: 'none',
             borderRadius: 2
