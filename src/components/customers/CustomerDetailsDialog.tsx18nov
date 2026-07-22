@@ -1,0 +1,265 @@
+//  src/components/customers/CustomerDetailsDialog.tsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, Typography, Chip, Divider, LinearProgress,
+  Box, Tabs, Tab, TextField, Card, CardHeader, CardContent,
+  Select, MenuItem
+} from '@mui/material';
+import {
+  Business as BusinessIcon,
+  Timeline as TimelineIcon,
+  History as HistoryIcon,
+  AssignmentInd as AssignmentIcon
+} from '@mui/icons-material';
+import Grid from '@mui/material/Grid';
+import type { Customer, TeamMember } from '@/types';
+import { CustomerOpportunitiesPanel } from './CustomerOpportunitiesPanel';
+import { LeadBriefPanel } from '@/components/leads/LeadBriefPanel';
+import { fetchBrief } from '@/lib/fetchBrief';
+import type { Brief, OrganizationMember } from '@/types';
+import { createClient } from '@/lib/supabase/client';
+
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  customer: Customer | null;
+  onAssign: (customerId: string, userId: string) => Promise<void>;
+  onRefreshCustomers?: () => void;
+  orgMembers: OrganizationMember[]; // ✅ add this
+};
+
+export function CustomerDetailsDialog({ open, onClose, customer, orgMembers=[], onAssign }: Props) {
+  const [tab, setTab] = useState(0);
+  const [localCustomer, setLocalCustomer] = useState<Customer | null>(customer);
+  const [brief, setBrief] = useState<Brief | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState(customer?.assigned_to || '');
+
+  useEffect(() => {
+    setLocalCustomer(customer);
+    setSelectedUser(customer?.assigned_to || '');
+    if (open && customer) {
+      loadBrief();
+    } else {
+      setBrief(null);
+      setUpdatedAt(null);
+      setError(null);
+      setLoading(false);
+    }
+  }, [open, customer?.id]);
+
+  const loadBrief = async (force = false) => {
+    if (!customer) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { brief, updated_at } = await fetchBrief(customer.id, force);
+      setBrief(brief);
+      setUpdatedAt(updated_at ?? null);
+    } catch (err: any) {
+      setError(err?.message ?? 'Failed to load brief');
+      setBrief(null);
+      setUpdatedAt(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formattedDate = (d?: string) => (d ? new Date(d).toLocaleString() : 'Unknown');
+
+  const [interactions, setInteractions] = useState<any[]>([]);
+
+useEffect(() => {
+  setLocalCustomer(customer);
+  setSelectedUser(customer?.assigned_to || '');
+  if (open && customer) {
+    loadBrief();
+    loadInteractions();   // ✅ fetch interactions too
+  } else {
+    setBrief(null);
+    setUpdatedAt(null);
+    setError(null);
+    setLoading(false);
+    setInteractions([]);
+  }
+}, [open, customer?.id]);
+
+const loadInteractions = async () => {
+  if (!customer) return;
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('interactions_with_creator')   // or your view/table
+    .select('*')
+    .eq('customer_id', customer.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching interactions:', error);
+    setInteractions([]);
+    return;
+  }
+  setInteractions(data || []);
+};
+
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle sx={{ pb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">Customer details</Typography>
+          <Chip label={customer?.status ?? 'Unknown'} color="primary" variant="outlined" />
+        </Box>
+      </DialogTitle>
+
+      <DialogContent>
+        <Tabs value={tab} onChange={(_, val) => setTab(val)} sx={{ mb: 2 }}>
+          <Tab label="Details" />
+          <Tab label="Opportunities" />
+          <Tab label="Brief" />
+        </Tabs>
+
+        {/* DETAILS TAB */}
+        {tab === 0 && localCustomer && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Basic Info */}
+            <Card sx={{ borderRadius: 2 }}>
+              <CardHeader avatar={<BusinessIcon />} title="Basic information" />
+              <Divider />
+              <CardContent>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs:12, sm:6 }}>
+                    <TextField label="Name" fullWidth size="small" value={localCustomer.name || ''} />
+                  </Grid>
+                  <Grid size={{ xs:12, sm:6 }}>
+                    <TextField label="Company" fullWidth size="small" value={localCustomer.company || ''} />
+                  </Grid>
+                  <Grid size={{ xs:12, sm:6 }}>
+                    <TextField label="Email" fullWidth size="small" value={localCustomer.email || ''} />
+                  </Grid>
+                  <Grid size={{ xs:12, sm:6 }}>
+                    <TextField label="Phone" fullWidth size="small" value={localCustomer.phone || ''} />
+                  </Grid>
+                  <Grid size={{ xs:12, sm:6 }}>
+                    <TextField label="Industry" fullWidth size="small" value={localCustomer.industry || ''} />
+                  </Grid>
+                  <Grid size={{ xs:12, sm:6 }}>
+                    <TextField label="Type" fullWidth size="small" value={localCustomer.customer_type || ''} />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+
+            {/* Assignment */}
+            <Card sx={{ borderRadius: 2 }}>
+              <CardHeader avatar={<AssignmentIcon />} title="Assignment" />
+              <Divider />
+              <CardContent>
+                <Select
+                  fullWidth
+                  value={selectedUser}
+                  onChange={(e) => setSelectedUser(e.target.value)}
+                >
+                  {orgMembers.map((tm) => (
+                    <MenuItem key={tm.user_id} value={tm.user_id}>
+                      {tm.users?.user_metadata?.full_name || tm.user_id}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      if (customer && selectedUser) {
+                        onAssign(customer.id, selectedUser);
+                      }
+                    }}
+                  >
+                    Save Assignment
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+
+            {/* Timeline */}
+            <Card sx={{ borderRadius: 2 }}>
+              <CardHeader avatar={<TimelineIcon />} title="Timeline" />
+              <Divider />
+              <CardContent>
+                <Typography variant="body2">  Created: {formattedDate(customer?.created_at ?? undefined)} </Typography>
+                <Typography variant="body2">  Updated: {formattedDate(customer?.updated_at ?? undefined)} </Typography>
+              </CardContent>
+            </Card>
+
+            {/* Interactions */}
+            <Card sx={{ borderRadius: 2 }}>
+      <CardHeader avatar={<HistoryIcon />} title="Interactions" />
+      <Divider />
+      <CardContent>
+        {interactions.length > 0 ? (
+          interactions.map((i) => (
+            <Box key={i.id} sx={{ mb: 1 }}>
+              <Typography variant="body2">
+                {i.type} — {new Date(i.created_at).toLocaleString()}
+              </Typography>
+              {i.summary && (
+                <Typography variant="caption" color="text.secondary">
+                  {i.summary}
+                </Typography>
+              )}
+            </Box>
+          ))
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No interactions logged yet.
+          </Typography>
+        )}
+      </CardContent>
+    </Card>
+
+          </Box>
+        )}
+
+        {/* OPPORTUNITIES TAB */}
+    {tab === 1 && customer && (
+      <CustomerOpportunitiesPanel
+        customerId={customer.id}
+        onReloadRef={(reloadFn) => {
+          // optional: keep a reference if you want to trigger reload from parent
+        }}
+      />
+    )}
+
+
+        {/* BRIEF TAB */}
+        {tab === 2 && (
+          <Box>
+            {loading && <LinearProgress sx={{ mb: 2 }} />}
+            <LeadBriefPanel
+              brief={brief}
+              updatedAt={updatedAt}
+              error={error}
+              loading={loading}
+              onRetry={() => loadBrief(true)}
+            />
+            {error && (
+              <Box sx={{ mt: 2 }}>
+                <Button variant="outlined" onClick={() => loadBrief(true)}>
+                  Retry brief
+                </Button>
+              </Box>
+            )}
+          </Box>
+        )}
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}

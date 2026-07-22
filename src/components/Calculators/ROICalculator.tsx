@@ -59,7 +59,7 @@ function CustomKnob({ value, onChange, min, max, step = 1, label, color = 'prima
   const isDarkMode = theme.palette.mode === 'dark';
 
   const knobSize = size === 'small' ? 60 : 80;
-  const fontSize = size === 'small' ? '1rem' : '1.25rem';
+  const fontSize = size === 'small' ? '0.75rem' : '1rem';
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onChange(Number(event.target.value));
@@ -131,7 +131,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
     weeklyTestingHours: 40,
     monthlyTestCycles: 20,
     devicesUsed: 10,
-    testerSalary: 75000,
+    testerSalary: 500000,
     releaseFrequency: 4,
     industry: 'general',
   });
@@ -195,22 +195,22 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
 
     const formatCurrency = (amount: number) => {
       if (!amount && amount !== 0) return '$0';
-      if (amount >= 1000000) {
-        return `$${(amount / 1000000).toFixed(1)}M`;
-      } else if (amount >= 1000) {
-        return `$${(amount / 1000).toFixed(0)}K`;
+      if (amount >= 10000000) {
+        return `₹${(amount / 10000000).toFixed(1)}Cr`;
+      } else if (amount >= 100000) {
+        return `₹${(amount / 100000).toFixed(0)} Lac`;
       }
-      return `$${amount}`;
+      return `₹${amount}`;
     };
 
     try {
       return [
         {
-          label: "Annual Savings",
+          label: "Savings",
           value: formatCurrency(results.totalAnnualSavings),
           change: results.totalAnnualSavings / (inputs.testerSalary * inputs.manualTesters) * 100,
           isPositive: true,
-          description: "Total estimated annual cost savings"
+          description: "Est annual cost savings"
         },
         {
           label: "Manual Effort Reduction",
@@ -256,13 +256,14 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
 
   const impactMetrics = formatImpactMetrics();
 
+
   const formatCurrency = (amount: number): string => {
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`;
+    if (amount >= 10000000) {
+      return `₹${(amount / 10000000).toFixed(1)}Cr`;
+    } else if (amount >= 100000) {
+      return `₹${(amount / 100000).toFixed(0)}Lac`;
     }
-    return `$${amount}`;
+    return `₹${amount}`;
   };
 
   return (
@@ -343,7 +344,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
               onChange={(value) => handleInputChange('testerSalary', value)}
               min={currentBenchmark.typicalSalary[0]}
               max={currentBenchmark.typicalSalary[1]}
-              step={5000}
+              step={50000}
               label="Salary"
               color="warning"
               size="small"
@@ -430,7 +431,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 6 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%'  }}>
                       <Gauge
                         value={results.reductionManualEffort}
                         label="Effort Reduction"
@@ -600,7 +601,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
                   endIcon={<SendIcon />}
                   sx={{ borderRadius: 1, fontWeight: 'bold' }}
                 >
-                  Email Me This
+                  Email  This
                 </Button>
                 <Button
                   variant="outlined"
@@ -609,7 +610,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
                   endIcon={<SendIcon />}
                   sx={{ borderRadius: 1, fontWeight: 'bold' }}
                 >
-                  Request Demo
+                  Ask Demo
                 </Button>
               </Box>
 

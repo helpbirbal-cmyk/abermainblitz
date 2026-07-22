@@ -1,0 +1,252 @@
+'use client';
+
+import {
+  Box,
+  Typography,
+  Checkbox,
+  Chip,
+  IconButton,
+  Avatar,
+  Stack,
+  Tooltip,
+  LinearProgress,
+  useTheme,
+  alpha
+} from '@mui/material';
+import {
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  CheckCircle as CheckIcon,
+  Assignment as AssignmentIcon,
+  Business as BusinessIcon,
+  MoreVert as MoreIcon
+} from '@mui/icons-material';
+import type { LeadData } from '@/types';
+
+interface LeadCardProps {
+  lead: LeadData;
+  isSelected: boolean;
+  isActive?: boolean;
+  onSelect: (leadId: string) => void;
+  onDragStart: () => void;
+  onDragEnd: () => void;
+  onTouchStart: (e: React.TouchEvent) => void;
+  onTouchEnd: (e: React.TouchEvent) => void;
+  onClick: () => void;
+  onInteractionClick?: () => void;
+  onDetailsClick?: () => void;
+  onConvertClick?: () => void;
+  onAssignClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+export const LeadCard = ({
+  lead,
+  isSelected,
+  isActive,
+  onSelect,
+  onDragStart,
+  onDragEnd,
+  onTouchStart,
+  onTouchEnd,
+  onClick,
+  onInteractionClick,
+  onDetailsClick,
+  onConvertClick,
+  onAssignClick
+}: LeadCardProps) => {
+  const theme = useTheme();
+  const leadType = lead.lead_type || 'assessment';
+
+  return (
+    <Box
+      draggable={!lead.converted_to_customer_id}
+      onDragStart={(e) => {
+        e.dataTransfer.setData('text/plain', lead.id);
+        onDragStart();
+      }}
+      onDragEnd={onDragEnd}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      onClick={onClick}
+      sx={{
+        p: 2,
+        borderRadius: 1,
+        bgcolor: 'background.paper',
+        border: '1px solid',
+        borderColor: lead.converted_to_customer_id ? theme.palette.success.main :
+                    isSelected ? theme.palette.primary.main :
+                    isActive ? theme.palette.success.main :
+                    theme.palette.divider,
+        backgroundColor: lead.converted_to_customer_id ?
+                       alpha(theme.palette.success.main, 0.05) :
+                       isActive ?
+                       (theme.palette.mode === 'dark' ? alpha(theme.palette.success.dark, 0.2) : alpha(theme.palette.success.main, 0.1)) :
+                       'background.paper',
+        position: 'relative',
+        transition: 'all 0.2s ease',
+        '&:hover': {
+          boxShadow: theme.shadows[2],
+          transform: lead.converted_to_customer_id ? 'none' : 'translateY(-1px)'
+        },
+      }}
+    >
+      {/* Header Section */}
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        mb: 1
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, flex: 1 }}>
+          <Checkbox
+            size="small"
+            checked={isSelected}
+            onChange={() => onSelect(lead.id)}
+            sx={{ mt: 0.25 }}
+            disabled={!!lead.converted_to_customer_id}
+          />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              variant="subtitle2"
+              fontWeight="600"
+              noWrap
+              sx={{
+                textDecoration: lead.converted_to_customer_id ? 'line-through' : 'none',
+                color: lead.converted_to_customer_id ? 'text.secondary' : 'text.primary'
+              }}
+            >
+              {lead.name || 'Unnamed Lead'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" noWrap>
+              {lead.company || 'No company'}
+              {lead.converted_to_customer_id && ' ✓'}
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Chip
+            label={leadType === 'calculator' ? 'Calc' : 'Assess'}
+            size="small"
+            color={leadType === 'calculator' ? 'secondary' : 'primary'}
+            sx={{
+              height: 20,
+              fontSize: '0.7rem',
+              opacity: lead.converted_to_customer_id ? 0.6 : 1
+            }}
+          />
+          {onAssignClick && (
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAssignClick(e);
+              }}
+              disabled={!!lead.converted_to_customer_id}
+            >
+              <MoreIcon fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
+      </Box>
+
+      {/* Contact Info */}
+      <Stack spacing={0.5} sx={{ mb: 1 }}>
+        {lead.email && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <EmailIcon sx={{ fontSize: 16 }} color="action" />
+            <Typography variant="caption" noWrap sx={{ flex: 1 }}>
+              {lead.email}
+            </Typography>
+          </Box>
+        )}
+        {lead.phone && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <PhoneIcon sx={{ fontSize: 16 }} color="action" />
+            <Typography variant="caption">{lead.phone}</Typography>
+          </Box>
+        )}
+      </Stack>
+
+      {/* Lead Score */}
+      <Box sx={{ mb: 1 }}>
+        <Tooltip title={`Lead Score: ${lead.lead_score}/100`}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <LinearProgress
+              variant="determinate"
+              value={lead.lead_score}
+              sx={{
+                flex: 1,
+                height: 6,
+                borderRadius: 3
+              }}
+              color={
+                lead.lead_score > 70 ? 'success' :
+                lead.lead_score > 40 ? 'warning' : 'primary'
+              }
+            />
+            <Typography
+              variant="caption"
+              sx={{
+                color:
+                  lead.lead_score > 70 ? 'success.main' :
+                  lead.lead_score > 40 ? 'warning.main' : 'primary.main',
+                fontWeight: 'bold'
+              }}
+            >
+              {lead.lead_score}
+            </Typography>
+          </Box>
+        </Tooltip>
+      </Box>
+
+      {/* Actions */}
+      <Box sx={{ display: 'flex', gap: 0.5 }}>
+        {onInteractionClick && (
+          <Tooltip title="Log Interaction">
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onInteractionClick();
+              }}
+            >
+              <AssignmentIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
+        {onDetailsClick && (
+          <Tooltip title="View Details">
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDetailsClick();
+              }}
+            >
+              <BusinessIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
+        {!lead.converted_to_customer_id && onConvertClick && (
+          <Tooltip title="Convert to Customer">
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onConvertClick();
+              }}
+            >
+              <CheckIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
+      </Box>
+
+      {/* Creation Date */}
+      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+        Created: {new Date(lead.created_at).toLocaleDateString()}
+      </Typography>
+    </Box>
+  );
+};

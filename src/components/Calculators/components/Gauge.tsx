@@ -39,7 +39,7 @@ export const Gauge: React.FC<GaugeProps> = ({ value, label, color }) => {
           <span className="text-lg font-bold">{value}%</span>
         </div>
       </div>
-      <span className="text-xs text-gray-600 mt-2 text-center">{label}</span>
+      <span className="text-xs text-gray-600  dark:text-gray-100 mt-2 text-center">{label}</span>
     </div>
   );
 };

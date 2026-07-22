@@ -1,0 +1,139 @@
+'use client';
+
+import { useState } from 'react';
+import { Container } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { createClient } from '@/lib/supabase/client';
+import { useTenant } from '@/lib/supabase/tenant-context';
+import { usePipelineData } from '@/hooks/usePipelineData';
+import { useLeadMutations } from '@/hooks/useLeadMutations';
+import { PipelineKanban } from '@/components/leads/PipelineKanban';
+import { ListView } from '@/components/leads/ListView';
+import { LeadDetailsDialog } from '@/components/leads/LeadDetailsDialog';
+import { PipelineHeader } from '@/components/leads/PipelineHeader';
+
+
+import type { LeadData, PipelineStage, TeamMember } from '@/types';
+
+export function LeadsPipelineClient() {
+  const theme = useTheme();
+  const { organization } = useTenant();
+  const orgId = organization?.id;
+
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedCount, setSelectedCount] = useState(0);
+
+  const [view, setView] = useState<'pipeline' | 'list'>('pipeline');
+  const [detailsState, setDetailsState] = useState<{ open: boolean; lead: LeadData | null }>({
+    open: false,
+    lead: null
+  });
+
+  const {
+    stages,
+    leads,
+    teamMembers,
+    loading,
+    reloadPipeline
+  } = usePipelineData(orgId ?? '');
+
+  const { updateLeadStage } = useLeadMutations();
+
+let lastMove = { leadId: '', toStage: '' };
+
+  const handleLeadMove = async (leadId: string, newStageId: string) => {
+
+    if (lastMove.leadId === leadId && lastMove.toStage === newStageId) {
+        console.warn('⏭️ Duplicate move detected — skipping');
+        return;
+      }
+
+      lastMove = { leadId, toStage: newStageId };
+
+    console.log('Available stages:', stages.map(s => ({ id: s.id, slug: s.slug })));
+    console.log('Trying to move to stage ID:', newStageId);
+
+    const stage = stages.find(s => s.id === newStageId);
+    if (!stage || !stage.slug) {
+      console.error('Invalid stage ID or missing slug:', newStageId);
+      return;
+    }
+    console.log('🔍 Trying to move to stage ID:', newStageId);
+    console.log('✅ Available stage IDs:', stages.map(s => s.id));
+
+    await updateLeadStage(leadId, stage.slug);
+    await reloadPipeline();
+  };
+
+
+
+  const handleUpdateLead = async (leadId: string, updates: Partial<LeadData>) => {
+    try {
+      const supabase = createClient();
+      const table = updates.lead_type === 'assessment' ? 'lead_assessment_reports' : 'lead_reports';
+
+      const { error } = await supabase
+        .from(table)
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', leadId);
+
+      if (error) throw error;
+
+      await reloadPipeline();
+      setDetailsState({ open: false, lead: null });
+    } catch (error) {
+      console.error('Error updating lead:', error);
+    }
+  };
+
+  if (!orgId) return null;
+
+  return (
+    <Container maxWidth={false}>
+      <PipelineHeader
+              viewMode={view === 'pipeline' ? 'kanban' : 'list'}
+              onViewModeChange={handleViewModeChange}
+              showFilters={showFilters}
+              onToggleFilters={handleToggleFilters}
+              selectedCount={selectedCount}
+              onClearSelection={handleClearSelection}
+              onAddLead={handleAddLead}
+            />
+     {view === 'pipeline' && (
+        <PipelineKanban
+          leads={leads}
+          stages={stages}
+          teamMembers={teamMembers}
+          selectedLeads={new Set()}
+          onLeadSelect={() => {}}
+          onSelectAll={() => {}}
+          onDropLead={handleLeadMove}
+          onLeadMove={handleLeadMove}
+          onLeadClick={() => {}}
+          onDetailsClick={(lead) => setDetailsState({ open: true, lead })}
+        />
+      )}
+
+      {view === 'list' && (
+        <ListView
+          leads={leads}
+          teamMembers={teamMembers}
+          selectedLeads={new Set()}
+          onLeadSelect={() => {}}
+          onDetailsClick={(lead) => setDetailsState({ open: true, lead })}
+          onSelectAll={() => {}}
+        />
+      )}
+
+      <LeadDetailsDialog
+        open={detailsState.open}
+        onClose={() => setDetailsState({ open: false, lead: null })}
+        lead={detailsState.lead}
+        onUpdateLead={handleUpdateLead}
+      />
+    </Container>
+  );
+}

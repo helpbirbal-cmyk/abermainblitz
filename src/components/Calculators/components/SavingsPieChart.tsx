@@ -21,12 +21,12 @@ export const SavingsPieChart: React.FC<SavingsPieChartProps> = ({
   const salaryDashOffset = circumference - (salaryPercentage / 100) * circumference;
 
   const formatCurrency = (amount: number) => {
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`;
+    if (amount >= 10000000) {
+      return `₹${(amount / 10000000).toFixed(1)} Cr`;
+    } else if (amount >= 100000) {
+      return `₹${(amount / 100000).toFixed(0)} Lac  `;
     }
-    return `$${amount}`;
+    return `₹${amount}`;
   };
 
   return (
@@ -65,8 +65,8 @@ export const SavingsPieChart: React.FC<SavingsPieChartProps> = ({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="text-xl font-bold text-gray-800">{formatCurrency(totalSavings)}</div>
-          <div className="text-xs text-gray-600">Total Savings</div>
+          <div className="text-xl font-bold text-gray-800 dark:text-gray-100">{formatCurrency(totalSavings)}</div>
+          <div className="text-xs text-gray-600 dark:text-gray-100">Total Savings</div>
         </div>
       </div>
 
@@ -74,7 +74,7 @@ export const SavingsPieChart: React.FC<SavingsPieChartProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-            <span className="text-sm text-gray-700">Salary Savings</span>
+            <span className="text-sm text-gray-700 dark:text-gray-100">Salary Savings</span>
           </div>
           <span className="text-sm font-semibold text-green-600">
             {Math.round(salaryPercentage)}%
@@ -83,7 +83,7 @@ export const SavingsPieChart: React.FC<SavingsPieChartProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-            <span className="text-sm text-gray-700">Device Savings</span>
+            <span className="text-sm text-gray-700 dark:text-gray-100">Device Savings</span>
           </div>
           <span className="text-sm font-semibold text-blue-600">
             {Math.round(devicePercentage)}%

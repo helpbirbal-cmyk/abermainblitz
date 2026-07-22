@@ -1,0 +1,2592 @@
+// src/app/leads/LeadsPipelineClient.tsx - FIXED MOBILE DRAG & DROP
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { useTenant } from '@/lib/supabase/tenant-context';
+import { createClient } from '@/lib/supabase/client';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Chip,
+  Container,
+  Stack,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  LinearProgress,
+  Alert,
+  Checkbox,
+  IconButton,
+  Menu,
+  Tooltip,
+  InputAdornment,
+  Tabs,
+  Tab,
+  Badge,
+  Avatar,
+  useTheme,
+  alpha,
+  ButtonGroup,
+  Collapse,
+  Divider,
+  ListItemIcon,
+  ListItemText
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Phone as PhoneIcon,
+  Email as EmailIcon,
+  Business as BusinessIcon,
+  Search as SearchIcon,
+  Assignment as AssignmentIcon,
+  Delete as DeleteIcon,
+  MoveToInbox as MoveIcon,
+  MoreVert as MoreIcon,
+  CheckCircle as CheckIcon,
+  FilterList as FilterListIcon,
+  PlaylistAddCheck as PlaylistAddCheckIcon,
+  Refresh as RefreshIcon,
+  Settings as SettingsIcon,
+  MoveToInbox as MoveToInboxIcon,
+  ViewKanban as ViewKanbanIcon,
+  ViewList as ViewListIcon
+} from '@mui/icons-material';
+import WarningIcon from '@mui/icons-material/Warning';
+import Grid from '@mui/material/Grid';
+
+interface PipelineLead {
+  id: string;
+  name: string;
+  email: string;
+  company: string;
+  phone: string;
+  status: string;
+  pipeline_stage: string;
+  lead_score: number;
+  probability: number;
+  assigned_to?: string;
+  created_at: string;
+  interactions_count?: number;
+  lead_type?: 'assessment' | 'calculator';
+  source?: string;
+  calculator_results_data?: any;
+  source_table?: 'lead_assessment_reports' | 'lead_reports';
+  website_id?: string;
+  form_id?: string;
+  page_url?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  converted_at?: string;
+  customer_id?: string;
+  conversion_notes?: string;
+}
+
+interface PipelineStage {
+  id: string;
+  name: string;
+  stage_order: number;
+  probability: number;
+  color: string;
+  organization_id: string | null;
+  leads: PipelineLead[];
+}
+
+interface UserData {
+  email: string;
+  user_metadata?: any;
+}
+
+interface TeamMember {
+  user_id: string;
+  role: string;
+  users: {
+    email: string;
+    user_metadata?: any;
+  } | null;
+}
+
+interface Interaction {
+  id: string;
+  lead_id: string;
+  type: 'call' | 'email' | 'meeting' | 'note' | 'task';
+  description: string;
+  created_by: string;
+  created_at: string;
+  metadata?: any;
+}
+
+export function LeadsPipelineClient() {
+  const theme = useTheme();
+  const { organization, organizations } = useTenant();
+  const [stages, setStages] = useState<PipelineStage[]>([]);
+  const [leads, setLeads] = useState<PipelineLead[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showLeadDialog, setShowLeadDialog] = useState(false);
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('');
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+
+  // Drag & Drop State
+  const [draggedLead, setDraggedLead] = useState<PipelineLead | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Mobile Touch State - SIMPLIFIED
+  const [touchStartTime, setTouchStartTime] = useState<number>(0);
+  const [touchStartLead, setTouchStartLead] = useState<PipelineLead | null>(null);
+  const [selectedLead, setSelectedLead] = useState<PipelineLead | null>(null);
+
+  // Filter State
+  const [filters, setFilters] = useState({
+    search: '',
+    source: 'all',
+    leadType: 'all',
+    scoreMin: 0,
+    scoreMax: 100,
+    dateRange: 'all',
+    assignedTo: 'all'
+  });
+
+  // Bulk Actions State
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [bulkActionAnchor, setBulkActionAnchor] = useState<null | HTMLElement>(null);
+
+  // Assignment State
+  const [assignmentAnchor, setAssignmentAnchor] = useState<{ anchor: HTMLElement | null, leadId: string | null }>({ anchor: null, leadId: null });
+
+  // Active Tab State
+  const [activeTab, setActiveTab] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Dialog States
+  const [showInteractionDialog, setShowInteractionDialog] = useState(false);
+  const [selectedLeadForInteraction, setSelectedLeadForInteraction] = useState<PipelineLead | null>(null);
+  const [interactionType, setInteractionType] = useState<'call' | 'email' | 'meeting' | 'note'>('note');
+  const [interactionNotes, setInteractionNotes] = useState('');
+  const [interactions, setInteractions] = useState<Interaction[]>([]);
+
+  const [showConvertDialog, setShowConvertDialog] = useState(false);
+  const [leadToConvert, setLeadToConvert] = useState<PipelineLead | null>(null);
+
+  // ADD VIEW DETAILS DIALOG STATE
+  const [showViewDetailsDialog, setShowViewDetailsDialog] = useState(false);
+  const [selectedLeadForDetails, setSelectedLeadForDetails] = useState<PipelineLead | null>(null);
+
+  // ========== FIXED MOBILE DRAG & DROP HANDLERS ==========
+
+  // Simple touch start - just record the start
+  const handleTouchStart = (e: React.TouchEvent, lead: PipelineLead) => {
+    if (lead.customer_id || (lead.lead_type === 'calculator' && !isValidUUID(lead.id))) {
+      return;
+    }
+
+    setTouchStartTime(Date.now());
+    setTouchStartLead(lead);
+  };
+
+  // Simple touch end - handle the move if it was a long press
+  const handleTouchEnd = (e: React.TouchEvent, targetStage?: PipelineStage) => {
+    const touchDuration = Date.now() - touchStartTime;
+
+    // If it was a long press (500ms+) and we have a target stage, move the lead
+    if (touchDuration > 500 && touchStartLead && targetStage &&
+        touchStartLead.pipeline_stage !== targetStage.name.toLowerCase().replace(/\s+/g, '_')) {
+
+      console.log('📱 Mobile drag - Moving lead to stage:', targetStage.name);
+      handleDropInternal(touchStartLead, targetStage);
+    }
+
+    // Reset touch state
+    setTouchStartTime(0);
+    setTouchStartLead(null);
+  };
+
+  // Keep your existing desktop handlers
+  const handleDragStart = (lead: PipelineLead) => {
+    if (isDragging) return;
+
+    if (lead.lead_type === 'calculator' && !isValidUUID(lead.id)) {
+      alert('This calculator lead cannot be moved. Please contact support.');
+      return;
+    }
+
+    if (!isValidUUID(lead.id)) {
+      alert('This lead cannot be moved. Please contact support.');
+      return;
+    }
+
+    setDraggedLead(lead);
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedLead(null);
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent, stageName: string) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, targetStage: PipelineStage) => {
+    e.preventDefault();
+
+    if (!draggedLead) return;
+
+    if (draggedLead.pipeline_stage === targetStage.name.toLowerCase().replace(/\s+/g, '_')) {
+      handleDragEnd();
+      return;
+    }
+
+    handleDropInternal(draggedLead, targetStage);
+    handleDragEnd();
+  };
+
+  // Updated stage click handler for mobile
+  const handleStageClick = (stage: PipelineStage) => {
+    if (selectedLead && selectedLead.pipeline_stage !== stage.name.toLowerCase().replace(/\s+/g, '_')) {
+      console.log('📱 Stage clicked - Moving selected lead to stage:', stage.name);
+      handleDropInternal(selectedLead, stage);
+      setSelectedLead(null);
+    }
+  };
+
+  const handleLeadClick = (lead: PipelineLead) => {
+    if (lead.customer_id || (lead.lead_type === 'calculator' && !isValidUUID(lead.id))) return;
+
+    if (isDragging) return;
+
+    if (selectedLead?.id === lead.id) {
+      setSelectedLead(null);
+    } else {
+      setSelectedLead(lead);
+    }
+  };
+// =========================
+
+// Add this useEffect to load team members
+useEffect(() => {
+  const loadTeamMembers = async () => {
+  if (!selectedOrganizationId) {
+    console.log('❌ No organization selected');
+    return;
+  }
+
+  try {
+    const supabase = createClient();
+
+    console.log('🔍 Loading team members for organization:', selectedOrganizationId);
+
+    // Option 1: Use the view (recommended)
+    const { data, error } = await supabase
+      .from('organization_members_with_profiles')
+      .select(`
+        user_id,
+        role,
+        email,
+        full_name
+      `)
+      .eq('organization_id', selectedOrganizationId);
+
+    if (error) {
+      console.error('❌ Error loading team members from view:', error);
+
+      // Fallback: Try the base table
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('organization_members')
+        .select(`
+          user_id,
+          role,
+          user_profiles (
+            email,
+            full_name
+          )
+        `)
+        .eq('organization_id', selectedOrganizationId);
+
+      if (fallbackError) {
+        console.error('❌ Error loading team members from base table:', fallbackError);
+        return;
+      }
+
+      console.log('👥 Loaded team members from base table:', fallbackData);
+
+      const transformedMembers: TeamMember[] = fallbackData.map(item => ({
+        user_id: item.user_id,
+        role: item.role,
+        users: {
+          email: item.user_profiles?.email || 'No email',
+          user_metadata: {
+            full_name: item.user_profiles?.full_name || 'Unknown User'
+          }
+        }
+      }));
+
+      setTeamMembers(transformedMembers);
+      return;
+    }
+
+    console.log('👥 Loaded team members from view:', data);
+
+    // Transform the data to match TeamMember interface
+    const transformedMembers: TeamMember[] = data.map(item => ({
+      user_id: item.user_id,
+      role: item.role,
+      users: {
+        email: item.email || 'No email',
+        user_metadata: {
+          full_name: item.full_name || 'Unknown User'
+        }
+      }
+    }));
+
+    setTeamMembers(transformedMembers);
+
+  } catch (error) {
+    console.error('❌ Error loading team members:', error);
+
+    // Ultimate fallback - create current user as team member
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      const currentUserMember: TeamMember = {
+        user_id: user.id,
+        role: 'admin',
+        users: {
+          email: user.email || 'current@user.com',
+          user_metadata: {
+            full_name: user.user_metadata?.full_name || 'You',
+            name: user.user_metadata?.name || 'Current User'
+          }
+        }
+      };
+      console.log('👥 Using current user as fallback team member:', currentUserMember);
+      setTeamMembers([currentUserMember]);
+    }
+  }
+};
+
+  loadTeamMembers();
+}, [selectedOrganizationId]);
+  // ========== ADD VIEW LEAD DETAILS DIALOG ==========
+
+  const ViewLeadDetailsDialog = () => (
+    <Dialog
+      open={showViewDetailsDialog}
+      onClose={() => {
+        setShowViewDetailsDialog(false);
+        setSelectedLeadForDetails(null);
+      }}
+      maxWidth="md"
+      fullWidth
+    >
+      <DialogTitle>
+        Lead Details - {selectedLeadForDetails?.name}
+      </DialogTitle>
+      <DialogContent>
+        {selectedLeadForDetails && (
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            {/* Basic Information */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <BusinessIcon />
+                Basic Information
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    label="Name"
+                    fullWidth
+                    value={selectedLeadForDetails.name}
+                    disabled
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    label="Company"
+                    fullWidth
+                    value={selectedLeadForDetails.company || 'Not specified'}
+                    disabled
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    label="Email"
+                    type="email"
+                    fullWidth
+                    value={selectedLeadForDetails.email || 'Not provided'}
+                    disabled
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    label="Phone"
+                    fullWidth
+                    value={selectedLeadForDetails.phone || 'Not provided'}
+                    disabled
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+
+            <Divider />
+
+            {/* Lead Metadata */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AssignmentIcon />
+                Lead Metadata
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                      value={selectedLeadForDetails.status}
+                      label="Status"
+                      disabled
+                    >
+                      <MenuItem value="New">New</MenuItem>
+                      <MenuItem value="Contacted">Contacted</MenuItem>
+                      <MenuItem value="Qualified">Qualified</MenuItem>
+                      <MenuItem value="Converted">Converted</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Pipeline Stage</InputLabel>
+                    <Select
+                      value={selectedLeadForDetails.pipeline_stage}
+                      label="Pipeline Stage"
+                      disabled
+                    >
+                      {stages.map(stage => (
+                        <MenuItem key={stage.id} value={stage.name.toLowerCase().replace(/\s+/g, '_')}>
+                          {stage.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    label="Lead Score"
+                    fullWidth
+                    value={selectedLeadForDetails.lead_score}
+                    disabled
+                    InputProps={{
+                      endAdornment: <InputAdornment position="end">/100</InputAdornment>,
+                    }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    label="Lead Type"
+                    fullWidth
+                    value={selectedLeadForDetails.lead_type === 'calculator' ? 'Calculator' : 'Assessment'}
+                    disabled
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+
+            <Divider />
+
+            {/* Source Information */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <SearchIcon />
+                Source Information
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    label="Source"
+                    fullWidth
+                    value={selectedLeadForDetails.source || 'Not specified'}
+                    disabled
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    label="Created Date"
+                    fullWidth
+                    value={new Date(selectedLeadForDetails.created_at).toLocaleDateString()}
+                    disabled
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* Conversion Info (if converted) */}
+            {selectedLeadForDetails.customer_id && (
+              <>
+                <Divider />
+                <Box>
+                  <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'success.main' }}>
+                    <CheckIcon />
+                    Conversion Information
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField
+                        label="Converted Date"
+                        fullWidth
+                        value={selectedLeadForDetails.converted_at ? new Date(selectedLeadForDetails.converted_at).toLocaleDateString() : 'Not available'}
+                        disabled
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField
+                        label="Customer ID"
+                        fullWidth
+                        value={selectedLeadForDetails.customer_id}
+                        disabled
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+              </>
+            )}
+          </Stack>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => {
+          setShowViewDetailsDialog(false);
+          setSelectedLeadForDetails(null);
+        }}>
+          Close
+        </Button>
+        {!selectedLeadForDetails?.customer_id && (
+          <Button
+            variant="contained"
+            onClick={() => {
+              setLeadToConvert(selectedLeadForDetails);
+              setShowViewDetailsDialog(false);
+              setShowConvertDialog(true);
+            }}
+          >
+            Convert to Customer
+          </Button>
+        )}
+      </DialogActions>
+    </Dialog>
+  );
+//add listview
+
+// ========== LIST VIEW COMPONENT ==========
+const ListView = () => {
+  const [sortField, setSortField] = useState<keyof PipelineLead>('created_at');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Get all filtered leads for list view
+  const allFilteredLeads = getFilteredLeadsForStage(leads);
+
+  // Sort leads
+  const sortedLeads = [...allFilteredLeads].sort((a, b) => {
+    let aValue = a[sortField];
+    let bValue = b[sortField];
+
+    // Handle dates
+    if (sortField === 'created_at' || sortField === 'converted_at') {
+      aValue = new Date(aValue || '').getTime();
+      bValue = new Date(bValue || '').getTime();
+    }
+
+    // Handle numbers
+    if (sortField === 'lead_score' || sortField === 'probability') {
+      aValue = Number(aValue) || 0;
+      bValue = Number(bValue) || 0;
+    }
+
+    // Handle strings
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      aValue = aValue.toLowerCase();
+      bValue = bValue.toLowerCase();
+    }
+
+    if (sortDirection === 'asc') {
+      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+    } else {
+      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+    }
+  });
+
+  // Pagination
+  const paginatedLeads = sortedLeads.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  const handleSort = (field: keyof PipelineLead) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const SortableHeader = ({ field, children }: { field: keyof PipelineLead; children: React.ReactNode }) => (
+    <Typography
+      variant="subtitle2"
+      fontWeight="600"
+      sx={{
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.5,
+        '&:hover': { color: 'primary.main' }
+      }}
+      onClick={() => handleSort(field)}
+    >
+      {children}
+      {sortField === field && (
+        <Box component="span" sx={{ fontSize: '1rem' }}>
+          {sortDirection === 'asc' ? '↑' : '↓'}
+        </Box>
+      )}
+    </Typography>
+  );
+
+  return (
+    <Card>
+      <CardContent sx={{ p: 0 }}>
+        {/* List Header */}
+        <Box sx={{
+  display: 'flex',
+  alignItems: 'center',
+  p: 2,
+  borderBottom: `2px solid ${theme.palette.divider}`,
+  backgroundColor: theme.palette.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.05)'
+    : 'rgba(0, 0, 0, 0.02)',
+  fontWeight: 'bold',
+}}>
+          <Box sx={{ width: 50, display: 'flex', justifyContent: 'center' }}>
+            <Checkbox
+              size="small"
+              checked={selectedLeads.size === allFilteredLeads.length && allFilteredLeads.length > 0}
+              indeterminate={selectedLeads.size > 0 && selectedLeads.size < allFilteredLeads.length}
+              onChange={() => {
+                if (selectedLeads.size === allFilteredLeads.length) {
+                  setSelectedLeads(new Set());
+                } else {
+                  setSelectedLeads(new Set(allFilteredLeads.map(lead => lead.id)));
+                }
+              }}
+            />
+          </Box>
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr 1fr 1fr 1fr 120px', gap: 2, flex: 1 }}>
+            <SortableHeader field="name">Lead Details</SortableHeader>
+            <SortableHeader field="company">Company</SortableHeader>
+            <SortableHeader field="pipeline_stage">Stage</SortableHeader>
+            <SortableHeader field="lead_score">Score</SortableHeader>
+            <SortableHeader field="created_at">Created</SortableHeader>
+            <SortableHeader field="assigned_to">Assigned To</SortableHeader>
+            <Typography variant="subtitle2" fontWeight="600" sx={{ textAlign: 'center' }}>
+              Actions
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* List Items */}
+        {paginatedLeads.length > 0 ? (
+          <Stack divider={<Divider />}>
+            {paginatedLeads.map((lead) => (
+              <Box
+                key={lead.id}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  p: 2,
+                  transition: 'all 0.2s ease',
+
+                  // More visible Salesforce-style selection
+                  borderLeft: selectedLeads.has(lead.id)
+                    ? `4px solid ${theme.palette.primary.main}`
+                    : '4px solid transparent',
+
+                  backgroundColor: selectedLeads.has(lead.id)
+                    ? theme.palette.mode === 'dark'
+                      ? '#1a237e'  // Dark blue background
+                      : '#e3f2fd'  // Light blue background
+                    : theme.palette.background.paper,
+
+                  '&:hover': {
+                    backgroundColor: selectedLeads.has(lead.id)
+                      ? theme.palette.mode === 'dark'
+                        ? '#283593'  // Darker blue
+                        : '#bbdefb'  // Darker light blue
+                      : theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.08)'
+                      : 'rgba(0, 0, 0, 0.06)',
+                  },
+
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                }}
+              >
+
+
+        <Box sx={{ width: 50, display: 'flex', justifyContent: 'center' }}>
+                  <Checkbox
+                    size="small"
+                    checked={selectedLeads.has(lead.id)}
+                    onChange={() => handleSelectLead(lead.id)}
+                    disabled={!!lead.customer_id}
+                  />
+                </Box>
+
+                <Box sx={{
+                  display: 'grid',
+                  gridTemplateColumns: '2fr 1.5fr 1fr 1fr 1fr 1fr 120px',
+                  gap: 2,
+                  flex: 1,
+                  alignItems: 'center'
+                }}>
+                  {/* Lead Details */}
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight="600" noWrap>
+                      {lead.name}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                      <EmailIcon sx={{ fontSize: 14 }} color="action" />
+                      <Typography variant="caption" color="text.secondary" noWrap>
+                        {lead.email || 'No email'}
+                      </Typography>
+                    </Box>
+                    {lead.phone && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <PhoneIcon sx={{ fontSize: 14 }} color="action" />
+                        <Typography variant="caption" color="text.secondary">
+                          {lead.phone}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+
+                  {/* Company */}
+                  <Typography variant="body2" noWrap>
+                    {lead.company || 'No company'}
+                  </Typography>
+
+                  {/* Stage */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: '50%',
+                        backgroundColor: getStageColor(
+                          stages.find(s =>
+                            s.name.toLowerCase().replace(/\s+/g, '_') === lead.pipeline_stage
+                          )?.color || '#666'
+                        )
+                      }}
+                    />
+                    <Typography variant="body2" noWrap>
+                      {stages.find(s =>
+                        s.name.toLowerCase().replace(/\s+/g, '_') === lead.pipeline_stage
+                      )?.name || lead.pipeline_stage}
+                    </Typography>
+                  </Box>
+
+                  {/* Score */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 60 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={lead.lead_score}
+                        color={
+                          lead.lead_score > 70 ? 'success' :
+                          lead.lead_score > 40 ? 'warning' : 'primary'
+                        }
+                        sx={{ height: 6, borderRadius: 3 }}
+                      />
+                    </Box>
+                    <Typography variant="body2" fontWeight="600">
+                      {lead.lead_score}
+                    </Typography>
+                  </Box>
+
+                  {/* Created Date */}
+                  <Typography variant="body2">
+                    {new Date(lead.created_at).toLocaleDateString()}
+                  </Typography>
+
+                  {/* Assigned To */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {lead.assigned_to ? (
+                      <>
+                        <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
+                          {getUserAvatar(getAssignedUser(lead.assigned_to))}
+                        </Avatar>
+                        <Typography variant="body2" noWrap>
+                          {getUserDisplayName(getAssignedUser(lead.assigned_to))}
+                        </Typography>
+                      </>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary" fontStyle="italic">
+                        Unassigned
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {/* Actions */}
+                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+                    <Tooltip title="View Details">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setSelectedLeadForDetails(lead);
+                          setShowViewDetailsDialog(true);
+                        }}
+                      >
+                        <BusinessIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Log Interaction">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setSelectedLeadForInteraction(lead);
+                          setShowInteractionDialog(true);
+                        }}
+                      >
+                        <AssignmentIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+
+                    {!lead.customer_id && (
+                      <Tooltip title="Convert to Customer">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setLeadToConvert(lead);
+                            setShowConvertDialog(true);
+                          }}
+                        >
+                          <CheckIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
+            ))}
+          </Stack>
+        ) : (
+          <Box sx={{ textAlign: 'center', py: 6 }}>
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No leads found
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Try adjusting your filters or add new leads
+            </Typography>
+          </Box>
+        )}
+
+        {/* Pagination */}
+        {allFilteredLeads.length > 0 && (
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            p: 2,
+            borderTop: 1,
+            borderColor: 'divider'
+          }}>
+            <Typography variant="body2" color="text.secondary">
+              Showing {paginatedLeads.length} of {allFilteredLeads.length} leads
+            </Typography>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <Select
+                  value={rowsPerPage}
+                  onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                >
+                  <MenuItem value={10}>10 per page</MenuItem>
+                  <MenuItem value={25}>25 per page</MenuItem>
+                  <MenuItem value={50}>50 per page</MenuItem>
+                  <MenuItem value={100}>100 per page</MenuItem>
+                </Select>
+              </FormControl>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <IconButton
+                  size="small"
+                  disabled={page === 0}
+                  onClick={() => setPage(page - 1)}
+                >
+                  <Box component="span" sx={{ fontSize: '1.2rem' }}>‹</Box>
+                </IconButton>
+
+                <Typography variant="body2">
+                  Page {page + 1} of {Math.ceil(sortedLeads.length / rowsPerPage)}
+                </Typography>
+
+                <IconButton
+                  size="small"
+                  disabled={page >= Math.ceil(sortedLeads.length / rowsPerPage) - 1}
+                  onClick={() => setPage(page + 1)}
+                >
+                  <Box component="span" sx={{ fontSize: '1.2rem' }}>›</Box>
+                </IconButton>
+              </Box>
+            </Box>
+          </Box>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+  // ========== REST OF YOUR EXISTING CODE (keep all your existing functions) ==========
+
+  // Keep all your existing functions like:
+  // - loadPipelineData, transformLeadData, isValidUUID
+  // - calculateLeadScore, getFilteredLeadsForStage
+  // - handleSelectLead, handleSelectAllInStage
+  // - handleDropInternal, handleBulkMove, handleBulkDelete
+  // - handleAssignLead, handleUnassignLead
+  // - OrganizationSwitcher, getUserDisplayName, etc.
+  // - InteractionDialog, ConvertLeadDialog, validateLeadForConversion, handleConvertLead
+
+  // Add this useEffect to load data when organization changes
+useEffect(() => {
+  if (selectedOrganizationId && selectedOrganizationId !== "") {
+    console.log('🔄 Organization selected, loading pipeline data:', selectedOrganizationId);
+    loadPipelineData();
+  }
+}, [selectedOrganizationId]);
+
+// Also add this to load data when component mounts with initial organization
+useEffect(() => {
+  if (organization?.id && organization.id !== selectedOrganizationId) {
+    console.log('🏢 Initial organization detected:', organization.id);
+    setSelectedOrganizationId(organization.id);
+  }
+}, [organization]);
+
+  const loadPipelineData = async () => {
+    if (!selectedOrganizationId || selectedOrganizationId === "" || loading) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const supabase = createClient();
+
+      const { data: stagesData } = await supabase
+        .from('pipeline_stages')
+        .select('*')
+        .or(`organization_id.eq.${selectedOrganizationId},organization_id.is.null`)
+        .order('stage_order');
+
+      const { data: assessmentLeads } = await supabase
+        .from('lead_assessment_reports')
+        .select('*')
+        .or(`organization_id.eq.${selectedOrganizationId},organization_id.is.null`);
+
+      const { data: calculatorLeads } = await supabase
+        .from('lead_reports')
+        .select('*')
+        .or(`organization_id.eq.${selectedOrganizationId},organization_id.is.null`);
+
+      const allLeads = [
+        ...(assessmentLeads || []).map(lead => transformLeadData(lead, 'assessment')),
+        ...(calculatorLeads || []).map(lead => transformLeadData(lead, 'calculator'))
+      ];
+
+      if (stagesData && allLeads) {
+        const stagesWithLeads = stagesData.map(stage => {
+          const stageName = stage.name.toLowerCase().replace(/\s+/g, '_');
+          const stageLeads = allLeads.filter(lead => lead.pipeline_stage === stageName);
+          return { ...stage, leads: stageLeads };
+        });
+
+        setStages(stagesWithLeads);
+        setLeads(allLeads);
+      }
+    } catch (error) {
+      // Silent error handling
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const transformLeadData = (data: any, source: 'assessment' | 'calculator' = 'assessment'): PipelineLead => {
+  const originalId = data.id;
+  const stringId = String(originalId);
+
+  return {
+    id: stringId,
+    name: data.name || 'Unnamed Lead',
+    email: data.email || '',
+    company: data.company || '',
+    phone: data.phone || '',
+    status: data.status || 'New',
+    pipeline_stage: (data.pipeline_stage || 'new'),
+    lead_score: data.lead_score || 0,
+    probability: data.probability || 0,
+    assigned_to: data.assigned_to,
+    created_at: data.created_at || new Date().toISOString(),
+    interactions_count: data.interactions_count,
+    lead_type: source,
+    source: data.source || (source === 'calculator' ? 'calculator' : 'website_modal'),
+    calculator_results_data: data.calculator_results_data,
+    source_table: source === 'calculator' ? 'lead_reports' : 'lead_assessment_reports'
+  };
+  };
+
+  // UUID validation helper
+  const isValidUUID = (id: string) => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+  };
+
+  // Enhanced lead scoring function with proper CRM logic
+  const calculateLeadScore = (lead: PipelineLead): number => {
+    let score = 0;
+
+    // Base score from form completeness (0-25 points)
+    if (lead.email) score += 8;
+    if (lead.phone) score += 8;
+    if (lead.company) score += 9;
+
+    // Engagement scoring (0-20 points)
+    if (lead.interactions_count) {
+      score += Math.min(lead.interactions_count * 2, 12); // Max 12 from interactions
+    }
+
+    // Source scoring (0-10 points)
+    const sourceWeights: Record<string, number> = {
+      'calculator': 10,
+      'website_modal': 8,
+      'referral': 9,
+      'direct': 6
+    };
+    score += sourceWeights[lead.source || 'website_modal'] || 5;
+
+    // STAGE PROGRESSION - MAJOR WEIGHT (0-45 points)
+    const stageWeights: Record<string, number> = {
+      'new': 5,
+      'contacted': 15,
+      'qualified': 25,
+      'proposal': 35,
+      'negotiation': 40,
+      'closed_won': 45,  // Highest stage score
+      'closed_lost': 0
+    };
+    score += stageWeights[lead.pipeline_stage] || 5;
+
+    // Lead type bonus (0-5 points)
+    if (lead.lead_type === 'calculator') score += 5;
+
+    // Recent activity bonus (0-5 points)
+    const leadDate = new Date(lead.created_at);
+    const daysOld = (new Date().getTime() - leadDate.getTime()) / (1000 * 3600 * 24);
+    if (daysOld < 7) score += 3;
+
+    // Ensure closed_won leads get maximum score
+    if (lead.pipeline_stage === 'closed_won') {
+      score = Math.max(score,100); // Ensure at least 100 for won deals
+    }
+
+    // Ensure closed_lost leads get minimum score
+    if (lead.pipeline_stage === 'closed_lost') {
+      score = Math.min(score, 10); // Max 10 for lost deals
+    }
+
+    return Math.min(Math.max(score, 0), 100);
+  };
+
+  // Bulk Actions
+  const handleSelectLead = (leadId: string) => {
+    setSelectedLeads(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(leadId)) newSet.delete(leadId);
+      else newSet.add(leadId);
+      return newSet;
+    });
+  };
+
+  const handleSelectAllInStage = (stageLeads: PipelineLead[]) => {
+    const allSelected = stageLeads.every(lead => selectedLeads.has(lead.id));
+    setSelectedLeads(prev => {
+      const newSet = new Set(prev);
+      stageLeads.forEach(lead => allSelected ? newSet.delete(lead.id) : newSet.add(lead.id));
+      return newSet;
+    });
+  };
+  // modified to handle mobile issue
+  const handleDropInternal = async (lead: PipelineLead, targetStage: PipelineStage) => {
+    const targetStageName = targetStage.name.toLowerCase().replace(/\s+/g, '_');
+
+    console.log('🎯 handleDropInternal called:', {
+      leadId: lead.id,
+      leadName: lead.name,
+      fromStage: lead.pipeline_stage,
+      toStage: targetStageName,
+      assignedTo: lead.assigned_to
+    });
+
+    try {
+      const supabase = createClient();
+      const tableName = lead.lead_type === 'calculator' ? 'lead_reports' : 'lead_assessment_reports';
+
+      const updateData = {
+        pipeline_stage: targetStageName,
+        assigned_to: lead.assigned_to,
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('📝 Update data:', updateData);
+
+      const { data, error } = await supabase
+        .from(tableName)
+        .update(updateData)
+        .eq('id', lead.id)
+        .select();
+
+      if (error) {
+        console.error('❌ Supabase update failed:', error);
+        alert(`Failed to move lead: ${error.message}`);
+        throw error;
+      }
+
+      console.log('✅ Supabase update successful, returned data:', data);
+
+      // Update local state
+      setStages(prevStages =>
+        prevStages.map(stage => {
+          const stageName = stage.name.toLowerCase().replace(/\s+/g, '_');
+          if (stageName === lead.pipeline_stage) {
+            return {
+              ...stage,
+              leads: stage.leads.filter(l => l.id !== lead.id),
+            };
+          } else if (stage.id === targetStage.id) {
+            const updatedLead = {
+              ...lead,
+              pipeline_stage: targetStageName,
+              assigned_to: lead.assigned_to
+            };
+            return {
+              ...stage,
+              leads: [...stage.leads, updatedLead],
+            };
+          }
+          return stage;
+        })
+      );
+
+      console.log('✅ Local state updated successfully');
+
+      // CRITICAL: Reset ALL mobile state variables after successful move
+      setSelectedLead(null);
+      //setTouchDraggedLead(null);
+      //setIsTouchDragging(false);
+
+    } catch (error) {
+      console.error('❌ Error in handleDropInternal:', error);
+
+      // Also reset mobile state on error
+      setSelectedLead(null);
+      //setTouchDraggedLead(null);
+      //setIsTouchDragging(false);
+
+      loadPipelineData();
+    }
+  };
+  ///////////
+  const handleBulkMove = async (targetStage: string) => {
+  if (selectedLeads.size === 0) return;
+  try {
+    const supabase = createClient();
+    const leadIds = Array.from(selectedLeads);
+    const { data: currentLeads } = await supabase
+      .from('lead_assessment_reports')
+      .select('id, assigned_to')
+      .in('id', leadIds);
+    const updatePromises = currentLeads?.map(lead =>
+      supabase
+        .from('lead_assessment_reports')
+        .update({
+          pipeline_stage: targetStage.toLowerCase(),
+          assigned_to: lead.assigned_to,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', lead.id)
+    ) || [];
+    await Promise.all(updatePromises);
+    setStages(prevStages => prevStages.map(stage => {
+      if (stage.name.toLowerCase() === targetStage.toLowerCase()) {
+        const movedLeads = prevStages
+          .flatMap(s => s.leads)
+          .filter(lead => selectedLeads.has(lead.id))
+          .map(lead => ({ ...lead, pipeline_stage: targetStage.toLowerCase(), assigned_to: lead.assigned_to }));
+        return { ...stage, leads: [...stage.leads, ...movedLeads] };
+      } else {
+        return { ...stage, leads: stage.leads.filter(lead => !selectedLeads.has(lead.id)) };
+      }
+    }));
+    setSelectedLeads(new Set());
+    setBulkActionAnchor(null);
+    console.log(`✅ Moved ${leadIds.length} leads to ${targetStage}`);
+  } catch (error) {
+    console.error('Error in bulk move:', error);
+  }
+  };
+
+  const handleBulkDelete = async () => {
+  if (selectedLeads.size === 0) return;
+  const confirmDelete = window.confirm(`Are you sure you want to delete ${selectedLeads.size} leads?`);
+  if (!confirmDelete) return;
+  try {
+    const supabase = createClient();
+    const leadIds = Array.from(selectedLeads);
+    await supabase.from('lead_assessment_reports').delete().in('id', leadIds);
+    setStages(prevStages => prevStages.map(stage => ({
+      ...stage,
+      leads: stage.leads.filter(lead => !selectedLeads.has(lead.id))
+    })));
+    setSelectedLeads(new Set());
+    setBulkActionAnchor(null);
+    console.log(`✅ Deleted ${leadIds.length} leads`);
+  } catch (error) {
+    console.error('Error in bulk delete:', error);
+  }
+  };
+
+
+  // Individual Assignment
+  // Individual Assignment - FIXED VERSION
+  const handleAssignLead = async (leadId: string, userId: string) => {
+    try {
+      const supabase = createClient();
+
+      // Find the lead to determine its type
+      const lead = leads.find(l => l.id === leadId);
+      if (!lead) {
+        console.error('Lead not found:', leadId);
+        return;
+      }
+
+      // Determine the correct table based on lead type
+      const tableName = lead.lead_type === 'calculator' ? 'lead_reports' : 'lead_assessment_reports';
+
+      console.log(`🔄 Assigning lead ${leadId} to user ${userId} in table ${tableName}`);
+
+      const { data, error } = await supabase
+        .from(tableName)
+        .update({
+          assigned_to: userId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', leadId)
+        .select();
+
+      if (error) {
+        console.error('❌ Database error assigning lead:', error);
+        alert(`Failed to assign lead: ${error.message}`);
+        return;
+      }
+
+      console.log('✅ Assignment successful, updated data:', data);
+
+      // Update local state
+      setStages(prevStages => prevStages.map(stage => ({
+        ...stage,
+        leads: stage.leads.map(lead =>
+          lead.id === leadId ? { ...lead, assigned_to: userId } : lead
+        )
+      })));
+
+      setAssignmentAnchor({ anchor: null, leadId: null });
+      console.log(`✅ Successfully assigned lead to user ${userId}`);
+
+    } catch (error) {
+      console.error('❌ Error assigning lead:', error);
+      alert('Failed to assign lead. Please try again.');
+    }
+  };
+
+  const handleUnassignLead = async (leadId: string) => {
+    try {
+      const supabase = createClient();
+
+      // Find the lead to determine its type
+      const lead = leads.find(l => l.id === leadId);
+      if (!lead) {
+        console.error('Lead not found:', leadId);
+        return;
+      }
+
+      // Determine the correct table based on lead type
+      const tableName = lead.lead_type === 'calculator' ? 'lead_reports' : 'lead_assessment_reports';
+
+      console.log(`🔄 Unassigning lead ${leadId} from table ${tableName}`);
+
+      const { data, error } = await supabase
+        .from(tableName)
+        .update({
+          assigned_to: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', leadId)
+        .select();
+
+      if (error) {
+        console.error('❌ Database error unassigning lead:', error);
+        alert(`Failed to unassign lead: ${error.message}`);
+        return;
+      }
+
+      console.log('✅ Unassignment successful, updated data:', data);
+
+      // Update local state - use null consistently
+      setStages(prevStages => prevStages.map(stage => ({
+        ...stage,
+        leads: stage.leads.map(lead =>
+          lead.id === leadId ? { ...lead, assigned_to: null } : lead
+        )
+      })));
+
+      setAssignmentAnchor({ anchor: null, leadId: null });
+      console.log(`✅ Successfully unassigned lead`);
+
+    } catch (error) {
+      console.error('❌ Error unassigning lead:', error);
+      alert('Failed to unassign lead. Please try again.');
+    }
+  };  // Helper functions
+
+  // User display functions that work without detailed user data
+  const getUserDisplayName = (member: TeamMember | null): string => {
+    if (!member) return 'Unassigned';
+
+    // If we have user data, use it
+    if (member.users) {
+      const userData = Array.isArray(member.users) ? member.users[0] : member.users;
+      return userData.user_metadata?.full_name ||
+             userData.user_metadata?.name ||
+             userData.email ||
+             `User ${member.user_id.substring(0, 8)}`;
+    }
+
+    // Fallback: create friendly names based on user_id and role
+    const roleDisplay = member.role.charAt(0).toUpperCase() + member.role.slice(1);
+    return `${roleDisplay} (${member.user_id.substring(0, 8)}...)`;
+  };
+
+  const getUserEmail = (member: TeamMember | null): string => {
+    if (!member) return 'unassigned';
+
+    if (member.users) {
+      const userData = Array.isArray(member.users) ? member.users[0] : member.users;
+      return userData.email || `user-${member.user_id.substring(0, 8)}`;
+    }
+
+    return `${member.role}.${member.user_id.substring(0, 8)}@team.com`;
+  };
+
+  const getUserAvatar = (member: TeamMember | null): string => {
+    const displayName = getUserDisplayName(member);
+    return displayName.charAt(0).toUpperCase();
+  };
+
+  const getAssignedUser = (userId?: string): TeamMember | null => {
+    if (!userId) return null;
+    return teamMembers.find(member => member.user_id === userId) || null;
+  };
+
+
+  const getUserMetadata = (member: TeamMember): any => {
+    if (!member.users) return {};
+    if (Array.isArray(member.users)) return member.users[0]?.user_metadata || {};
+    return member.users.user_metadata || {};
+  };
+
+  const getStageColor = (color: string) => color || '#666';
+
+
+  // Filtering Logic
+  const getFilteredLeadsForStage = (stageLeads: PipelineLead[]) => {
+    return stageLeads.filter(lead => {
+      const matchesSearch = !filters.search ||
+        lead.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        lead.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        lead.company?.toLowerCase().includes(filters.search.toLowerCase());
+
+      const matchesSource = filters.source === 'all' || lead.source === filters.source;
+      const matchesLeadType = filters.leadType === 'all' || lead.lead_type === filters.leadType;
+      const matchesScore = lead.lead_score >= filters.scoreMin && lead.lead_score <= filters.scoreMax;
+
+      const matchesAssignedTo = filters.assignedTo === 'all' ||
+        (filters.assignedTo === 'unassigned' && !lead.assigned_to) ||
+        lead.assigned_to === filters.assignedTo;
+
+      const leadDate = new Date(lead.created_at);
+      const now = new Date();
+      let matchesDate = true;
+
+      switch (filters.dateRange) {
+        case 'today':
+          matchesDate = leadDate.toDateString() === now.toDateString();
+          break;
+        case 'week':
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          matchesDate = leadDate >= weekAgo;
+          break;
+        case 'month':
+          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          matchesDate = leadDate >= monthAgo;
+          break;
+        case 'quarter':
+          const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          matchesDate = leadDate >= quarterAgo;
+          break;
+        default:
+          matchesDate = true;
+      }
+
+      return matchesSearch && matchesSource && matchesLeadType &&
+             matchesScore && matchesAssignedTo && matchesDate;
+    });
+  };
+
+  // Interaction Dialog Component
+  const InteractionDialog = () => (
+    <Dialog
+      open={showInteractionDialog}
+      onClose={() => {
+        setShowInteractionDialog(false);
+        setSelectedLeadForInteraction(null);
+        setInteractionNotes('');
+      }}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle>
+        Log Interaction - {selectedLeadForInteraction?.name}
+      </DialogTitle>
+      <DialogContent>
+        <Stack spacing={3} sx={{ mt: 1 }}>
+          <FormControl fullWidth>
+            <InputLabel>Interaction Type</InputLabel>
+            <Select
+              value={interactionType}
+              label="Interaction Type"
+              onChange={(e) => setInteractionType(e.target.value as any)}
+            >
+              <MenuItem value="call">Phone Call</MenuItem>
+              <MenuItem value="email">Email</MenuItem>
+              <MenuItem value="meeting">Meeting</MenuItem>
+              <MenuItem value="note">Note</MenuItem>
+            </Select>
+          </FormControl>
+
+          <TextField
+            label="Notes"
+            multiline
+            rows={4}
+            fullWidth
+            value={interactionNotes}
+            onChange={(e) => setInteractionNotes(e.target.value)}
+            placeholder="Describe the interaction..."
+          />
+
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Chip
+              label={`Email: ${selectedLeadForInteraction?.email || 'No email'}`}
+              variant="outlined"
+              size="small"
+            />
+            <Chip
+              label={`Phone: ${selectedLeadForInteraction?.phone || 'No phone'}`}
+              variant="outlined"
+              size="small"
+            />
+            <Chip
+              label={`Company: ${selectedLeadForInteraction?.company || 'No company'}`}
+              variant="outlined"
+              size="small"
+            />
+          </Box>
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setShowInteractionDialog(false)}>Cancel</Button>
+        <Button
+          variant="contained"
+          onClick={async () => {
+            if (!selectedLeadForInteraction) return;
+
+            try {
+              const supabase = createClient();
+
+              // Log the interaction
+              const { error } = await supabase
+                .from('lead_interactions') // You'll need to create this table
+                .insert({
+                  lead_id: selectedLeadForInteraction.id,
+                  interaction_type: interactionType,
+                  notes: interactionNotes,
+                  created_by: (await supabase.auth.getUser()).data.user?.id,
+                  created_at: new Date().toISOString()
+                });
+
+              if (error) throw error;
+
+              // Update interactions count locally
+              setStages(prevStages => prevStages.map(stage => ({
+                ...stage,
+                leads: stage.leads.map(lead =>
+                  lead.id === selectedLeadForInteraction.id
+                    ? {
+                        ...lead,
+                        interactions_count: (lead.interactions_count || 0) + 1
+                      }
+                    : lead
+                )
+              })));
+
+              setShowInteractionDialog(false);
+              setSelectedLeadForInteraction(null);
+              setInteractionNotes('');
+
+            } catch (error) {
+              console.error('Error logging interaction:', error);
+              alert('Failed to log interaction. Please try again.');
+            }
+          }}
+        >
+          Log Interaction
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  // convert to customer
+      // Convert Lead Dialog Component
+    const ConvertLeadDialog = () => (
+      <Dialog open={showConvertDialog} onClose={() => setShowConvertDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Convert Lead to Customer</DialogTitle>
+        <DialogContent>
+          {leadToConvert && (
+            <Stack spacing={3} sx={{ mt: 1 }}>
+              <Alert severity="info">
+                Converting <strong>{leadToConvert.name}</strong> from {leadToConvert.company || 'No company'} to a customer.
+              </Alert>
+
+              <TextField
+                label="Customer Name"
+                fullWidth
+                value={leadToConvert.name}
+                disabled
+              />
+
+              <TextField
+                label="Company"
+                fullWidth
+                value={leadToConvert.company || ''}
+                onChange={(e) => setLeadToConvert(prev => prev ? {...prev, company: e.target.value} : null)}
+                placeholder="Enter company name"
+              />
+
+              <TextField
+                label="Email"
+                type="email"
+                fullWidth
+                value={leadToConvert.email}
+                disabled
+              />
+
+              <FormControl fullWidth>
+                <InputLabel>Customer Type</InputLabel>
+                <Select
+                  label="Customer Type"
+                  defaultValue="sme"
+                >
+                  <MenuItem value="enterprise">Enterprise</MenuItem>
+                  <MenuItem value="sme">SME</MenuItem>
+                  <MenuItem value="startup">Startup</MenuItem>
+                  <MenuItem value="individual">Individual</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel>Industry</InputLabel>
+                <Select
+                  label="Industry"
+                  defaultValue=""
+                >
+                  <MenuItem value="technology">Technology</MenuItem>
+                  <MenuItem value="healthcare">Healthcare</MenuItem>
+                  <MenuItem value="finance">Finance</MenuItem>
+                  <MenuItem value="retail">Retail</MenuItem>
+                  <MenuItem value="manufacturing">Manufacturing</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowConvertDialog(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleConvertLead}
+            disabled={!leadToConvert?.company}
+          >
+            Convert to Customer
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+
+
+    const validateLeadForConversion = (lead: PipelineLead): string[] => {
+      const errors: string[] = [];
+
+      if (!lead.company) errors.push("Company name required");
+      if (!lead.email && !lead.phone) errors.push("Contact information required");
+      if (lead.pipeline_stage === 'new') errors.push("Lead not sufficiently qualified");
+      if (lead.lead_score < 50) errors.push("Lead score too low for conversion");
+
+      return errors;
+    };
+
+    const handleConvertLead = async () => {
+      if (!leadToConvert || !selectedOrganizationId) return;
+
+      // Validation
+      const errors = validateLeadForConversion(leadToConvert);
+      if (errors.length > 0) {
+        alert(`Cannot convert lead:\n${errors.join('\n')}`);
+        return;
+      }
+
+      try {
+        const supabase = createClient();
+        const currentUser = (await supabase.auth.getUser()).data.user;
+
+        if (!currentUser) {
+          console.error('No user logged in');
+          return;
+        }
+
+        // 1. Create customer record
+        const { data: customer, error: customerError } = await supabase
+          .from('customers')
+          .insert({
+            name: leadToConvert.name,
+            email: leadToConvert.email,
+            phone: leadToConvert.phone || null,
+            company: leadToConvert.company || leadToConvert.name,
+            industry: 'technology',
+            status: 'active',
+            customer_type: 'sme',
+            organization_id: selectedOrganizationId,
+            created_by: currentUser.id
+          })
+          .select()
+          .single();
+
+        if (customerError) throw customerError;
+
+        // 2. Update lead with conversion data - FIXED: Use customer_id NOT id
+        const tableName = leadToConvert.source_table || 'lead_assessment_reports';
+        const { error: leadUpdateError } = await supabase
+          .from(tableName)
+          .update({
+            pipeline_stage: 'converted',
+            converted_at: new Date().toISOString(),
+            customer_id: customer.id, // ← CORRECT: Use customer_id field
+            conversion_notes: `Converted to customer on ${new Date().toLocaleDateString()}`,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', leadToConvert.id);
+
+        if (leadUpdateError) throw leadUpdateError;
+
+        // 3. Update local state - FIXED: Use customer_id NOT id
+        setStages(prevStages => prevStages.map(stage => ({
+          ...stage,
+          leads: stage.leads.map(lead =>
+            lead.id === leadToConvert.id
+              ? {
+                  ...lead,
+                  pipeline_stage: 'converted',
+                  customer_id: customer.id, // ← CORRECT: Use customer_id field
+                  converted_at: new Date().toISOString(),
+                  conversion_notes: `Converted to customer on ${new Date().toLocaleDateString()}`
+                }
+              : lead
+          )
+        })));
+
+        setShowConvertDialog(false);
+        setLeadToConvert(null);
+        alert(`✅ Successfully converted "${leadToConvert.name}" to customer!`);
+
+      } catch (error) {
+        console.error('❌ Error converting lead:', error);
+        alert('Failed to convert lead. Please try again.');
+      }
+    };
+    // SIMPLIFIED Organization Switcher
+    const OrganizationSwitcher = () => {
+      const { switchOrganization } = useTenant();
+      return (
+        <FormControl sx={{ minWidth: 200 }} size="small">
+          <InputLabel>Organization</InputLabel>
+          <Select
+            value={selectedOrganizationId || ""}
+            label="Organization"
+            onChange={(e) => {
+              const newOrgId = e.target.value;
+              if (newOrgId && newOrgId !== "") {
+                setSelectedOrganizationId(newOrgId);
+                if (switchOrganization) switchOrganization(newOrgId);
+              }
+            }}
+          >
+            {organizations.map((org) => (
+              <MenuItem key={org.id} value={org.id}>{org.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      );
+    };
+
+
+  // ========== UPDATED RENDER WITH FIXED MOBILE DRAG ==========
+
+  return (
+    <Container maxWidth={false} sx={{ py: { xs: 1, md: 1 }, px: { xs: 1, md: 1 } }}>
+      {/* Header with Title */}
+      <Box sx={{ mb: 3 }}>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          mb: 2,
+          gap: 2
+        }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="h4" fontWeight="bold" gutterBottom sx={{
+              fontSize: { xs: '1.5rem', md: '2rem' },
+              lineHeight: 1.2
+            }}>
+              Sales Pipeline
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <BusinessIcon fontSize="small" color="action" />
+              <OrganizationSwitcher />
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Salesforce-style Action Bar */}
+      <Card sx={{ mb: 2 }}>
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          p: { xs: 1, md: 2 },
+          gap: 1
+        }}>
+          {/* Left Side - Views & Stats */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', flex: 1 }}>
+            {/* View Selector */}
+            <ButtonGroup variant="outlined" size="small" sx={{ display: { xs: 'none', sm: 'flex' } }}>
+              <Button
+                variant={activeTab === 0 ? "contained" : "outlined"}
+                onClick={() => setActiveTab(0)}
+              >
+                Pipeline
+              </Button>
+              <Button
+                variant={activeTab === 1 ? "contained" : "outlined"}
+                onClick={() => setActiveTab(1)}
+              >
+                List
+              </Button>
+            </ButtonGroup>
+
+            {/* Mobile View Selector */}
+            <Box sx={{ display: { xs: 'flex', sm: 'none' }, gap: 0.5 }}>
+              <IconButton
+                size="small"
+                color={activeTab === 0 ? "primary" : "default"}
+                onClick={() => setActiveTab(0)}
+              >
+                <ViewKanbanIcon />
+              </IconButton>
+              <IconButton
+                size="small"
+                color={activeTab === 1 ? "primary" : "default"}
+                onClick={() => setActiveTab(1)}
+              >
+                <ViewListIcon />
+              </IconButton>
+            </Box>
+
+            {/* Quick Stats */}
+            <Box sx={{ display: 'flex', gap: 0.5, ml: { xs: 0, sm: 1 } }}>
+              <Chip
+                label={`${leads.length}`}
+                size="small"
+                variant="outlined"
+                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+              />
+              {selectedLeads.size > 0 && (
+                <Chip
+                  label={`${selectedLeads.size}`}
+                  size="small"
+                  color="primary"
+                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                />
+              )}
+            </Box>
+          </Box>
+
+          {/* Right Side - Actions */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+            {/* Filter Toggle */}
+            <Tooltip title="Show filters" placement="top" >
+              <IconButton
+                size="small"
+                onClick={() => setShowFilters(!showFilters)}
+                color={showFilters ? "primary" : "default"}
+              >
+                <FilterListIcon />
+              </IconButton>
+            </Tooltip>
+
+
+
+            {/* Bulk Actions Menu */}
+            <Tooltip title="Bulk actions" placement="top">
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={selectedLeads.size === 0}
+                  onClick={(e) => setBulkActionAnchor(e.currentTarget)}
+                  color={selectedLeads.size > 0 ? "primary" : "default"}
+                >
+                  <Badge badgeContent={selectedLeads.size} color="primary" max={99}>
+                    <PlaylistAddCheckIcon />
+                  </Badge>
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            {/* Refresh */}
+            <Tooltip title="Refresh" placement="top">
+              <IconButton size="small" onClick={loadPipelineData}>
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+
+            {/* Add Lead Button */}
+            <Button
+              variant="contained"
+              startIcon={<AddIcon sx={{ display: { xs: 'none', sm: 'inline-block' } }} />}
+              onClick={() => setShowLeadDialog(true)}
+              size="small"
+              sx={{
+                minWidth: { xs: 'auto', sm: 'inherit' },
+                px: { xs: 1, sm: 2 }
+              }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                Lead
+              </Box>
+              <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+                <AddIcon fontSize="small" />
+              </Box>
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Collapsible Filter Panel */}
+        <Collapse in={showFilters}>
+          <Divider />
+          <Box sx={{ p: 2 }}>
+            {/* Quick filter chips */}
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+              <Chip
+                label="New Today"
+                size="small"
+                onClick={() => setFilters(prev => ({ ...prev, dateRange: 'today' }))}
+                variant={filters.dateRange === 'today' ? 'filled' : 'outlined'}
+              />
+              <Chip
+                label="Unassigned"
+                size="small"
+                onClick={() => setFilters(prev => ({ ...prev, assignedTo: 'unassigned' }))}
+                variant={filters.assignedTo === 'unassigned' ? 'filled' : 'outlined'}
+              />
+              <Chip
+                label="High Score"
+                size="small"
+                onClick={() => setFilters(prev => ({ ...prev, scoreMin: 70 }))}
+                variant={filters.scoreMin === 70 ? 'filled' : 'outlined'}
+              />
+            </Box>
+
+            <Grid container spacing={2} alignItems="center">
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Search leads..."
+                  value={filters.search}
+                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>,
+                  }}
+                />
+              </Grid>
+              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Source</InputLabel>
+                  <Select
+                    value={filters.source}
+                    label="Source"
+                    onChange={(e) => setFilters(prev => ({ ...prev, source: e.target.value }))}
+                  >
+                    <MenuItem value="all">All Sources</MenuItem>
+                    <MenuItem value="website_modal">Website Modal</MenuItem>
+                    <MenuItem value="calculator">Calculator</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Type</InputLabel>
+                  <Select
+                    value={filters.leadType}
+                    label="Type"
+                    onChange={(e) => setFilters(prev => ({ ...prev, leadType: e.target.value }))}
+                  >
+                    <MenuItem value="all">All Types</MenuItem>
+                    <MenuItem value="assessment">Assessment</MenuItem>
+                    <MenuItem value="calculator">Calculator</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Assigned</InputLabel>
+                  <Select
+                    value={filters.assignedTo}
+                    label="Assigned"
+                    onChange={(e) => setFilters(prev => ({ ...prev, assignedTo: e.target.value }))}
+                  >
+                    <MenuItem value="all">All</MenuItem>
+                    <MenuItem value="unassigned">Unassigned</MenuItem>
+                    {teamMembers.map(member => (
+                      <MenuItem key={member.user_id} value={member.user_id}>
+                        {getUserDisplayName(member)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setFilters({
+                    search: '',
+                    source: 'all',
+                    leadType: 'all',
+                    scoreMin: 0,
+                    scoreMax: 100,
+                    dateRange: 'all',
+                    assignedTo: 'all'
+                  })}
+                >
+                  Clear
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </Collapse>
+      </Card>
+
+      {/* Bulk Actions Menu */}
+      <Menu
+        anchorEl={bulkActionAnchor}
+        open={Boolean(bulkActionAnchor)}
+        onClose={() => setBulkActionAnchor(null)}
+      >
+        <MenuItem disabled>
+          <Typography variant="subtitle2">
+            {selectedLeads.size} leads selected
+          </Typography>
+        </MenuItem>
+        <Divider />
+
+        <MenuItem onClick={() => { handleBulkMove('qualified'); setBulkActionAnchor(null); }}>
+          <ListItemIcon><MoveToInboxIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Move to Qualified</ListItemText>
+        </MenuItem>
+
+        <MenuItem onClick={() => { handleBulkMove('contacted'); setBulkActionAnchor(null); }}>
+          <ListItemIcon><MoveToInboxIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Move to Contacted</ListItemText>
+        </MenuItem>
+
+        <MenuItem onClick={() => { setBulkActionAnchor(null); }}>
+          <ListItemIcon><AssignmentIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Assign to...</ListItemText>
+        </MenuItem>
+
+        <Divider />
+
+        <MenuItem onClick={() => { handleBulkDelete(); setBulkActionAnchor(null); }} sx={{ color: 'error.main' }}>
+          <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
+          <ListItemText>Delete Leads</ListItemText>
+        </MenuItem>
+      </Menu>
+
+      {/* Conditional Rendering: Pipeline View vs ListView */}
+      {activeTab === 0 ? (
+        // Pipeline Board - UPDATED WITH FIXED MOBILE DRAG
+        <Box sx={{
+          display: 'flex',
+          gap: 1,
+          overflowX: 'auto',
+          pb: 2,
+          '&::-webkit-scrollbar': { height: 8 },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.grey[300], borderRadius: 4 }
+        }}>
+          {stages.map((stage) => {
+            const filteredLeads = getFilteredLeadsForStage(stage.leads);
+            const selectedInStage = filteredLeads.filter(lead => selectedLeads.has(lead.id)).length;
+            const isActiveStage = selectedLead;
+
+            return (
+              <Card
+                key={stage.id}
+                sx={{
+                  minWidth: { xs: 300, md: 350 },
+                  flexShrink: 0,
+                  border: isDragging ? `2px dashed ${theme.palette.primary.main}` : 'none',
+                  transition: 'all 0.2s ease',
+                  backgroundColor: isActiveStage ? alpha(theme.palette.primary.main, 0.05) : 'background.paper',
+                  cursor: isActiveStage ? 'pointer' : 'default'
+                }}
+                onDragOver={(e) => handleDragOver(e, stage.name)}
+                onDrop={(e) => handleDrop(e, stage)}
+                onClick={() => handleStageClick(stage)}
+                // ADD TOUCH HANDLER TO STAGE
+                onTouchEnd={(e) => handleTouchEnd(e, stage)}
+              >
+                <CardContent sx={{ p: 2 }}>
+                  {/* Stage Header */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="h6" sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} fontWeight="600">
+                        {stage.name}
+                      </Typography>
+                      <Chip label={filteredLeads.length} size="small" sx={{ backgroundColor: getStageColor(stage.color) }} />
+                    </Box>
+                    {/* REMOVED THE activeTab CHECK HERE SINCE WE'RE IN PIPELINE VIEW */}
+                    {filteredLeads.length > 0 && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Checkbox
+                          size="small"
+                          checked={selectedInStage === filteredLeads.length && filteredLeads.length > 0}
+                          indeterminate={selectedInStage > 0 && selectedInStage < filteredLeads.length}
+                          onChange={() => handleSelectAllInStage(filteredLeads)}
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          {selectedInStage}/{filteredLeads.length}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+
+                  {/* Leads List LEADSCARD - UPDATED WITH FIXED TOUCH */}
+                  <Stack spacing={1}>
+                    {filteredLeads.map((lead) => (
+                      <Tooltip
+                        key={lead.id}
+                        title="Tap and hold (1+ second) then tap destination stage to move"
+                        placement="top"
+                      >
+                        <Card
+                          variant="outlined"
+                          sx={{
+                            cursor: lead.customer_id ? 'default' : 'pointer',
+                            border: lead.customer_id ? `2px solid ${theme.palette.success.main}` :
+                                    selectedLeads.has(lead.id) ? `2px solid ${theme.palette.primary.main}` :
+                                    selectedLead?.id === lead.id ? `3px solid ${theme.palette.success.main}` :
+                                    `1px solid ${theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300]}`,
+                            backgroundColor: lead.customer_id ?
+                                           alpha(theme.palette.success.main, 0.05) :
+                                           (selectedLead?.id === lead.id ?
+                                            (theme.palette.mode === 'dark' ? alpha(theme.palette.success.dark, 0.2) : alpha(theme.palette.success.main, 0.1)) :
+                                            (theme.palette.mode === 'dark' ? theme.palette.background.paper : 'background.paper')),
+                            position: 'relative',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              boxShadow: theme.palette.mode === 'dark'
+                                ? '0 4px 12px rgba(0, 0, 0, 0.4)'
+                                : '0 2px 8px rgba(0, 0, 0, 0.15)',
+                              transform: lead.customer_id ? 'none' : 'translateY(-1px)'
+                            },
+                          }}
+                          draggable={!lead.customer_id}
+                          onDragStart={() => !lead.customer_id && handleDragStart(lead)}
+                          onDragEnd={handleDragEnd}
+                          // FIXED TOUCH HANDLERS
+                          onTouchStart={(e) => handleTouchStart(e, lead)}
+                        >
+                          <CardContent
+                            sx={{ p: 1.5 }}
+                            onClick={() => !lead.customer_id && handleLeadClick(lead)}
+                          >
+                            {/* Converted Lead Badge */}
+                            {lead.customer_id && (
+                              <Box sx={{
+                                position: 'absolute',
+                                top: 8,
+                                right: 8,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.5
+                              }}>
+                                <Chip
+                                  label="Converted"
+                                  size="small"
+                                  color="success"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: '0.65rem',
+                                    fontWeight: 'bold'
+                                  }}
+                                />
+                              </Box>
+                            )}
+
+                            {/* Lead Header - Compact for mobile */}
+                            <Box sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-start',
+                              mb: 1,
+                              pr: lead.customer_id ? 6 : 0
+                            }}>
+                              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, flex: 1 }}>
+                                {/* REMOVED activeTab CHECK HERE SINCE WE'RE IN PIPELINE VIEW */}
+                                <Checkbox
+                                  size="small"
+                                  checked={selectedLeads.has(lead.id)}
+                                  onChange={() => !lead.customer_id && handleSelectLead(lead.id)}
+                                  sx={{ mt: 0.25 }}
+                                  disabled={!!lead.customer_id}
+                                />
+                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                  <Typography
+                                    variant="subtitle2"
+                                    fontWeight="600"
+                                    noWrap
+                                    sx={{
+                                      textDecoration: lead.customer_id ? 'line-through' : 'none',
+                                      color: lead.customer_id ? 'text.secondary' : 'text.primary'
+                                    }}
+                                  >
+                                    {lead.name || 'Unnamed Lead'}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary" noWrap>
+                                    {lead.company || 'No company'}
+                                    {lead.customer_id && ' ✓'}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <Chip
+                                  label={lead.lead_type === 'calculator' ? 'Calc' : 'Assess'}
+                                  size="small"
+                                  color={lead.lead_type === 'calculator' ? 'secondary' : 'primary'}
+                                  sx={{
+                                    height: 20,
+                                    fontSize: '0.7rem',
+                                    opacity: lead.customer_id ? 0.6 : 1
+                                  }}
+                                />
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setAssignmentAnchor({ anchor: e.currentTarget, leadId: lead.id });
+                                  }}
+                                  disabled={!!lead.customer_id}
+                                >
+                                  <MoreIcon fontSize="small" />
+                                </IconButton>
+                              </Box>
+                            </Box>
+
+                            {/* Rest of your existing lead card content remains the same */}
+                            {/* Assignment - Compact */}
+                            {lead.assigned_to && (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                                <Avatar sx={{ width: 20, height: 20, fontSize: '0.6rem' }}>
+                                  {getUserAvatar(getAssignedUser(lead.assigned_to))}
+                                </Avatar>
+                                <Typography variant="caption" color="text.secondary" noWrap>
+                                  {getUserDisplayName(getAssignedUser(lead.assigned_to))}
+                                </Typography>
+                              </Box>
+                            )}
+
+                            {/* Contact Info - Compact */}
+                            <Stack spacing={0.5} sx={{ mb: 1 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <EmailIcon sx={{ fontSize: 16 }} color="action" />
+                                <Typography variant="caption" noWrap sx={{ flex: 1 }}>
+                                  {lead.email || 'No email'}
+                                </Typography>
+                              </Box>
+                              {lead.phone && (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <PhoneIcon sx={{ fontSize: 16 }} color="action" />
+                                  <Typography variant="caption">{lead.phone}</Typography>
+                                </Box>
+                              )}
+                            </Stack>
+
+                            {/* Converted Info */}
+                            {lead.customer_id && lead.converted_at && (
+                              <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.5,
+                                mb: 1,
+                                p: 0.5,
+                                backgroundColor: alpha(theme.palette.success.main, 0.1),
+                                borderRadius: 1
+                              }}>
+                                <CheckIcon fontSize="small" color="success" />
+                                <Typography variant="caption" color="success.main" fontWeight="medium">
+                                  Converted {new Date(lead.converted_at).toLocaleDateString()}
+                                </Typography>
+                              </Box>
+                            )}
+
+                            {/* Interactions & Score Row */}
+                            <Box sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              mb: 1
+                            }}>
+                              {/* Interactions Count */}
+                              <Tooltip title={`${lead.interactions_count || 0} interactions`} placement="top">
+                                <Chip
+                                  icon={<AssignmentIcon />}
+                                  label={lead.interactions_count || 0}
+                                  size="small"
+                                  variant="outlined"
+                                  color={lead.interactions_count ? 'primary' : 'default'}
+                                  sx={{ height: 24, fontSize: '0.75rem' }}
+                                />
+                              </Tooltip>
+
+                              {/* Lead Score with Progress */}
+                              <Tooltip title={`Lead Score: ${lead.lead_score}/100`} placement="top">
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Box sx={{ width: 60, position: 'relative' }}>
+                                    <LinearProgress
+                                      variant="determinate"
+                                      value={lead.lead_score}
+                                      color={
+                                        lead.lead_score > 70 ? 'success' :
+                                        lead.lead_score > 40 ? 'warning' : 'primary'
+                                      }
+                                      sx={{ height: 6, borderRadius: 3 }}
+                                    />
+                                  </Box>
+                                  <Typography
+                                    variant="caption"
+                                    fontWeight="bold"
+                                    sx={{
+                                      color:
+                                        lead.lead_score > 70 ? 'success.main' :
+                                        lead.lead_score > 40 ? 'warning.main' : 'primary.main',
+                                      minWidth: 25,
+                                      textAlign: 'center'
+                                    }}
+                                  >
+                                    {lead.lead_score}
+                                  </Typography>
+                                </Box>
+                              </Tooltip>
+                            </Box>
+
+                            {/* Quick Actions - UPDATED VIEW DETAILS BUTTON */}
+                            <Box sx={{
+                              display: 'flex',
+                              gap: 0.5,
+                              mb: 1,
+                              flexWrap: 'wrap'
+                            }}>
+                              {/* Email Action */}
+                              {lead.email && (
+                                <Tooltip title={`Email ${lead.email}`} placement="top">
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      window.location.href = `mailto:${lead.email}`;
+                                    }}
+                                    sx={{
+                                      color: 'primary.main',
+                                      '&:hover': { backgroundColor: 'primary.light', color: 'white' }
+                                    }}
+                                  >
+                                    <EmailIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+
+                              {/* Call Action */}
+                              {lead.phone && (
+                                <Tooltip title={`Call ${lead.phone}`} placement="top" >
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      window.location.href = `tel:${lead.phone}`;
+                                    }}
+                                    sx={{
+                                      color: 'success.main',
+                                      '&:hover': { backgroundColor: 'success.light', color: 'white' }
+                                    }}
+                                  >
+                                    <PhoneIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+
+                              {/* Log Interaction Action */}
+                              <Tooltip title="Log Interaction" placement="top">
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedLeadForInteraction(lead);
+                                    setShowInteractionDialog(true);
+                                  }}
+                                  sx={{
+                                    color: 'info.main',
+                                    '&:hover': { backgroundColor: 'info.light', color: 'white' }
+                                  }}
+                                >
+                                  <AssignmentIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+
+                              {/* View Details Action - FIXED */}
+                              <Tooltip title="View Lead Details" placement="top">
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    console.log('View lead details:', lead);
+                                    setSelectedLeadForDetails(lead);
+                                    setShowViewDetailsDialog(true);
+                                  }}
+                                  sx={{
+                                    color: 'secondary.main',
+                                    '&:hover': { backgroundColor: 'secondary.light', color: 'white' }
+                                  }}
+                                >
+                                  <BusinessIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+
+                              {/* Convert to Customer Action - Only show for non-converted leads */}
+                              {!lead.customer_id && (
+                                <Tooltip title="Convert to Customer" placement="top">
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      console.log('🔄 Convert to Customer clicked for:', lead.name);
+                                      setLeadToConvert(lead);
+                                      setShowConvertDialog(true);
+                                    }}
+                                    sx={{
+                                      color: 'success.main',
+                                      '&:hover': { backgroundColor: 'success.light', color: 'white' }
+                                    }}
+                                  >
+                                    <CheckIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                            </Box>
+
+                            {/* Footer - Compact */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="caption" color="text.secondary">
+                                {new Date(lead.created_at).toLocaleDateString()}
+                              </Typography>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </Tooltip>
+                    ))}
+
+                    {filteredLeads.length === 0 && (
+                      <Box sx={{ textAlign: 'center', py: 3, color: 'text.secondary' }}>
+                        <Typography variant="body2">No leads in this stage</Typography>
+                      </Box>
+                    )}
+                  </Stack>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </Box>
+      ) : (
+        // List View (New)
+        <ListView />
+      )}
+
+
+      { /* ========== ADD ALL DIALOGS HERE ========== */ }
+      <ConvertLeadDialog />
+      <InteractionDialog />
+      <ViewLeadDetailsDialog /> {/* ADD THIS NEW DIALOG */}
+
+      {/* Rest of your existing menus and dialogs */}
+    <Menu
+    anchorEl={assignmentAnchor.anchor}
+    open={Boolean(assignmentAnchor.anchor)}
+    onClose={() => setAssignmentAnchor({ anchor: null, leadId: null })}
+  >
+    <MenuItem disabled>
+    <Typography variant="subtitle2">
+      {assignmentAnchor.currentOwner ? 'Reassign Lead' : 'Assign Lead'}
+    </Typography>
+  </MenuItem>
+
+    {/* Show current assignment status */}
+    {assignmentAnchor.leadId && (
+      <MenuItem
+        onClick={() => {
+          console.log('🔄 Unassign clicked for lead:', assignmentAnchor.leadId);
+          handleUnassignLead(assignmentAnchor.leadId!);
+        }}
+        sx={{ color: 'text.secondary' }}
+      >
+        <ListItemIcon><DeleteIcon fontSize="small" /></ListItemIcon>
+            <ListItemText>Unassign</ListItemText>
+      </MenuItem>
+    )}
+
+    <Divider />
+
+    {/* Team members list */}
+    {teamMembers.length > 0 ? (
+      teamMembers.map(member => (
+        <MenuItem
+          key={member.user_id}
+          onClick={() => {
+            console.log('🔄 Assign clicked for lead:', assignmentAnchor.leadId, 'to user:', member.user_id);
+            handleAssignLead(assignmentAnchor.leadId!, member.user_id);
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
+              {getUserAvatar(member)}
+            </Avatar>
+            <Box>
+              <Typography variant="body2">{getUserDisplayName(member)}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {member.role} • {getUserEmail(member)}
+              </Typography>
+            </Box>
+          </Box>
+        </MenuItem>
+      ))
+    ) : (
+      <MenuItem disabled>
+        <Typography variant="body2" color="text.secondary">
+          No team members found
+        </Typography>
+      </MenuItem>
+    )}
+  </Menu>
+
+      {/* Add Lead Dialog */}
+      <Dialog open={showLeadDialog} onClose={() => setShowLeadDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add New Lead</DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            <TextField label="Name" fullWidth required />
+            <TextField label="Email" type="email" fullWidth required />
+            <TextField label="Company" fullWidth />
+            <TextField label="Phone" fullWidth />
+            <FormControl fullWidth>
+              <InputLabel>Organization</InputLabel>
+              <Select label="Organization" value={selectedOrganizationId}>
+                {organizations.map((org) => (
+                  <MenuItem key={org.id} value={org.id}>{org.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>Pipeline Stage</InputLabel>
+              <Select label="Pipeline Stage" defaultValue="new">
+                {stages.map(stage => (
+                  <MenuItem key={stage.id} value={stage.name.toLowerCase()}>{stage.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowLeadDialog(false)}>Cancel</Button>
+          <Button variant="contained">Add Lead</Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
+  );
+}

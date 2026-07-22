@@ -1,0 +1,211 @@
+// src/components/customers/CustomerCard.tsx
+'use client';
+
+import { useState , useEffect} from 'react';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Chip,
+  Avatar,
+  IconButton,
+  useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Select,
+  MenuItem
+} from '@mui/material';
+import {
+  Info,
+  AssignmentInd,
+  Chat as ChatIcon,
+} from '@mui/icons-material';
+import { createClient } from '@/lib/supabase/client';
+import type { Customer, OrganizationMember } from '@/types';
+import { CustomerInteractionDialog } from '@/components/customers/CustomerInteractionDialog';
+import { CustomerLeadsPanel } from '@/components/customers/CustomerLeadsPanel';
+import { CustomerOpportunitiesPanel } from '@/components/customers/CustomerOpportunitiesPanel';
+
+
+
+interface CustomerCardProps {
+  customer: Customer;
+  orgMembers: OrganizationMember[]; // rename to match your schema
+  onAssign: (customerId: string, userId: string) => Promise<void>; // ✅ two args
+  onRefreshCustomers?: () => void; // optional, matches dialog
+   onOpenDetails: () => void;
+}
+
+export const CustomerCard = ({
+  customer,
+  orgMembers,
+  onAssign,
+  onRefreshCustomers,
+  onOpenDetails,
+}: CustomerCardProps) => {
+  const theme = useTheme();
+  const assignedUser = orgMembers.find(m => m.user_id === customer.assigned_to);
+  const initials = assignedUser?.users?.user_metadata?.full_name?.[0] || '?';
+
+  const [interactionOpen, setInteractionOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(customer.assigned_to || '');
+  const supabase = createClient();
+
+  useEffect(() => {
+    console.log('CustomerCard mounted for', customer.id);
+  }, [customer.assigned_to]);
+
+
+  const handleAddLead = async (customerId: string) => {
+    await supabase.from('leads').insert({ customer_id: customerId, name: 'New Lead' });
+    onRefreshCustomers?.();
+  };
+
+  const handleAddOpportunity = async (customerId: string) => {
+    await supabase.from('opportunities').insert({ customer_id: customerId, name: 'New Opportunity' });
+    onRefreshCustomers?.();
+  };
+
+
+  return (
+    <>
+      <Card
+  sx={{
+    minHeight: 120,
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: 3,
+    borderRadius: 2,
+    cursor: 'pointer',
+    transition: 'transform 0.2s ease',
+    '&:hover': {
+      zIndex: 2,
+      boxShadow: theme.shadows[4],
+      transform: 'scale(1.01)',
+    },
+  }}
+>
+  <CardContent>
+    <Typography variant="subtitle2" fontWeight={600}>
+      {customer.name}
+    </Typography>
+    <Typography variant="body2">{customer.company || 'NA'}</Typography>
+
+    <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+      <Chip label={customer.status || 'Active'} size="small" />
+      <Chip label={customer.customer_type || 'SME'} size="small" />
+      {customer.industry && <Chip label={customer.industry} size="small" />}
+    </Box>
+
+    <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between' }}>
+      <Avatar>{initials}</Avatar>
+      <Box>
+        <IconButton size="small" onClick={onOpenDetails}>
+          <Info />
+        </IconButton>
+        <IconButton size="small" onClick={() => setAssignOpen(true)}>
+          <AssignmentInd />
+        </IconButton>
+        <IconButton size="small" onClick={() => setInteractionOpen(true)}>
+          <ChatIcon />
+        </IconButton>
+      </Box>
+    </Box>
+
+    <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+      <Chip
+        label={`Leads (${customer.leads?.length ?? 0})`}
+        size="small"
+        color="primary"
+        onClick={() => onOpenDetails()} // or open a Leads dialog
+      />
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={() => handleAddLead(customer.id)}
+      >
+        + New Lead
+      </Button>
+    </Box>
+
+    <Box sx={{ mt: 1, display: 'flex', gap: 2 }}>
+      <Chip
+        label={`Opportunities (${customer.opportunities?.length ?? 0})`}
+        size="small"
+        color="secondary"
+        onClick={() => onOpenDetails()} // or open an Opps dialog
+      />
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={() => handleAddOpportunity(customer.id)}
+      >
+        + New Opportunity
+      </Button>
+    </Box>
+  </CardContent>
+</Card>
+
+
+      {/* Assignment dialog */}
+      <Dialog open={assignOpen} onClose={() => setAssignOpen(false)}>
+        <DialogTitle>Assign Customer</DialogTitle>
+        <DialogContent>
+          <Select
+            fullWidth
+            value={selectedUser}
+            onChange={(e) => setSelectedUser(e.target.value)}
+          >
+            {orgMembers.map((tm) => (
+              <MenuItem key={tm.user_id} value={tm.user_id}>
+                {tm.users?.user_metadata?.full_name || tm.user_id}
+              </MenuItem>
+            ))}
+          </Select>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAssignOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              if (selectedUser) {
+                onAssign(customer.id, selectedUser); // ✅ both args
+                setAssignOpen(false);
+              }
+            }}
+          >
+            Assign
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
+
+        {interactionOpen && (
+          <CustomerInteractionDialog
+              open={interactionOpen}
+              onClose={() => setInteractionOpen(false)}
+              customer={customer}   // ✅ pass the customer object as "lead"
+              onSubmit={async (type, notes) => {
+                // call Supabase insert here
+                await supabase.from('interactions').insert({
+                  related_to_type: 'customer',
+                  related_to_id: customer.id,
+                  interaction_type: type,
+                  description: notes,
+                });
+                setInteractionOpen(false);
+              //  loadInteractions(customer.id);
+              }}
+              />
+          )}
+    </>
+  );
+};

@@ -3,11 +3,35 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import {
+  Box,
+  Button,
+  Typography,
+  useTheme,
+  useMediaQuery,
+  Container,
+  Chip,
+  Stack
+} from '@mui/material'
+import { useTheme as useNextTheme } from 'next-themes'
+
+
 interface InteractionFormProps {
   leadId: string;
 }
 
 export function InteractionForm({ leadId }: InteractionFormProps) {
+
+  const { resolvedTheme } = useNextTheme()
+  const isDarkMode = resolvedTheme === 'dark'
+  const [isMobile, setIsMobile] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [currentTitleIndex, setCurrentTitleIndex] = useState(0)
+  const theme = useTheme()
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'))
+
+
+
   const router = useRouter();
   const [interactionType, setInteractionType] = useState('note');
   const [description, setDescription] = useState('');

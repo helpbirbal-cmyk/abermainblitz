@@ -1,0 +1,52 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { LeadBriefPanel } from '@/components/leads/LeadBriefPanel';
+import { fetchBrief, Brief } from '@/lib/fetchBrief';
+
+export default function LeadPage({ params }: { params: { id: string } }) {
+  const [brief, setBrief] = useState<Brief | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadBrief = async (force = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { brief, updated_at } = await fetchBrief(params.id, force);
+      setBrief(brief);
+      setUpdatedAt(updated_at ?? null);
+    } catch (err: any) {
+      setError(err?.message ?? 'Failed to load brief');
+      setBrief(null);
+      setUpdatedAt(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadBrief();
+  }, [params.id]);
+
+  return (
+    <main style={{ padding: '2rem', maxWidth: 900, margin: '0 auto' }}>
+      <h1>Lead intelligence brief</h1>
+      <LeadBriefPanel
+        brief={brief}
+        updatedAt={updatedAt}
+        error={error}
+        loading={loading}
+        onRetry={() => loadBrief(true)}
+      />
+
+      <details style={{ marginTop: '2rem' }}>
+        <summary>Raw debug</summary>
+        <pre style={{ whiteSpace: 'pre-wrap' }}>
+          {JSON.stringify({ parsed: brief, updatedAt, error }, null, 2)}
+        </pre>
+      </details>
+    </main>
+  );
+}

@@ -40,7 +40,7 @@ const formatCurrency = (value: number) => {
   if (value >= 1000000000) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 1,
       maximumFractionDigits: 1
     }).format(value / 1000000000) + 'B';
@@ -48,7 +48,7 @@ const formatCurrency = (value: number) => {
   if (value >= 1000000) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 1,
       maximumFractionDigits: 1
     }).format(value / 1000000) + 'M';
@@ -56,14 +56,14 @@ const formatCurrency = (value: number) => {
   if (value >= 1000) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 1,
       maximumFractionDigits: 1
     }).format(value / 1000) + 'K';
   }
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   }).format(value);
@@ -482,13 +482,13 @@ const monthlyTrendData = useMemo(() => generateTrendData(), [inputs, results]);
       formatValue: formatNumber
     },
     {
-      label: "Average Transaction Value ($)",
+      label: "Average Transaction Value (₹)",
       name: "avgValue",
       value: inputs.avgValue,
       min: 1,
       max: 100,
       step: 1,
-      formatValue: (v: number) => `$ ${v}` // ← Add this
+      formatValue: (v: number) => `₹ ${v}` // ← Add this
     }
   ];
 

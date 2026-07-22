@@ -100,7 +100,7 @@ export default function CRMNavigation() {
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
         <Dashboard color="primary" />
         <Typography variant="h6" fontWeight="bold" color="text.primary">
-          AberCRM
+          AberScale
         </Typography>
       </Box>
 

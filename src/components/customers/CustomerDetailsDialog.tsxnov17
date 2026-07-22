@@ -1,0 +1,236 @@
+//  src/components/customers/CustomerDetailsDialog.tsx
+'use client';
+
+import { useState, useRef, useEffect, useMemo } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Tabs,
+  Tab,
+  Box,
+  Typography,
+  Chip,
+  TextField,
+  MenuItem,
+  Divider,
+} from '@mui/material';
+import { CheckCircle as CheckIcon } from '@mui/icons-material';
+import type { Customer } from '@/types';
+import { ProfilerPanel } from '@/components/leads/ProfilerPanel';
+import { LeadBriefPanel } from '@/components/leads/LeadBriefPanel';
+import { CustomerOpportunitiesPanel } from '@/components/customers/CustomerOpportunitiesPanel';
+import { createClient } from '@/lib/supabase/client';
+import { useTenant } from '@/lib/supabase/tenant-context';
+import { fetchBrief, Brief } from '@/lib/fetchBrief';
+
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  customer: Customer | null;
+};
+
+export function CustomerDetailsDialog({ open, onClose, customer }: Props) {
+  const [tab, setTab] = useState(0);
+  const { organization } = useTenant();
+
+  const [brief, setBrief] = useState<Brief | null>(null);
+  const [briefUpdatedAt, setBriefUpdatedAt] = useState<string | null>(null);
+  const [briefLoading, setBriefLoading] = useState(false);
+  const [briefError, setBriefError] = useState<string | null>(null);
+
+  // Form state for new opportunity
+  const [newOpp, setNewOpp] = useState({
+    name: '',
+    amount: 0,
+    probability: 0,
+    expected_close_date: '',
+    pipeline_stage_id: '',
+  });
+
+  // Ref to trigger reload in CustomerOpportunitiesPanel
+  const reloadOpportunitiesRef = useRef<() => void>();
+
+  const handleCreateOpportunity = async () => {
+    if (!organization || !customer) return;
+    const supabase = createClient();
+    const { error } = await supabase.from('opportunities').insert({
+      organization_id: organization.id,
+      customer_id: customer.id,
+      name: newOpp.name,
+      amount: newOpp.amount,
+      probability: newOpp.probability,
+      expected_close_date: newOpp.expected_close_date || null,
+      pipeline_stage_id: newOpp.pipeline_stage_id || null,
+      status: 'active',
+      created_by: (await supabase.auth.getUser()).data.user?.id,
+    });
+    if (error) {
+      console.error('Error creating opportunity:', error);
+    } else {
+      // reset form
+      setNewOpp({
+        name: '',
+        amount: 0,
+        probability: 0,
+        expected_close_date: '',
+        pipeline_stage_id: '',
+      });
+      // trigger reload in panel
+      reloadOpportunitiesRef.current?.();
+    }
+  };
+
+  // ✅ Memoize briefKey to avoid unstable dependency loops
+  const briefKey = useMemo(
+    () => customer?.converted_from_lead || customer?.id || null,
+    [customer?.converted_from_lead, customer?.id]
+  );
+
+  // ✅ Only fetch brief when tab is "Brief" and briefKey is stable
+  useEffect(() => {
+    if (tab === 2 && briefKey) {
+      setBriefLoading(true);
+      fetchBrief(briefKey)
+        .then((res) => {
+          setBrief(res.brief);
+          setBriefUpdatedAt(res.updated_at ?? null);
+          setBriefError(null);
+        })
+        .catch((err) => {
+          setBriefError(err.message);
+          setBrief(null);
+        })
+        .finally(() => setBriefLoading(false));
+    }
+  }, [tab, briefKey]);
+
+  if (!customer) return null;
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle sx={{ pb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">{customer.name}</Typography>
+          {customer.status === 'active' ? (
+            <Chip label="Active" color="success" icon={<CheckIcon />} />
+          ) : (
+            <Chip label={customer.status} color="primary" variant="outlined" />
+          )}
+        </Box>
+      </DialogTitle>
+
+      <DialogContent>
+        <Tabs value={tab} onChange={(_, val) => setTab(val)} sx={{ mb: 2 }}>
+          <Tab label="Details" />
+          <Tab label="Profiler" />
+          <Tab label="Brief" />
+          <Tab label="Opportunities" />
+        </Tabs>
+
+        {tab === 0 && (
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body1">Company: {customer.company}</Typography>
+            <Typography variant="body1">Email: {customer.email}</Typography>
+            <Typography variant="body1">Phone: {customer.phone}</Typography>
+            <Typography variant="body1">Industry: {customer.industry}</Typography>
+          </Box>
+        )}
+
+        {tab === 1 && <ProfilerPanel leadId={customer.id ?? ''} />}
+
+        {tab === 2 && (
+          <LeadBriefPanel
+            brief={brief}
+            updatedAt={briefUpdatedAt}
+            error={briefError}
+            loading={briefLoading}
+            onRetry={() => {
+              if (briefKey) {
+                setBriefLoading(true);
+                fetchBrief(briefKey, true) // force refresh
+                  .then((res) => {
+                    setBrief(res.brief);
+                    setBriefUpdatedAt(res.updated_at ?? null);
+                    setBriefError(null);
+                  })
+                  .catch((err) => {
+                    setBriefError(err.message);
+                    setBrief(null);
+                  })
+                  .finally(() => setBriefLoading(false));
+              }
+            }}
+          />
+        )}
+
+        {tab === 3 && (
+          <Box>
+            <CustomerOpportunitiesPanel
+              customerId={customer.id}
+              onReloadRef={(reloadFn) => (reloadOpportunitiesRef.current = reloadFn)}
+            />
+
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="subtitle1" gutterBottom>
+              Create New Opportunity
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <TextField
+                label="Opportunity Name"
+                value={newOpp.name}
+                onChange={(e) => setNewOpp({ ...newOpp, name: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="Amount"
+                type="number"
+                value={newOpp.amount}
+                onChange={(e) => setNewOpp({ ...newOpp, amount: Number(e.target.value) })}
+                fullWidth
+              />
+              <TextField
+                label="Probability (%)"
+                type="number"
+                value={newOpp.probability}
+                onChange={(e) => setNewOpp({ ...newOpp, probability: Number(e.target.value) })}
+                fullWidth
+              />
+              <TextField
+                label="Expected Close Date"
+                type="date"
+                value={newOpp.expected_close_date}
+                onChange={(e) => setNewOpp({ ...newOpp, expected_close_date: e.target.value })}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                select
+                label="Pipeline Stage"
+                value={newOpp.pipeline_stage_id}
+                onChange={(e) => setNewOpp({ ...newOpp, pipeline_stage_id: e.target.value })}
+                fullWidth
+              >
+                <MenuItem value="">Select Stage</MenuItem>
+                <MenuItem value="prospecting">Prospecting</MenuItem>
+                <MenuItem value="proposal">Proposal</MenuItem>
+                <MenuItem value="negotiation">Negotiation</MenuItem>
+                <MenuItem value="closed_won">Closed Won</MenuItem>
+                <MenuItem value="closed_lost">Closed Lost</MenuItem>
+              </TextField>
+              <Button variant="contained" onClick={handleCreateOpportunity}>
+                Save Opportunity
+              </Button>
+            </Box>
+          </Box>
+        )}
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}

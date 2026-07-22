@@ -1,0 +1,257 @@
+// src/components/customers/CustomerOpportunitiesPanel.tsx
+'use client';
+console.log('CustomerOpportunitiesPanel file version: inline panel, no Dialog');
+
+import { useEffect, useState, useCallback } from 'react';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  LinearProgress,
+  AvatarGroup,
+  Avatar,
+  Stack
+} from '@mui/material';
+import { Add as AddIcon, CalendarToday as CalendarIcon } from '@mui/icons-material';
+import { createClient } from '@/lib/supabase/client';
+import { useTenant } from '@/lib/supabase/tenant-context';
+
+interface Opportunity {
+  id: string;
+  name: string;
+  amount: number;
+  probability: number;
+  expected_close_date: string | null;
+  status: string;
+  pipeline_stage_id: string | null;
+  customer_id: string;
+  contacts: Array<{
+    contact_id: string;
+    name: string;
+    role: string;
+    influence_level: string;
+  }>;
+}
+
+type Props = {
+  customerId: string;
+  reloadTrigger?: number;
+  onReloadRef?: (reloadFn: () => void) => void;
+};
+
+// Helper that tolerates both object and array shapes from PostgREST
+function contactDisplayName(contactsNode: any): string {
+  if (!contactsNode) return '';
+  // If it's an array, take the first item
+  if (Array.isArray(contactsNode)) {
+    const first = contactsNode[0];
+    const fn = first?.first_name ?? '';
+    const ln = first?.last_name ?? '';
+    return `${fn} ${ln}`.trim();
+  }
+  // Otherwise it's an object
+  const fn = contactsNode?.first_name ?? '';
+  const ln = contactsNode?.last_name ?? '';
+  return `${fn} ${ln}`.trim();
+}
+
+export function CustomerOpportunitiesPanel({ customerId, reloadTrigger, onReloadRef }: Props) {
+  const { organization } = useTenant();
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [loading, setLoading] = useState(false);
+
+
+  console.log('Mounting CustomerOpportunitiesPanel for customer', customerId);
+
+  const loadOpportunities = useCallback(async () => {
+    if (!organization?.id || !customerId) return;
+    setLoading(true);
+    const supabase = createClient();
+
+    // 1) Load opportunities for this customer
+    const { data: opps, error: oppErr } = await supabase
+      .from('opportunities')
+      .select(
+        `
+        id,
+        name,
+        amount,
+        probability,
+        expected_close_date,
+        status,
+        pipeline_stage_id,
+        customer_id,
+        created_at
+        `
+      )
+      .eq('organization_id', organization.id)
+      .eq('customer_id', customerId)
+      .order('created_at', { ascending: false });
+
+    if (oppErr) {
+      console.error('Error loading opportunities:', oppErr);
+      setOpportunities([]);
+      setLoading(false);
+      return;
+    }
+
+    const base = (opps ?? []).map((o: any) => ({ ...o, contacts: [] as Opportunity['contacts'] }));
+
+    if (base.length === 0) {
+      setOpportunities([]);
+      setLoading(false);
+      return;
+    }
+
+    // 2) Load contacts for these opportunities using in()
+    const oppIds = base.map((o) => o.id);
+
+    const { data: ocRows, error: ocErr } = await supabase
+      .from('opportunity_contacts')
+      .select(
+        `
+        opportunity_id,
+        contact_id,
+        role,
+        influence_level,
+        contacts (
+          first_name,
+          last_name
+        )
+        `
+      )
+      .in('opportunity_id', oppIds);
+
+    if (ocErr) {
+      console.error('Error loading opportunity contacts:', ocErr);
+      setOpportunities(base); // show opps without contacts if join fails
+      setLoading(false);
+      return;
+    }
+
+    // 3) Map contacts into each opportunity (handle array/object shapes)
+    const byOpp: Record<string, Opportunity['contacts']> = {};
+    for (const row of ocRows ?? []) {
+      const displayName = contactDisplayName(row.contacts);
+      const entry = {
+        contact_id: row.contact_id,
+        name: displayName || row.contact_id,
+        role: row.role,
+        influence_level: row.influence_level
+      };
+      const arr = byOpp[row.opportunity_id] ?? [];
+      arr.push(entry);
+      byOpp[row.opportunity_id] = arr;
+    }
+
+    const merged = base.map((o) => ({
+      ...o,
+      contacts: byOpp[o.id] ?? []
+    }));
+
+    setOpportunities(merged);
+    setLoading(false);
+  }, [organization?.id, customerId]);
+
+  useEffect(() => {
+    if (onReloadRef) onReloadRef(loadOpportunities);
+  }, [onReloadRef, loadOpportunities]);
+
+  useEffect(() => {
+    void loadOpportunities();
+  }, [loadOpportunities, reloadTrigger]);
+
+  const createOpportunity = async () => {
+    if (!organization?.id) return;
+    const supabase = createClient();
+    const { error } = await supabase.from('opportunities').insert({
+      organization_id: organization.id,
+      customer_id: customerId,
+      name: 'New Opportunity',
+      amount: 0,
+      status: 'active',
+      probability: 0,
+      pipeline_stage_id: null,
+      created_by: (await supabase.auth.getUser()).data.user?.id
+    });
+    if (error) {
+      console.error('Error creating opportunity:', error);
+    } else {
+      void loadOpportunities();
+    }
+  };
+
+  return (
+    <Box sx={{ mt: 3 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+        <Typography variant="h6">Opportunities</Typography>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={createOpportunity}>
+          New Opportunity
+        </Button>
+      </Stack>
+
+      {loading ? (
+        <LinearProgress />
+      ) : opportunities.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">
+          No opportunities yet for this customer.
+        </Typography>
+      ) : (
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+            gap: 2
+          }}
+        >
+          {opportunities.map((opp) => (
+            <Card key={opp.id} sx={{ p: 2 }}>
+              <CardContent>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  {opp.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Status: {opp.status}
+                </Typography>
+                <Typography variant="h6" color="primary" sx={{ mb: 1 }}>
+                  ${opp.amount.toLocaleString()}
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={opp.probability}
+                  sx={{ height: 6, borderRadius: 3, mb: 1 }}
+                  color={
+                    opp.probability > 70
+                      ? 'success'
+                      : opp.probability > 40
+                      ? 'warning'
+                      : 'primary'
+                  }
+                />
+                {opp.expected_close_date && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <CalendarIcon fontSize="small" color="action" />
+                    <Typography variant="caption">
+                      {new Date(opp.expected_close_date).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                )}
+                {opp.contacts.length > 0 && (
+                  <AvatarGroup max={3}>
+                    {opp.contacts.map((c, idx) => (
+                      <Avatar key={idx} sx={{ width: 28, height: 28 }}>
+                        {c.name?.charAt(0)}
+                      </Avatar>
+                    ))}
+                  </AvatarGroup>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      )}
+    </Box>
+  );
+}

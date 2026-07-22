@@ -4,6 +4,10 @@ import { NextResponse } from 'next/server';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!;
 
+// Define valid customer types based on your database constraint
+const VALID_CUSTOMER_TYPES = ['enterprise', 'business', 'individual', 'startup']; // Adjust based on your constraint
+const VALID_STATUSES = ['active', 'inactive', 'prospect', 'lead'];
+
 export async function POST(request: Request) {
   try {
     const { customers } = await request.json();
@@ -22,24 +26,39 @@ export async function POST(request: Request) {
 
     for (const customer of customers) {
       try {
+        // Validate and sanitize customer data
+        const sanitizedCustomer = {
+          name: customer.name?.trim() || '',
+          email: customer.email?.trim() || null,
+          phone: customer.phone?.trim() || null,
+          company: customer.company?.trim() || null,
+          industry: customer.industry?.trim() || null,
+          website: customer.website?.trim() || null,
+          status: VALID_STATUSES.includes(customer.status?.toLowerCase())
+            ? customer.status.toLowerCase()
+            : 'active',
+          customer_type: VALID_CUSTOMER_TYPES.includes(customer.customer_type?.toLowerCase())
+            ? customer.customer_type.toLowerCase()
+            : 'business' // Default fallback
+        };
+
+        // Skip if no name
+        if (!sanitizedCustomer.name) {
+          errors.push(`Skipped customer: Missing name`);
+          continue;
+        }
+
         const { data, error } = await supabase
           .from('customers')
-          .insert([{
-            name: customer.name,
-            email: customer.email || null,
-            phone: customer.phone || null,
-            company: customer.company || null,
-            industry: customer.industry || null,
-            website: customer.website || null,
-            status: customer.status || 'active',
-            customer_type: customer.customer_type || 'business'
-          }])
+          .insert([sanitizedCustomer])
           .select()
           .single();
 
         if (error) {
           if (error.code === '23505') { // Unique violation
             errors.push(`Duplicate email: ${customer.email}`);
+          } else if (error.code === '23514') { // Check constraint violation
+            errors.push(`Invalid data for ${customer.name}: ${error.message}`);
           } else {
             errors.push(`Failed to import ${customer.name}: ${error.message}`);
           }

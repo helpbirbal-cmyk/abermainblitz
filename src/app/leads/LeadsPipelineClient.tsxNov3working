@@ -1,0 +1,539 @@
+// src/app/leads/LeadsPipelineClient.tsx GitCo
+'use client';
+
+import { useState, useCallback } from 'react';
+import { Container, Box, Button, useTheme, IconButton } from '@mui/material';
+import { MoreVert as MoreIcon } from '@mui/icons-material';
+import { useTenant } from '@/lib/supabase/tenant-context';
+import { usePipelineData } from '@/hooks/usePipelineData';
+import { PipelineHeader } from '@/components/leads/PipelineHeader';
+import { PipelineKanban } from '@/components/leads/PipelineKanban';
+import { ListView } from '@/components/leads/ListView';
+import { AssignmentMenu } from '@/components/leads/AssignmentMenu';
+import { InteractionDialog } from '@/components/leads/InteractionDialog';
+import { LeadDetailsDialog } from '@/components/leads/LeadDetailsDialog';
+import { ConvertLeadDialog } from '@/components/leads/ConvertLeadDialog';
+import { AddLeadDialog } from '@/components/leads/AddLeadDialog';
+import { FiltersDialog } from '@/components/leads/FiltersDialog';
+import { BulkActionsMenu } from '@/components/leads/BulkActionsMenu';
+import { createClient } from '@/lib/supabase/client';
+import type { LeadData, FilterState } from '@/types';
+import { UpdateStageDialog } from '@/components/leads/UpdateStageDialog';
+
+export function LeadsPipelineClient() {
+  const theme = useTheme();
+  const { organization } = useTenant();
+  const orgId = organization?.id;
+
+  // Pipeline Data & State
+  const {
+    stages,
+    leads,
+    teamMembers,
+    loading,
+    filters,
+    setFilters,
+    reloadPipeline
+  } = usePipelineData(orgId ?? '');
+
+  // UI State
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [showFilters, setShowFilters] = useState(false);
+  const [bulkActionAnchor, setBulkActionAnchor] = useState<null | HTMLElement>(null);
+
+  // Dialog States
+  const [showAddLead, setShowAddLead] = useState(false);
+
+  const [assignmentState, setAssignmentState] = useState<{
+    anchorEl: HTMLElement | null;
+    lead: LeadData | null;
+  }>({ anchorEl: null, lead: null });
+
+  const [interactionState, setInteractionState] = useState<{
+    open: boolean;
+    lead: LeadData | null;
+  }>({ open: false, lead: null });
+
+  const [detailsState, setDetailsState] = useState<{
+    open: boolean;
+    lead: LeadData | null;
+  }>({ open: false, lead: null });
+
+  const [convertState, setConvertState] = useState<{
+    open: boolean;
+    lead: LeadData | null;
+    isBulk?: boolean;
+  }>({ open: false, lead: null });
+
+  const [showUpdateStage, setShowUpdateStage] = useState(false);
+
+  // Action Handlers
+
+  const handleLeadMove = async (leadId: string, newStageId: string) => {
+    try {
+      const supabase = createClient();
+      const lead = leads.find(l => l.id === leadId);
+      if (!lead) {
+        console.warn('Lead not found for move:', leadId);
+        return;
+      }
+
+  /***    const { error } = await supabase
+        .from('unified_leads')
+        .update({
+          pipeline_stage: stages.find(s => s.id === newStageId)?.name.toLowerCase().replace(/\s+/g, '_'),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', leadId);
+      if (error) throw error;
+  ***/
+
+
+  const table = lead.lead_type === 'assessment' ? 'lead_assessment_reports' : 'lead_reports';
+
+  const stage = stages.find(s => s.id === newStageId);
+
+if (!stage) return;
+
+await supabase
+  .from(table)
+  .update({
+    pipeline_stage: stage.name.toLowerCase().replace(/\s+/g, '_'),
+    updated_at: new Date().toISOString()
+  })
+  .eq('id', lead.id);
+
+
+
+      reloadPipeline();
+    } catch (error) {
+      console.error('Error moving lead:', error);
+    }
+  };
+
+  const handleLeadSelect = (leadId: string) => {
+    setSelectedLeads(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(leadId)) {
+        newSet.delete(leadId);
+      } else {
+        newSet.add(leadId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = (leads: LeadData[]) => {
+    setSelectedLeads(prev => {
+      const allSelected = leads.every(lead => prev.has(lead.id));
+      if (allSelected) {
+        return new Set();
+      } else {
+        const newSet = new Set(prev);
+        leads.forEach(lead => newSet.add(lead.id));
+        return newSet;
+      }
+    });
+  };
+
+  // Bulk Actions
+
+  const handleBulkConvert = async (data: {
+    customerType: string;
+    industry: string;
+  }) => {
+    try {
+      const supabase = createClient();
+
+      // Convert all selected leads
+      for (const leadId of selectedLeads) {
+        const lead = leads.find(l => l.id === leadId);
+        if (!lead) continue;
+
+        // Create customer record
+        const { data: customer, error: customerError } = await supabase
+          .from('customers')
+          .insert({
+            name: lead.name,
+            company: lead.company,
+            email: lead.email,
+            phone: lead.phone,
+            customer_type: data.customerType,
+            industry: data.industry,
+            organization_id: orgId,
+            created_from_lead_id: lead.id,
+            created_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (customerError) throw customerError;
+
+        /** Update lead
+        const { error: leadError } = await supabase
+          .from('unified_leads')
+          .update({
+            converted_to_customer_id: customer.id,
+            converted_at: new Date().toISOString(),
+            status: 'converted',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', lead.id);
+
+        if (leadError) throw leadError; **/
+
+
+const table = lead.lead_type === 'assessment' ? 'lead_assessment_reports' : 'lead_reports';
+        await supabase
+          .from(table)
+          .update({
+            converted_to_customer_id: customer.id,
+            converted_at: new Date().toISOString(),
+            status: 'converted',
+            pipeline_stage: null, // ✅ Clear the stage if converted
+            updated_at: new Date().toISOString()
+          })
+
+      }
+
+      await reloadPipeline();
+      setSelectedLeads(new Set());
+      setConvertState({ open: false, lead: null });
+    } catch (error) {
+      console.error('Error converting leads:', error);
+    }
+  };
+
+  const handleBulkAssign = async (userId: string | null) => {
+    try {
+      const supabase = createClient();
+      const updates = Array.from(selectedLeads).map(leadId => ({
+        id: leadId,
+        assigned_to: userId,
+        updated_at: new Date().toISOString()
+      }));
+
+      const { error } = await supabase
+        .from('unified_leads')
+        .upsert(updates);
+
+      if (error) throw error;
+      await reloadPipeline();
+      setSelectedLeads(new Set());
+    } catch (error) {
+      console.error('Error bulk assigning leads:', error);
+    }
+  };
+
+  const handleBulkStageUpdate = async (stageId: string) => {
+    try {
+      const supabase = createClient();
+      const targetStage = stages.find(s => s.id === stageId);
+      if (!targetStage) return;
+
+      const updates = Array.from(selectedLeads).map(leadId => ({
+        id: leadId,
+        pipeline_stage: targetStage.name.toLowerCase().replace(/\s+/g, '_'),
+        updated_at: new Date().toISOString()
+      }));
+
+      const { error } = await supabase
+        .from('unified_leads')
+        .upsert(updates);
+
+      if (error) throw error;
+      await reloadPipeline();
+      setSelectedLeads(new Set());
+    } catch (error) {
+      console.error('Error bulk updating stages:', error);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Are you sure you want to delete ${selectedLeads.size} leads?`)) {
+      return;
+    }
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('unified_leads')
+        .delete()
+        .in('id', Array.from(selectedLeads));
+
+      if (error) throw error;
+      await reloadPipeline();
+      setSelectedLeads(new Set());
+    } catch (error) {
+      console.error('Error bulk deleting leads:', error);
+    }
+  };
+
+  // Filter Handler
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
+  const handleAssign = async (leadId: string, userId: string | null) => {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('unified_leads')
+        .update({
+          assigned_to: userId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', leadId);
+
+      if (error) throw error;
+
+      reloadPipeline();
+      setAssignmentState({ anchorEl: null, lead: null });
+    } catch (error) {
+      console.error('Error assigning lead:', error);
+    }
+  };
+
+  const handleLogInteraction = async (type: string, notes: string) => {
+    if (!interactionState.lead) return;
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('lead_interactions')
+        .insert({
+          lead_id: interactionState.lead.id,
+          type,
+          notes,
+          created_by: (await supabase.auth.getUser()).data.user?.id,
+          created_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      // Update interactions count
+      await supabase
+        .from('unified_leads')
+        .update({
+          interactions_count: (interactionState.lead.interactions_count || 0) + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', interactionState.lead.id);
+
+      reloadPipeline();
+      setInteractionState({ open: false, lead: null });
+    } catch (error) {
+      console.error('Error logging interaction:', error);
+    }
+  };
+
+  const handleConvertLead = async (data: {
+    name: string;
+    company: string;
+    customerType: string;
+    industry: string;
+  }) => {
+    if (!convertState.lead) return;
+
+    try {
+      const supabase = createClient();
+
+      // Create customer record
+      const { data: customer, error: customerError } = await supabase
+        .from('customers')
+        .insert({
+          name: data.name,
+          company: data.company,
+          email: convertState.lead.email,
+          phone: convertState.lead.phone,
+          customer_type: data.customerType,
+          industry: data.industry,
+          organization_id: orgId,
+          created_from_lead_id: convertState.lead.id,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (customerError) throw customerError;
+
+      /** Update lead
+      const { error: leadError } = await supabase
+        .from('unified_leads')
+        .update({
+          converted_to_customer_id: customer.id,
+          converted_at: new Date().toISOString(),
+          status: 'converted',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', convertState.lead.id);
+
+      if (leadError) throw leadError; **/
+const lead = convertState.lead;
+
+if (!lead) return;
+
+const table = lead.lead_type === 'assessment' ? 'lead_assessment_reports' : 'lead_reports';
+      await supabase
+        .from(table)
+        .update({
+          converted_to_customer_id: customer.id,
+          converted_at: new Date().toISOString(),
+          status: 'converted',
+          pipeline_stage: null, // ✅ Clear the stage if converted
+          updated_at: new Date().toISOString()
+        })
+
+      reloadPipeline();
+      setConvertState({ open: false, lead: null });
+    } catch (error) {
+      console.error('Error converting lead:', error);
+    }
+  };
+
+  if (!orgId) return null;
+
+  return (
+    <Container maxWidth={false} sx={{ py: { xs: 1, md: 1 }, px: { xs: 1, md: 1 } }}>
+      <PipelineHeader
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        showFilters={showFilters}
+        onToggleFilters={() => setShowFilters(!showFilters)}
+        selectedCount={selectedLeads.size}
+        onClearSelection={() => setSelectedLeads(new Set())}
+        onAddLead={() => setShowAddLead(true)}
+      />
+
+      <Box sx={{ mt: 2 }}>
+        {viewMode === 'kanban' ? (
+          <PipelineKanban
+            stages={stages}
+            teamMembers={teamMembers}
+            onLeadMove={handleLeadMove}
+            selectedLeads={selectedLeads}
+            onLeadSelect={handleLeadSelect}
+            onSelectAll={handleSelectAll}
+            onInteractionClick={(lead) => setInteractionState({ open: true, lead })}
+            onDetailsClick={(lead) => setDetailsState({ open: true, lead })}
+            onConvertClick={(lead) => setConvertState({ open: true, lead })}
+            onAssignClick={(lead, event) => setAssignmentState({
+              anchorEl: event.currentTarget,
+              lead
+            })}
+          />
+        ) : (
+          <ListView
+            leads={leads}
+            selectedLeads={selectedLeads}
+            onLeadSelect={handleLeadSelect}
+            onSelectAll={handleSelectAll}
+            onInteractionClick={(lead) => setInteractionState({ open: true, lead })}
+            onDetailsClick={(lead) => setDetailsState({ open: true, lead })}
+            onConvertClick={(lead) => setConvertState({ open: true, lead })}
+            onAssignClick={(lead, event) => setAssignmentState({
+              anchorEl: event.currentTarget,
+              lead
+            })}
+          />
+        )}
+      </Box>
+
+      {/* Menus & Dialogs */}
+
+      {/* Dialogs */}
+      <AddLeadDialog
+        open={showAddLead}
+        onClose={() => setShowAddLead(false)}
+        organizationId={orgId}
+        onLeadAdded={reloadPipeline}
+      />
+
+
+      <FiltersDialog
+        open={showFilters}
+        onClose={() => setShowFilters(false)}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        teamMembers={teamMembers}
+      />
+
+      <AssignmentMenu
+        anchorEl={assignmentState.anchorEl}
+        open={Boolean(assignmentState.anchorEl)}
+        onClose={() => setAssignmentState({ anchorEl: null, lead: null })}
+        onAssign={(userId) => assignmentState.lead && handleAssign(assignmentState.lead.id, userId)}
+        teamMembers={teamMembers}
+        lead={assignmentState.lead}
+      />
+
+      <InteractionDialog
+        open={interactionState.open}
+        onClose={() => setInteractionState({ open: false, lead: null })}
+        lead={interactionState.lead}
+        onSubmit={handleLogInteraction}
+      />
+
+      <LeadDetailsDialog
+        open={detailsState.open}
+        onClose={() => setDetailsState({ open: false, lead: null })}
+        lead={detailsState.lead}
+        onConvert={() => {
+          setDetailsState({ open: false, lead: null });
+          setConvertState({ open: true, lead: detailsState.lead });
+        }}
+      />
+
+      <ConvertLeadDialog
+        open={convertState.open}
+        onClose={() => setConvertState({ open: false, lead: null })}
+        lead={convertState.lead}
+        isBulk={convertState.isBulk}
+        onConvert={async (data) => {
+          if (convertState.isBulk) {
+            await handleBulkConvert(data);
+          } else {
+            await handleConvertLead(data);
+          }
+        }}
+      />
+
+      <BulkActionsMenu
+        anchorEl={bulkActionAnchor}
+        open={Boolean(bulkActionAnchor)}
+        onClose={() => setBulkActionAnchor(null)}
+        onAssign={() => {
+          setBulkActionAnchor(null);
+          setAssignmentState({
+            anchorEl: bulkActionAnchor,
+            lead: null
+          });
+        }}
+        onUpdateStage={() => {
+          setBulkActionAnchor(null);
+          setShowUpdateStage(true);
+        }}
+        onConvert={() => {
+          setBulkActionAnchor(null);
+          setConvertState({
+            open: true,
+            lead: null,
+            isBulk: true
+          });
+        }}
+        onDelete={handleBulkDelete}
+        selectedCount={selectedLeads.size}
+      />
+
+      {/* Add the UpdateStageDialog */}
+      <UpdateStageDialog
+        open={showUpdateStage}
+        onClose={() => setShowUpdateStage(false)}
+        stages={stages}
+        selectedCount={selectedLeads.size}
+        onUpdate={handleBulkStageUpdate}
+      />
+    </Container>
+  );
+}

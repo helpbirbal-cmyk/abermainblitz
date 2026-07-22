@@ -1,0 +1,56 @@
+// src/hooks/usePipelineData.tsx
+import { useState, useCallback, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import type { LeadData, TeamMember, FilterState } from '@/types';
+
+export default function usePipelineData(orgId?: string | null) {
+  const supabase = createClient();
+  const [leads, setLeads] = useState<LeadData[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [filter, setFilter] = useState<FilterState | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadPipeline = useCallback(async () => {
+    if (!orgId) return;
+
+    try {
+      setLoading(true);
+
+      const { data: leadsData, error: leadsError } = await supabase
+        .from('unified_leads')
+        .select('*')
+        .eq('organization_id', orgId)
+        .order('created_at', { ascending: false });
+
+      if (leadsError) throw leadsError;
+
+      const { data: membersData, error: membersError } = await supabase
+        .from('organization_members')
+        .select('id, user_id, organization_id, role, created_at')
+        .eq('organization_id', orgId);
+
+      if (membersError) throw membersError;
+
+      setLeads(leadsData || []);
+      setTeamMembers(membersData || []);
+    } catch (err) {
+      console.error('❌ Failed to load pipeline data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [orgId, supabase]);
+
+  useEffect(() => {
+    loadPipeline();
+  }, [loadPipeline]);
+
+  return {
+    leads,
+    setLeads,
+    teamMembers,
+    filter,
+    setFilter,
+    loading,
+    reloadPipeline: loadPipeline,
+  };
+}

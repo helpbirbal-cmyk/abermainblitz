@@ -139,7 +139,7 @@ export default function Navigation({ openModal }: NavigationProps) {
               fontSize: '0.875rem',
               fontWeight: 500,
               borderRadius: '6px',
-              px: 3,
+              px: 1,
               py: 1,
               backgroundColor: '#2563eb', // blue-600
               color: 'white',
@@ -153,10 +153,21 @@ export default function Navigation({ openModal }: NavigationProps) {
           <Button
               onClick={() => router.push('/analytics')}
               variant="outlined"
-              sx={{ py: 2,fontSize: '0.875rem',
-              fontWeight: 300, }}
+              sx={{
+                textTransform: 'none',
+                fontSize: '0.875rem',
+                fontWeight: 300,
+                borderRadius: '6px',
+                px: 1,
+                py: 1,
+                backgroundColor: '#555057', // greyish
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: '#1d4ed8', // blue-700
+                }
+              }}
              >
-              CLM
+              Admin
           </Button>
         </Box>
 

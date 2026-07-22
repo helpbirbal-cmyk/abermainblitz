@@ -1,0 +1,86 @@
+'use client';
+
+import React, { useState } from 'react';
+import type { LeadData } from '@/types';
+import PipelineStageColumn from '@/components/PipelineStageColumn';
+import PipelineActionsBar from '@/components/PipelineActionsBar';
+import AddLeadDialog from '@/components/AddLeadDialog';
+import { normalizeStageName, compareDates, isValidDate } from '@/utils/helpers';
+import usePipelineData from '@/hooks/usePipelineData';
+import useRealtimePipeline from '@/hooks/useRealtimePipeline';
+import { useTenant } from '@/lib/supabase/tenant-context';
+
+interface Stage {
+  id: string;
+  name: string;
+  leads: LeadData[];
+}
+
+export function LeadsPipelineClientRefact() {
+  const { organization } = useTenant();
+  const orgId = organization?.id || null;
+
+  const {
+    teamMembers,
+    filter,
+    setFilter,
+    loading,
+    reloadPipeline,
+    leads,
+    setLeads,
+  } = usePipelineData(orgId ?? '');
+
+console.log('Current orgId:', orgId);
+console.log('Loaded leads:', leads);
+console.log('Team members:', teamMembers);
+console.log('Loading:', loading);
+
+
+  const [stages, setStages] = useState<Stage[]>([]);
+  const [draggedLead, setDraggedLead] = useState<LeadData | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
+
+  useRealtimePipeline(orgId ?? '', reloadPipeline);
+
+  if (!orgId) {
+    return <div className="p-4 text-gray-500">No organization selected.</div>;
+  }
+
+  // ✅ Render pipeline UI
+  return (
+    <div className="flex flex-col">
+      <PipelineActionsBar
+        teamMembers={teamMembers}
+        filter={filter}
+        setFilter={setFilter}
+        selectedLeads={selectedLeads}
+        setSelectedLeads={setSelectedLeads}
+        reloadPipeline={reloadPipeline}
+      />
+
+      <div className="flex flex-row overflow-x-auto">
+        {stages.map((stage) => (
+          <PipelineStageColumn
+            key={stage.id}
+            stage={stage}
+            leads={stage.leads}
+            isDragging={isDragging}
+            setDraggedLead={setDraggedLead}
+            draggedLead={draggedLead}
+            onDrop={() => {}}
+          />
+        ))}
+      </div>
+
+      <AddLeadDialog
+        open={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+        onLeadAdded={reloadPipeline}       // ✅ Refresh pipeline after adding lead
+        orgId={orgId}                // ✅ Pass orgId from props
+        teamMembers={teamMembers}          // ✅ Pass loaded team members
+      />
+    </div>
+  );
+}

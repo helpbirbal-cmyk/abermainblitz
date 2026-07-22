@@ -28,7 +28,7 @@ const logos = [
     width: 128
   },
   {
-    src: "/images/sonyliv.jpg",
+    src: "/images/sonyliv.png",
     alt: "SonyLiv Logo",
     height: 40,
     width: 128
@@ -107,10 +107,10 @@ export default function LogoCloud() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 flex: '0 0 auto',
-                filter: isDarkMode ? 'brightness(0) invert(1)' : 'none',
+               // filter: isDarkMode ? 'brightness(0) invert(1)' : 'none',
                 transition: 'all 0.3s ease-in-out',
                 '&:hover': {
-                  filter: isDarkMode ? 'brightness(0) invert(1) drop-shadow(0 4px 8px rgba(255,255,255,0.2))' : 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))',
+                 // filter: isDarkMode ? 'brightness(0) invert(1) drop-shadow(0 4px 8px rgba(255,255,255,0.2))' : 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))',
                   transform: 'translateY(-2px)'
                 }
               }}

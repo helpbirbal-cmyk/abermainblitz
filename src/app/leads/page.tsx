@@ -1,40 +1,29 @@
-import { createClient } from '@supabase/supabase-js';
-import { LeadsClient } from './LeadsClient';
-import { requireAuth } from '@/lib/auth';
-
-// Server-side only - uses service role key
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!;
-
-interface Lead {
-  id: string;
-  name: string;
-  email: string;
-  company: string;
-  projectType: string;
-  timeline: string;
-  message: string;
-  source: string;
-  demoType: string;
-  status: string;
-  created_at?: string;
-}
+// src/app/leads/page.tsx - FIXED VERSION
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { LeadsPipelineClient } from './LeadsPipelineClient';
 
 export default async function LeadsPage() {
-  // This will redirect to login if not authenticated
-  await requireAuth();
+  const supabase = createClient();
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  try {
+    // Check authentication with better error handling
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  const { data: leads, error } = await supabase
-    .from('lead_assessment_reports')
-    .select('*')
-    .order('created_at', { ascending: false });
+    if (authError || !user) {
+      console.log('Auth issue, redirecting to login');
+      redirect('/auth/login');
+    }
 
-  if (error) {
-    console.error('Error fetching leads:', error);
-    throw new Error('Failed to fetch leads');
+    // Organizations are handled by TenantContext in the client component
+    // No need to fetch or pass them as props
+
+    return (
+      <LeadsPipelineClient />
+    );
+
+  } catch (error) {
+    console.error('Unexpected error in leads page:', error);
+    redirect('/auth/login');
   }
-
-  return <LeadsClient leads={leads || []} />;
 }

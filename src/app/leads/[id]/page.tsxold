@@ -1,0 +1,18 @@
+import { ProfilerPanel } from '@/components/leads/ProfilerPanel';
+import { notFound } from 'next/navigation';
+
+interface LeadPageProps {
+  params: { id: string };
+}
+
+export default function LeadPage({ params }: LeadPageProps) {
+  const { id } = params;
+  if (!id) notFound();
+
+  return (
+    <main style={{ padding: '2rem', maxWidth: 900, margin: '0 auto' }}>
+      <h1 style={{ marginBottom: '1rem' }}>Lead intelligence brief</h1>
+      <ProfilerPanel leadId={id} />
+    </main>
+  );
+}

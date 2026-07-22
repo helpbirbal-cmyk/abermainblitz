@@ -1,0 +1,175 @@
+// src/components/customers/CustomerOpportunitiesPanel.tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Chip,
+  Button,
+  LinearProgress,
+  AvatarGroup,
+  Avatar,
+  Stack
+} from '@mui/material';
+import { Add as AddIcon, CalendarToday as CalendarIcon } from '@mui/icons-material';
+import { createClient } from '@/lib/supabase/client';
+import { useTenant } from '@/lib/supabase/tenant-context';
+
+interface Opportunity {
+  id: string;
+  name: string;
+  amount: number;
+  probability: number;
+  expected_close_date: string | null;
+  status: string;
+  pipeline_stage_id: string | null;
+  customer_id: string;
+  contacts: Array<{
+    contact_id: string;
+    name: string;
+    role: string;
+    influence_level: string;
+  }>;
+}
+
+type Props = {
+  customerId: string;
+  reloadTrigger?: number; // optional bump from parent
+};
+
+export function CustomerOpportunitiesPanel({ customerId, reloadTrigger }: Props) {
+  const { organization } = useTenant();
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const loadOpportunities = async () => {
+    if (!organization) return;
+    setLoading(true);
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('opportunities')
+      .select(`
+        id, name, amount, probability, expected_close_date, status, pipeline_stage_id, customer_id,
+        opportunity_contacts (
+          contact_id, role, influence_level,
+          contacts (name)
+        )
+      `)
+      .eq('organization_id', organization.id)
+      .eq('customer_id', customerId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading opportunities:', error);
+      setOpportunities([]);
+    } else {
+      const mapped = (data || []).map((opp: any) => ({
+        ...opp,
+        contacts: (opp.opportunity_contacts || []).map((oc: any) => ({
+          contact_id: oc.contact_id,
+          name: oc.contacts?.name,
+          role: oc.role,
+          influence_level: oc.influence_level
+        }))
+      }));
+      setOpportunities(mapped);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (organization && customerId) {
+      loadOpportunities();
+    }
+  }, [organization, customerId, reloadTrigger]); // reload when trigger changes
+
+  const createOpportunity = async () => {
+    if (!organization) return;
+    const supabase = createClient();
+    const { error } = await supabase.from('opportunities').insert({
+      organization_id: organization.id,
+      customer_id: customerId,
+      name: 'New Opportunity',
+      amount: 0,
+      status: 'active',
+      probability: 0,
+      pipeline_stage_id: null,
+      created_by: (await supabase.auth.getUser()).data.user?.id
+    });
+    if (error) {
+      console.error('Error creating opportunity:', error);
+    } else {
+      loadOpportunities();
+    }
+  };
+
+  return (
+    <Box sx={{ mt: 3 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+        <Typography variant="h6">Opportunities</Typography>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={createOpportunity}>
+          New Opportunity
+        </Button>
+      </Stack>
+
+      {loading ? (
+        <LinearProgress />
+      ) : opportunities.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">
+          No opportunities yet for this customer.
+        </Typography>
+      ) : (
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+            gap: 2
+          }}
+        >
+          {opportunities.map((opp) => (
+            <Card key={opp.id} sx={{ p: 2 }}>
+              <CardContent>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  {opp.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Status: {opp.status}
+                </Typography>
+                <Typography variant="h6" color="primary" sx={{ mb: 1 }}>
+                  ${opp.amount.toLocaleString()}
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={opp.probability}
+                  sx={{ height: 6, borderRadius: 3, mb: 1 }}
+                  color={opp.probability > 70 ? 'success' : opp.probability > 40 ? 'warning' : 'primary'}
+                />
+                {opp.expected_close_date && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <CalendarIcon fontSize="small" color="action" />
+                    <Typography variant="caption">
+                      {new Date(opp.expected_close_date).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                )}
+                {opp.contacts.length > 0 && (
+                  <AvatarGroup max={3}>
+                    {opp.contacts.map((c, idx) => (
+                      <Avatar key={idx} sx={{ width: 28, height: 28 }}>
+                        {c.name?.charAt(0)}
+                      </Avatar>
+                    ))}
+                  </AvatarGroup>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      )}
+    </Box>
+  );
+}

@@ -1,0 +1,90 @@
+// src/components/customers/CustomerKanbanVirtualized.tsx
+'use client';
+
+import { useRef, useState, useMemo, useEffect, UIEvent } from 'react';
+import { Box } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import { CustomerCard } from '@/components/customers/CustomerCard';
+import type { Customer, OrgMemberProfile } from '@/types';
+
+interface CustomerKanbanVirtualizedProps {
+  customers: Customer[];
+  orgMembers: any[];
+  onAssign: (customerId: string, userId: string) => Promise<void>;
+  onRefreshCustomers: () => Promise<void>;
+  onOpenDetails: (customer: Customer) => void;
+  height?: number;
+  itemHeight?: number;
+  overscan?: number;
+}
+type Props = {
+    customers: Customer[];
+    orgMembers: OrgMemberProfile[]; // ✅ changed
+    onAssign: (customerId: string, userId: string) => void;
+    onRefreshCustomers: () => void;
+    onOpenDetails: (customer: Customer) => void;
+};
+
+export const CustomerKanbanVirtualized = ({
+  customers,
+  orgMembers,
+  onAssign,
+  onRefreshCustomers,
+  onOpenDetails,
+  height = 600,
+  itemHeight = 220,
+  overscan = 6,
+}: CustomerKanbanVirtualizedProps) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+
+  const totalHeight = useMemo(() => customers.length * itemHeight, [customers.length, itemHeight]);
+
+  const startIndex = Math.max(Math.floor(scrollTop / itemHeight) - overscan, 0);
+  const endIndex = Math.min(
+    Math.ceil((scrollTop + height) / itemHeight) + overscan,
+    customers.length
+  );
+
+  const visibleItems = customers.slice(startIndex, endIndex);
+  const topSpacer = startIndex * itemHeight;
+  const bottomSpacer = totalHeight - topSpacer - visibleItems.length * itemHeight;
+
+  const handleScroll = (e: UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop);
+  };
+
+  useEffect(() => {
+    if (containerRef.current) {
+      setScrollTop(containerRef.current.scrollTop);
+    }
+  }, []);
+
+  return (
+    <Box
+      ref={containerRef}
+      onScroll={handleScroll}
+      sx={{ height, overflowY: 'auto', overflowX: 'hidden', px: 2, py: 2 }}
+    >
+      <Box sx={{ position: 'relative', height: totalHeight }}>
+        <Box sx={{ height: topSpacer }} />
+
+        <Grid container spacing={2}>
+          {visibleItems.map((customer) => (
+            <Grid key={customer.id} size={{ xs: 12, sm: 6, md: 4 }}>
+              <CustomerCard
+                customer={customer}
+                orgMembers={orgMembers}
+                onAssign={onAssign}
+                onRefreshCustomers={onRefreshCustomers}
+                onOpenDetails={() => onOpenDetails(customer)}
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        <Box sx={{ height: bottomSpacer }} />
+      </Box>
+    </Box>
+  );
+};

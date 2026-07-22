@@ -206,7 +206,7 @@ function CalculatorIntro({ calculatorType, onCalculatorChange, isDarkMode }: Cal
             <ToggleButton value="agenticaitest" aria-label="qa testing calculator">
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="button" sx={{ fontWeight: 600 , fontSize: { xs: '0.5rem', sm: '1rem', md: '1rem' }}}>
-                  QAT
+                  QA
                 </Typography>
               </Box>
             </ToggleButton>
@@ -215,7 +215,7 @@ function CalculatorIntro({ calculatorType, onCalculatorChange, isDarkMode }: Cal
           <ToggleButton value="ott" aria-label="streaming calculator">
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="button" sx={{ fontWeight: 600 , fontSize: { xs: '0.5rem', sm: '1rem', md: '1rem' }}}>
-                Streaming
+                Media
               </Typography>
             </Box>
           </ToggleButton>

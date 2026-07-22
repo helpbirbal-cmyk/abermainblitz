@@ -1,0 +1,90 @@
+import {
+  Box,
+  Card,
+  CardHeader,
+  CardContent,
+  Typography,
+  Divider,
+  Chip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import PersonIcon from '@mui/icons-material/Person';
+import BusinessIcon from '@mui/icons-material/Business';
+import InsightsIcon from '@mui/icons-material/Insights';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+
+interface LeadBriefPanelProps {
+  brief: {
+    snapshot?: string;
+    firmographics?: string;
+    signals?: string;
+    persona?: string;
+    summary?: string;
+  };
+}
+
+export const LeadBriefPanel = ({ brief }: LeadBriefPanelProps) => {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {/* Lead Snapshot */}
+      <Card>
+        <CardHeader avatar={<PersonIcon />} title="Lead Snapshot" />
+        <Divider />
+        <CardContent>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+            {brief.snapshot || 'No snapshot available'}
+          </Typography>
+        </CardContent>
+      </Card>
+
+      {/* Firmographic & Technographic */}
+      <Card>
+        <CardHeader avatar={<BusinessIcon />} title="Firmographic & Technographic" />
+        <Divider />
+        <CardContent>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+            {brief.firmographics || 'No firmographic data'}
+          </Typography>
+        </CardContent>
+      </Card>
+
+      {/* Behavioral Signals */}
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <TimelineIcon sx={{ mr: 1 }} /> <Typography>Behavioral Signals</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+            {brief.signals || 'No behavioral signals'}
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Persona & Intent */}
+      <Card>
+        <CardHeader avatar={<InsightsIcon />} title="Persona & Intent Analysis" />
+        <Divider />
+        <CardContent>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+            {brief.persona || 'No persona analysis'}
+          </Typography>
+        </CardContent>
+      </Card>
+
+      {/* Sales Advisor Summary */}
+      <Card>
+        <CardHeader avatar={<AssignmentTurnedInIcon />} title="Sales Advisor Summary" />
+        <Divider />
+        <CardContent>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+            {brief.summary || 'No summary available'}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+};

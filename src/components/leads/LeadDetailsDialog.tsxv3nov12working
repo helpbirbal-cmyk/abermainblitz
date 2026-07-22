@@ -1,0 +1,497 @@
+//src/components/leads/LeadDetailsDialog.tsx
+import { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Box,
+  Typography,
+  Divider,
+  LinearProgress,
+  Chip,
+  alpha,
+  useTheme,
+
+} from '@mui/material';
+import Grid from '@mui/material/Grid'; //     use as        <Grid size={{ xs: 12, sm: 6 }}>
+import { logInteraction, fetchInteractionsWithCreator} from '@/lib/supabase/interactions';
+import { StageChangeLog } from '@/components/leads/StageChangeLog';
+import { Tabs, Tab } from '@mui/material';
+import { ProfilerPanel } from '@/components/leads/ProfilerPanel';
+
+
+import {
+  Business as BusinessIcon,
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  CheckCircle as CheckIcon,
+  Assignment as AssignmentIcon,
+  Link as LinkIcon
+} from '@mui/icons-material';
+import type { LeadData } from '@/types';
+
+interface LeadDetailsDialogProps {
+  open: boolean;
+  onClose: () => void;
+  lead: LeadData | null;
+  onConvert?: () => void;
+  onUpdateLead: (leadId: string, updates: Partial<LeadData>) => Promise<void>;
+}
+
+export const LeadDetailsDialog = ({
+  open,
+  onClose,
+  lead,
+  onConvert,
+  onUpdateLead // ✅ Add this
+}: LeadDetailsDialogProps) => {
+  const theme = useTheme();
+  const [localLead, setLocalLead] = useState<LeadData | null>(null);
+  const [interactions, setInteractions] = useState<any[]>([]);
+  const [tab, setTab] = useState(0); // 0 = Details, 1 = Profiler
+
+  useEffect(() => {
+    if (open && lead) {
+      setLocalLead(lead);
+    }
+  }, [open, lead]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (lead?.id) {
+        try {
+          const data = await fetchInteractionsWithCreator(lead.id);
+          setInteractions(data || []);
+        } catch (err) {
+          console.error('Failed to fetch interactions:', err);
+        }
+      }
+    };
+
+    fetchData();
+  }, [lead?.id]);
+
+
+  if (!lead) {
+    return <Dialog open={open} onClose={onClose}><DialogContent><Typography>No lead selected.</Typography></DialogContent></Dialog>;
+  }
+
+  const formattedDate = (date: string) => {
+    return new Date(date).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+    >
+      <DialogTitle sx={{ pb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">Lead Details</Typography>
+          {lead.converted_to_customer_id ? (
+            <Chip
+              label="Converted"
+              color="success"
+              icon={<CheckIcon />}
+            />
+          ) : (
+            <Chip
+              label={lead.status}
+              color="primary"
+              variant="outlined"
+            />
+          )}
+        </Box>
+      </DialogTitle>
+      <DialogContent>
+        <Grid container spacing={3}>
+          {/* Basic Information */}
+          <Grid size={{ xs: 12 }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle1" fontWeight="600" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <BusinessIcon /> Basic Information
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 , sm:12}}>
+                {localLead && (
+                  <TextField
+                    label="Name"
+                    fullWidth
+                    size="small"
+                    value={localLead.name}
+                    onChange={(e) =>
+                    setLocalLead(prev => {
+                      if (prev === null) return null;
+                      return {
+                        ...prev,
+                        email: e.target.value
+                      } satisfies LeadData; // ✅ force full type match
+                    })
+                  }
+                    margin="dense"
+                  />
+                )}
+                </Grid>
+                <Grid size={{ xs: 12 , sm:6}}>
+                  {localLead && (
+                    <TextField
+                      label="Company"
+                      fullWidth
+                      size="small"
+                      value={localLead.company || ''}
+                      onChange={(e) =>
+                        setLocalLead(prev => {
+                          if (!prev) return null;
+                          return {
+                            ...prev,
+                            company: e.target.value
+                          } as LeadData;
+                        })
+                      }
+                      margin="dense"
+                    />
+                )}
+                </Grid>
+                <Grid size={{ xs: 12 , sm:6}}>
+                  {localLead && (
+                  <TextField
+                    label="Email"
+                    fullWidth
+                    size="small"
+                    value={localLead.email}
+                    onChange={(e) =>
+                      setLocalLead(prev => {
+                        if (!prev) return null;
+                        return {
+                          ...prev,
+                          email: e.target.value
+                        } as LeadData;
+                      })
+                    }
+                    margin="dense"
+                  />
+                )}
+                </Grid>
+          <Grid size={{ xs: 12 , sm:6}}>
+            {localLead && (
+                <TextField
+                  label="Phone"
+                  fullWidth
+                  size="small"
+                  value={localLead.phone}
+                  onChange={(e) =>
+                    setLocalLead(prev => {
+                      if (!prev) return null;
+                      return {
+                        ...prev,
+                        phone: e.target.value
+                      } as LeadData;
+                    })
+                  }
+                  margin="dense"
+                 />
+               )}
+                </Grid>
+              </Grid>
+            </Box>
+          </Grid>
+          <DialogActions>
+            <Button onClick={onClose}>Cancel</Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                if (!localLead) return;
+                onUpdateLead(localLead.id, {
+                  name: localLead.name,
+                  email: localLead.email,
+                  phone: localLead.phone,
+                  company: localLead.company,
+                });
+              }}
+            >
+              Save
+            </Button>
+          </DialogActions>
+          <Grid size={{ xs: 12 }}>
+            <Divider />
+          </Grid>
+
+          {/* Lead Score & Stage */}
+          <Grid size={{ xs: 12 }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle1" fontWeight="600" sx={{ mb: 2 }}>
+                Lead Quality
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 , sm:6}}>
+                  <Box sx={{ mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Lead Score
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
+                      <Box sx={{ flex: 1 }}>
+                        <LinearProgress
+                          variant="determinate"
+                          value={lead.lead_score}
+                          color={
+                            lead.lead_score > 70 ? 'success' :
+                            lead.lead_score > 40 ? 'warning' : 'primary'
+                          }
+                          sx={{ height: 8, borderRadius: 4 }}
+                        />
+                      </Box>
+                      <Typography variant="h6" sx={{ minWidth: 40 }}>
+                        {lead.lead_score}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+                <Grid size={{ xs: 12 , sm:6}}>
+                  <TextField
+                    fullWidth
+                    label="Pipeline Stage"
+                    value={lead.pipeline_stage}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          </Grid>
+
+          <Grid size={{ xs: 12 }}>
+            <Divider />
+          </Grid>
+
+          {/* Source Information */}
+          <Grid size={{ xs: 12 }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle1" fontWeight="600" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LinkIcon /> Source Information
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 , sm:6}}>
+                  <TextField
+                    fullWidth
+                    label="Lead Type"
+                    value={lead.lead_type}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                        <Grid size={{ xs: 12 , sm:6}}>
+                  <TextField
+                    fullWidth
+                    label="Source"
+                    value={lead.source || 'Not available'}
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+                {lead.page_url && (
+                <Grid size={{ xs: 12 }}>
+                   <TextField
+                      fullWidth
+                      label="Landing Page"
+                      value={lead.page_url}
+                      InputProps={{ readOnly: true }}
+                    />
+                  </Grid>
+                )}
+              </Grid>
+            </Box>
+          </Grid>
+
+          <Grid size={{ xs: 12 }}>
+            <Divider />
+          </Grid>
+
+          {/* Timeline */}
+      <Grid size={{ xs: 12 }}>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle1" fontWeight="600" sx={{ mb: 2 }}>
+            Timeline
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              p: 2,
+              bgcolor: alpha(theme.palette.background.default, 0.5),
+              borderRadius: 1
+            }}
+          >
+            {/* Lead Created */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                bgcolor: 'primary.main'
+              }} />
+              <Box>
+                <Typography variant="body2" fontWeight="500">
+                  Lead Created
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {formattedDate(lead.created_at)}
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Stage Changes */}
+            {Array.isArray(lead.stage_changes) && lead.stage_changes.length > 0 ? (
+              <StageChangeLog stageChanges={lead.stage_changes} />
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No stage changes logged yet.
+              </Typography>
+            )}
+
+            {/* Converted to Customer */}
+            {lead.converted_to_customer_id && lead.converted_at && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  bgcolor: 'success.main'
+                }} />
+                <Box>
+                  <Typography variant="body2" fontWeight="500">
+                    Converted to Customer
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formattedDate(lead.converted_at)}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+          </Box>
+        </Box>
+      </Grid>
+
+          {/* Interactions History */}
+          {Array.isArray(interactions) && interactions.length > 0 && (
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1" fontWeight="600" sx={{ mb: 2 }}>
+                      Interactions History
+                    </Typography>
+                    <Box sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 2,
+                      p: 2,
+                      bgcolor: alpha(theme.palette.background.default, 0.5),
+                      borderRadius: 1
+                    }}>
+                      {interactions.map(i => (
+                        <Box key={i.id} sx={{ mb: 2 }}>
+                          <Typography variant="body2" fontWeight="500">
+                            {i.interaction_type.toUpperCase()} — {new Date(i.created_at).toLocaleString()}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {`— by ${i.creator_name || i.creator_email || 'Unknown'}`}
+                          </Typography>
+                          {i.description && (
+                              <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                {i.description}
+                              </Typography>
+                            )}
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                </Grid>
+              )}
+
+              {Array.isArray(interactions) && interactions.length === 0 && (
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1" fontWeight="600" sx={{ mb: 2 }}>
+                      Interactions History
+                    </Typography>
+                    <Box sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 2,
+                      p: 2,
+                      bgcolor: alpha(theme.palette.background.default, 0.5),
+                      borderRadius: 1
+                    }}>
+                <Typography variant="body2" color="text.secondary">
+                  No interactions logged yet.
+                </Typography>
+              </Box>
+              </Box>
+            </Grid>
+              )}
+
+
+          {/* Stage Change Log */}
+          {Array.isArray(lead.stage_changes) && lead.stage_changes?.length > 0 && (
+            <Grid size={{ xs: 12 }}>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle1" fontWeight="600" sx={{ mb: 2 }}>
+                  Stage Change Log
+                </Typography>
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                  p: 2,
+                  bgcolor: alpha(theme.palette.background.default, 0.5),
+                  borderRadius: 1
+                }}>
+                  {lead.stage_changes.map((change, idx) => (
+                    <Box key={idx}>
+                      <Typography variant="body2" fontWeight="500">
+                        {change.from} → {change.to}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(change.changed_at).toLocaleString()}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            </Grid>
+          )}
+          <Tabs value={tab} onChange={(_, val) => setTab(val)}>
+            <Tab label="Details" />
+            <Tab label="Profiler" />
+          </Tabs>
+
+          {tab === 1 && <ProfilerPanel leadId={lead.id} />}
+
+
+        </Grid>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>
+          Close
+        </Button>
+        {!lead.converted_to_customer_id && onConvert && (
+          <Button
+            variant="contained"
+            color="success"
+            onClick={onConvert}
+          >
+            Convert to Customer
+          </Button>
+        )}
+      </DialogActions>
+    </Dialog>
+  );
+};
