@@ -303,25 +303,25 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
   };
 
   const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
+    if (value >= 10_000_000) {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD',
+        currency: 'INR',
         minimumFractionDigits: 0,
         maximumFractionDigits: 1
-      }).format(value / 1000000) + 'M';
+      }).format(value / 10_000_000) + 'Cr';
     }
-    if (value >= 1000) {
+    if (value >= 100_000) {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD',
+        currency: 'INR',
         minimumFractionDigits: 0,
         maximumFractionDigits: 1
-      }).format(value / 1000) + 'K';
+      }).format(value / 100_000) + 'Lac';
     }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(value);

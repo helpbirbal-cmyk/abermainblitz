@@ -52,9 +52,23 @@ interface KnobProps {
   size?: 'small' | 'medium';
   label: string;
   color?: MuiColor;
+  formatValue?: (value: number) => string; // Optional custom formatter
 }
 
-function CustomKnob({ value, onChange, min, max, step = 1, label, color = 'primary', size = 'medium' }: KnobProps) {
+// Helper to format numbers cleanly (100,000 -> $100K, 1,000,000 -> $1M)
+const defaultFormat = (val: number): string => {
+  if (val >= 1_00_000) {
+    const formatted = (val / 1_00_000).toFixed(1).replace(/\.0$/, '');
+    return `₹${formatted} L`;
+  }
+  if (val >= 1_000) {
+    const formatted = (val / 1_000).toFixed(1).replace(/\.0$/, '');
+    return `₹${formatted} K`;
+  }
+  return `${val}`;
+};
+
+function CustomKnob({ value, onChange, min, max, step = 1, label, color = 'primary', size = 'medium', formatValue = defaultFormat  }: KnobProps) {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
 
@@ -94,7 +108,7 @@ function CustomKnob({ value, onChange, min, max, step = 1, label, color = 'prima
             color: isDarkMode ? 'white' : 'text.primary'
           }}
         >
-          {value}
+          {formatValue(value)}
         </Typography>
       </Box>
       <input
