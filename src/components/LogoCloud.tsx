@@ -55,6 +55,8 @@ export default function LogoCloud() {
         marginLeft: 'calc(-50vw + 50%)',
         backgroundColor: isDarkMode ? 'black' : 'white',
         color: isDarkMode ? 'white' : 'black',
+         // backgroundColor: isDarkMode ? '#000000' : '#ffffff',
+         // color: isDarkMode ? '#ffffff' : '#000000',
         overflow: 'hidden'
       }}
     >
@@ -91,12 +93,12 @@ export default function LogoCloud() {
             flexWrap: 'wrap',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: isDarkMode ? 'grey.900' : 'white',
+            backgroundColor: isDarkMode ? 'black' : 'white',
             borderRadius: 2,
             gap: { xs: 4, md: 8 },
             p: 3,
             border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-            boxShadow: 1
+            boxShadow: 0
           }}
         >
           {logos.map((logo, index) => (
