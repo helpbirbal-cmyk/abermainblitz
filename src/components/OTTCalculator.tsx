@@ -78,10 +78,10 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
   const [inputs, setInputs] = useState({
     monthlyViewers: 1000000,
     avgViewTime: 45,
-    avgCpm: 15,
+    avgCpm: 100,
     currentLatency: 4.5,
     targetLatency: 2.0,
-    subscriptionPrice: 9.99,
+    subscriptionPrice: 200,
     subscriberCount: 50000,
     churnRate: 0.05,
     contentProductionCost: 250000,
@@ -370,7 +370,7 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
       min: 1,
       max: 120,
       step: 1,
-      formatValue: (v: number) => `${v} min` // Add this
+      formatValue: (v: number) => `${v} ` // Add this
     },
     {
       label: "Monthly Churn Rate (%)",
@@ -385,21 +385,21 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
 
   const monetizationFields = [
     {
-      label: "Average CPM Rate ($)",
+      label: "Avg CPM Rate (₹)",
       name: "avgCpm",
       value: inputs.avgCpm,
       min: 1,
-      max: 50,
-      step: 0.5,
-      formatValue: (v: number) => `${v} min` // Add this
+      max: 200,
+      step: 1,
+      formatValue: (v: number) => `${v} ` // Add this
     },
     {
-      label: "Subscription Price ($)",
+      label: "Subscription Price (₹)",
       name: "subscriptionPrice",
       value: inputs.subscriptionPrice,
-      min: 4.99,
-      max: 29.99,
-      step: 0.01
+      min: 0,
+      max: 999,
+      step: 10
     }
   ];
 
@@ -411,7 +411,7 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
       min: 1.0,
       max: 20.0,
       step: 0.1,
-      formatValue: (v: number) => `${v} min` // Add this
+      formatValue: (v: number) => `${v}` // Add this
     },
     {
       label: "Target Latency (seconds)",
@@ -431,7 +431,7 @@ export default function OTTCalculator({ onRequestDemo }: OTTCalculatorProps) {
       description: "Combined Financial Impact",
       change: 12, // Change to number
       isPositive: true,
-      icon: "💸"
+      icon: ""
     },
   /**  {
       label: "Payback Period",
