@@ -37,28 +37,28 @@ const formatNumber = (value: number | undefined | null) => {
 };
 
 const formatCurrency = (value: number) => {
-  if (value >= 1000000000) {
+  if (value >= 10000000) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'INR',
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1
-    }).format(value / 1000000000) + 'B';
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value / 10000000) + 'Cr';
   }
-  if (value >= 1000000) {
+  if (value >= 100000) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'INR',
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1
-    }).format(value / 1000000) + 'M';
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value / 100000) + 'Lac';
   }
   if (value >= 1000) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'INR',
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(value / 1000) + 'K';
   }
   return new Intl.NumberFormat('en-US', {

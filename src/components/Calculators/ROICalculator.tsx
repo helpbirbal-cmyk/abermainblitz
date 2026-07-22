@@ -131,7 +131,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
     weeklyTestingHours: 40,
     monthlyTestCycles: 20,
     devicesUsed: 10,
-    testerSalary: 500000,
+    testerSalary: 1800000,
     releaseFrequency: 4,
     industry: 'general',
   });

@@ -8,8 +8,8 @@ import CustomThemeProvider from '../components/ThemeProvider'
 import CRMNavigation from '../components/CRMNavigation'
 
 export const metadata: Metadata = {
-  title: "AberCXO",
-  description: "Trusted Advisory & Executyion Services",
+  title: "AberCXO Trusted Advisory",
+  description: "Advisory & Execution Services",
 };
 
 export const viewport: Viewport = {
