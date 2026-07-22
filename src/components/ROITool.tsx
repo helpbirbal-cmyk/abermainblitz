@@ -20,7 +20,7 @@ import Tooltip from '@mui/material/Tooltip';
 type CalculatorType = 'ott' | 'payment' | 'agenticaitest';
 
 interface ROIToolProps {
-  openModal: (type: 'general' | 'bfsi' | 'ott' | 'payment') => void;
+  openModal: (type:  'bfsi' | 'payment' | 'general'  | 'ott') => void;
 }
 
 export default function ROITool({ openModal }: ROIToolProps) {

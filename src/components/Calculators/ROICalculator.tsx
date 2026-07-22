@@ -147,7 +147,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
     devicesUsed: 10,
     testerSalary: 1800000,
     releaseFrequency: 4,
-    industry: 'general',
+    industry: 'banking',
   });
 
   const {

@@ -2,20 +2,7 @@
 import { IndustryBenchmark } from '../types/ROITypes';
 
 export const INDUSTRY_BENCHMARKS: { [key: string]: IndustryBenchmark } = {
-  general: {
-    name: "General Software",
-    description: "Moderate testing requirements",
-    typicalTesters: [2, 10],
-    typicalSalary: [1200000, 5000000],
-    typicalTestCycles: [8, 500],
-    typicalDevices: [5, 20],
-    typicalReleases: [2, 8],
-    testingComplexity: 3,
-    regulatoryRequirements: "Low",
-    efficiencyMultiplier: 1,
-    deviceCost: 500,
-    coverageBoost: 1
-  },
+
   banking: {
     name: "Banking/Finance (BFSI)",
     description: "Strict compliance requirements",
@@ -57,5 +44,19 @@ export const INDUSTRY_BENCHMARKS: { [key: string]: IndustryBenchmark } = {
     efficiencyMultiplier: 1.1,
     deviceCost: 600,
     coverageBoost: 1.15
+  },
+  general: {
+    name: "General Software",
+    description: "Moderate testing requirements",
+    typicalTesters: [2, 10],
+    typicalSalary: [1200000, 5000000],
+    typicalTestCycles: [8, 500],
+    typicalDevices: [5, 20],
+    typicalReleases: [2, 8],
+    testingComplexity: 3,
+    regulatoryRequirements: "Low",
+    efficiencyMultiplier: 1,
+    deviceCost: 500,
+    coverageBoost: 1
   }
 };
