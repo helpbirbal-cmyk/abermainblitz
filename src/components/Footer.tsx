@@ -2,11 +2,13 @@
 export default function Footer() {
   const footerLinks = {
     solutions: [
-   //   { label: "Banking & Financial Services", href: "#" },
+      { label:""}
+      //   { label: "Banking & Financial Services", href: "#" },
    //   { label: "OTT & Streaming Services", href: "#" },
    //   { label: "Media Companies", href: "#" }
     ],
     resources: [
+      { label:""}
      // { label: "Case Studies", href: "#" },
       // { label: "White Papers", href: "#" },
       // { label: "Webinars", href: "#" },
