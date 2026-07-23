@@ -43,7 +43,7 @@ export default function CostCalculators({ openModal }: CostCalculatorsProps) {
                 maxWidth: '100%',
                 mx: 'auto'
             }}
-            ">
+            >
         <CalculatorIntro
           calculatorType={calculatorType}
           setCalculatorType={setCalculatorType}
