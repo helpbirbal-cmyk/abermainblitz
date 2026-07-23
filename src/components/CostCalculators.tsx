@@ -30,11 +30,10 @@ export default function CostCalculators({ openModal }: CostCalculatorsProps) {
           component="section"
           sx={{
               py: 8,
-             // backgroundColor: isDarkMode ? 'black' : 'white',
+              backgroundColor: isDarkMode ? 'black' : 'white',
               width: '100vw',
               marginLeft: 'calc(-50vw + 50%)',
               overflow: 'hidden'
-              backgroundColor: '#000000', // 👈 THIS fills the top padding gap!
           }}
         >
         <Box
