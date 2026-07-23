@@ -81,7 +81,7 @@ interface BackgroundPathsProps {
 }
 
 export default function BackgroundPaths({
-  title = "MAKE APPS FLAWLESS ZERO DEFECTS",
+  title = "DIGITAL EXPERIENCE FLAWLESS ZERO DEFECT",
   openAssessmentModal
 }: BackgroundPathsProps) {
   const [isMobile, setIsMobile] = useState(false)
@@ -94,11 +94,13 @@ export default function BackgroundPaths({
 
   // Define rotating titles
   const rotatingTitles = [
-    ["LAUNCH APPS,", "ZERO DEFECT"],
-    ["SHIP FASTER,", "NO BUGS"],
-    ["AI AUTOMATED", "QA TESTS"],
-    ["CATCH DEFECTS,", "BEFORE USERS"],
-    ["AI-POWERED", "TESTING"],
+      ["MAKE FLAWLESS,", "A STANDARD"],
+      ["ZERO DEFECT", "LAUNCHES"],
+      ["AI-ENABLED", "TESTING"],
+      ["SHIP FASTER,", "NO BUGS"],
+      ["AI AUTOMATED", "DIGITAL TESTING"],
+      ["CATCH DEFECTS,", "BEFORE USERS"],
+      ["ZERO DEFECTS", "INFINITE PEACE"],
   ]
 
   useEffect(() => {
@@ -299,7 +301,7 @@ export default function BackgroundPaths({
                 px: 1
               }}
             >
-              Uncover App Issues, Before  Users See Them
+              Uncover Digital Experience Issues, Before  Users Churn
             </Typography>
 
             {/* Description */}
@@ -314,7 +316,7 @@ export default function BackgroundPaths({
                 px: 1
               }}
             >
-              AI-powered automated testing on real devices that catches defects early & delivers root cause insights, before you publish
+              AI enabled testing on Real Devices on Real Network, Catch Defects Early & get Realtime Insights
             </Typography>
 
             {/* Divider */}
