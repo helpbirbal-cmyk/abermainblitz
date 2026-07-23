@@ -30,7 +30,7 @@ export default function CTASection({
         p: { xs: 6, md: 10, lg: 15 }, // Responsive padding: 48px, 80px, 120px
         //backgroundColor: isDarkMode ? 'grey.900' : 'white',
         //backgroundColor: 'primary.main',
-        backgroundColor: '#1f2937',
+        backgroundColor: '#000000',
         //color: isDarkMode ? 'white' : 'black',
         color: 'white',
         border: '1px solid',
