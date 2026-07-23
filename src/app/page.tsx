@@ -37,7 +37,7 @@ export default function HomePage() {
       <IndustrySolutions />
       <TechnologySection />
       <CTASection
-        title="ZERO DEFECT DIGITALEXPERIENCE"
+        title="ZERO DEFECT DIGITAL EXPERIENCE"
         description="Do More, Cut 40% Costs & Scale Profitably"
         openModal={openModal} />
         <Footer />

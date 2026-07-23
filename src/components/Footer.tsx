@@ -2,15 +2,15 @@
 export default function Footer() {
   const footerLinks = {
     solutions: [
-      { label: "Banking & Financial Services", href: "#" },
-      { label: "OTT & Streaming Services", href: "#" },
-      { label: "Media Companies", href: "#" }
+   //   { label: "Banking & Financial Services", href: "#" },
+   //   { label: "OTT & Streaming Services", href: "#" },
+   //   { label: "Media Companies", href: "#" }
     ],
     resources: [
-      { label: "Case Studies", href: "#" },
-      { label: "White Papers", href: "#" },
-      { label: "Webinars", href: "#" },
-      { label: "Blog", href: "#" }
+     // { label: "Case Studies", href: "#" },
+      // { label: "White Papers", href: "#" },
+      // { label: "Webinars", href: "#" },
+      // { label: "Blog", href: "#" }
     ]
   }
 
@@ -20,10 +20,10 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           <div>
             <h3 className="text-xl font-bold mb-4">AberCXO</h3>
-            <p className="text-gray-400">MozarkAI for Online Apps</p>
+            <p className="text-gray-400">Trusted Advisory & Execution</p>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Industry Solutions</h4>
+            <h4 className="font-semibold mb-4"> Solutions</h4>
             <ul className="space-y-2">
               {footerLinks.solutions.map((link, index) => (
                 <li key={index}>
@@ -51,13 +51,13 @@ export default function Footer() {
             <ul className="space-y-2 text-gray-400">
               <li>aberdeenassociates@aol.com</li>
               <li>+1 (555) 123-4567</li>
-              <li>India | USA | Middle East | Singapore</li>
+              <li>India | Middle East | Africa </li>
             </ul>
           </div>
         </div>
         <hr className="border-gray-700 my-8" />
         <div className="text-center text-gray-400">
-          <p>© 2025 Aberdeen. All rights reserved. | MozarkAI </p>
+          <p>© 2025 AberCXO. All rights reserved. | MozarkAI </p>
         </div>
       </div>
     </footer>
