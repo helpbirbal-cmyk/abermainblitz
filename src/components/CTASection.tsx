@@ -98,7 +98,7 @@ export default function CTASection({
             variant="contained"
             size="large"
           >
-            Book Demo
+            Get Proposal
           </Button>
         </Box>
       </Container>

@@ -148,7 +148,7 @@ export default function Navigation({ openModal }: NavigationProps) {
               }
             }}
           >
-            Book Demo
+            Get Proposal
           </Button>
           <Button
               onClick={() => router.push('/analytics')}
@@ -167,7 +167,7 @@ export default function Navigation({ openModal }: NavigationProps) {
                 }
               }}
              >
-              Admin
+              Adm
           </Button>
         </Box>
 
@@ -250,14 +250,14 @@ export default function Navigation({ openModal }: NavigationProps) {
                   }
                 }}
               >
-                Book Demo
+                Get Proposal
               </Button>
               <Button
                   onClick={() => router.push('/analytics')}
                   variant="outlined"
                   sx={{ mt: 2 }}
                  >
-                  CRM
+                  Adm
               </Button>
             </ListItem>
           </List>

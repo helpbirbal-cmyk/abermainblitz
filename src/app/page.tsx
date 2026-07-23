@@ -37,8 +37,8 @@ export default function HomePage() {
       <IndustrySolutions />
       <TechnologySection />
       <CTASection
-        title="ZERO DEFECT DIGITAL EXPERIENCE"
-        description="Do More, Cut 40% Costs & Scale Profitably"
+        title=" Start AI Automation "
+        description="Cut Costs &  Grow Faster"
         openModal={openModal} />
         <Footer />
 
