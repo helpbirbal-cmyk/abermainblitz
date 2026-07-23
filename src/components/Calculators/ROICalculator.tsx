@@ -294,12 +294,14 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
       >
 
 
-    <Grid container spacing={2} justifyContent="center" alignItems="stretch"> {/* Added alignItems stretch */}
+    <Grid container spacing={2} justifyContent="center" alignItems="stretch" > {/* Added alignItems stretch */}
     {/* Column 1: Inputs */}
 <Grid size={{ xs: 12, md: 4 }}>
-  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 , backgroundColor: isDarkMode ? 'grey.900' : 'grey.50'}}>
     {/* Industry Selection */}
-    <Card sx={{ backgroundColor: isDarkMode ? 'grey.900' : 'grey.50' }}>
+    <Card sx={{
+          // backgroundColor: isDarkMode ? 'grey.900' : 'grey.50'
+          }}>
       <CardContent sx={{ p: 2 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
           Industry Settings
@@ -322,7 +324,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
 
     {/* Resource Metrics - Responsive */}
     <Card sx={{
-      backgroundColor: isDarkMode ? 'grey.800' : 'grey.50',
+     // backgroundColor: isDarkMode ? 'grey.800' : 'grey.50',
       minHeight: { xs: 'auto', md: 200 }
     }}>
       <CardContent sx={{ p: 2 }}>
@@ -381,7 +383,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
 
     {/* Testing Metrics - Responsive */}
     <Card sx={{
-      backgroundColor: isDarkMode ? 'grey.800' : 'grey.50',
+     // backgroundColor: isDarkMode ? 'grey.900' : 'grey.50',
       minHeight: { xs: 'auto', md: 180 }
     }}>
       <CardContent sx={{ p: 4 }}>
@@ -434,9 +436,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
           {/* Combined Performance & Savings Card */}
           <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
-                Performance & Savings Summary
-              </Typography>
+
 
               {/* Performance Metrics Grid */}
               <Box sx={{ mb: 3 }}>
@@ -615,7 +615,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
                   endIcon={<SendIcon />}
                   sx={{ borderRadius: 1, fontWeight: 'bold' }}
                 >
-                  Email  This
+                  Email  Me
                 </Button>
                 <Button
                   variant="outlined"

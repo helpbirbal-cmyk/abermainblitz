@@ -48,9 +48,9 @@ export default function ROITool({ openModal }: ROIToolProps) {
         py: 4,
         width: '100vw',
         marginLeft: 'calc(-50vw + 50%)', // Centers the full-width section
-        backgroundColor: 'background.default',
-        border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-        boxShadow: 2,
+        //backgroundColor: 'background.default',
+        // border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+        // boxShadow: 2,
         overflow: 'hidden' // Prevents horizontal scroll
       }}
     >
@@ -113,7 +113,7 @@ function CalculatorIntro({ calculatorType, onCalculatorChange, isDarkMode }: Cal
       sx={{
         textAlign: 'center',
         mb: 4,
-        backgroundColor: isDarkMode ? 'grey.900' : 'white',
+        backgroundColor: isDarkMode ? 'black' : 'white',
         borderRadius: 2,
         p: 3,
         boxShadow: 1,
@@ -206,7 +206,7 @@ function CalculatorIntro({ calculatorType, onCalculatorChange, isDarkMode }: Cal
             <ToggleButton value="agenticaitest" aria-label="qa testing calculator">
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="button" sx={{ fontWeight: 600 , fontSize: { xs: '0.5rem', sm: '1rem', md: '1rem' }}}>
-                  QA
+                  AI Testing
                 </Typography>
               </Box>
             </ToggleButton>

@@ -31,11 +31,11 @@ export default function HomePage() {
   return (
     <>
       <Navigation openModal={openModal} />
-      <BackgroundPaths openAssessmentModal={() => setIsModalOpen(true)} />
-      <LogoCloud />
+        <BackgroundPaths openAssessmentModal={() => setIsModalOpen(true)} />
+        <ROITool openModal={(type) => setIsModalOpen(true)} />
+        <LogoCloud />
       <IndustrySolutions />
       <TechnologySection />
-      <ROITool openModal={(type) => setIsModalOpen(true)} />
       <CTASection
         title="ZERO DEFECT YOUR APPS NOW"
         description="Get the AI Leverage to Do More, Cut Costs & Scale Profitably"

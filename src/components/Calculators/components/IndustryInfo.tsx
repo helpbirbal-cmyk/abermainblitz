@@ -20,7 +20,7 @@ export const IndustryInfo: React.FC<IndustryInfoProps> = ({ benchmark }) => {
       sx={{
         mt: 2,
         p: 2,
-        backgroundColor: isDarkMode ? 'grey.800' : 'grey.50',
+        //backgroundColor: isDarkMode ? 'grey.800' : 'grey.50',
         borderRadius: 1,
         border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
       }}
