@@ -284,12 +284,14 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Input Form with Clean Layout */}
       <Paper
-        elevation={1}
+        elevation={0}
         sx={{
+          backgroundColor: 'transparent', // 👈 Stops MUI Paper from injecting its default slate grey
+          backgroundImage: 'none',       // 👈 Disables MUI's default dark elevation overl
           borderRadius: 2,
           p: 3,
-          backgroundColor: isDarkMode ? 'black' : 'white',
-          border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+          //backgroundColor: isDarkMode ? 'black' : 'white',
+          //border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
         }}
       >
 

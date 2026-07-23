@@ -48,6 +48,9 @@ export default function ROITool({ openModal }: ROIToolProps) {
         py: 4,
         width: '100vw',
         marginLeft: 'calc(-50vw + 50%)', // Centers the full-width section
+          // ⬇️ Enable theme-aware background here!
+          backgroundColor: (theme) => (theme.palette.mode === 'dark' ? '#000000' : '#ffffff'),
+          color: (theme) => (theme.palette.mode === 'dark' ? '#ffffff' : '#000000'),
         //backgroundColor: 'background.default',
         // border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
         // boxShadow: 2,
