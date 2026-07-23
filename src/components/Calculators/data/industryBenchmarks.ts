@@ -14,7 +14,7 @@ export const INDUSTRY_BENCHMARKS: { [key: string]: IndustryBenchmark } = {
     testingComplexity: 5,
     regulatoryRequirements: "Very High",
     efficiencyMultiplier: 1.3,
-    deviceCost: 800,
+    deviceCost: 20000,
     coverageBoost: 1.3
   },
   fintech: {
@@ -28,7 +28,7 @@ export const INDUSTRY_BENCHMARKS: { [key: string]: IndustryBenchmark } = {
     testingComplexity: 4,
     regulatoryRequirements: "High",
     efficiencyMultiplier: 1.2,
-    deviceCost: 700,
+    deviceCost: 18000,
     coverageBoost: 1.25
   },
   enterprise: {
@@ -42,7 +42,7 @@ export const INDUSTRY_BENCHMARKS: { [key: string]: IndustryBenchmark } = {
     testingComplexity: 4,
     regulatoryRequirements: "Medium compliance",
     efficiencyMultiplier: 1.1,
-    deviceCost: 600,
+    deviceCost: 18000,
     coverageBoost: 1.15
   },
   general: {
@@ -56,7 +56,7 @@ export const INDUSTRY_BENCHMARKS: { [key: string]: IndustryBenchmark } = {
     testingComplexity: 3,
     regulatoryRequirements: "Low",
     efficiencyMultiplier: 1,
-    deviceCost: 500,
+    deviceCost: 15000,
     coverageBoost: 1
   }
 };

@@ -141,7 +141,7 @@ export function ROICalculator({ onRequestDemo }: ROICalculatorProps) {
   const isDarkMode = theme.palette.mode === 'dark';
 
   const [inputs, setInputs] = useState<CalculatorInputs>({
-    manualTesters: 5,
+    manualTesters: 15,
     weeklyTestingHours: 40,
     monthlyTestCycles: 20,
     devicesUsed: 10,
