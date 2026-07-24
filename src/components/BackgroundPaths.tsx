@@ -94,12 +94,13 @@ export default function BackgroundPaths({
 
   // Define rotating titles
   const rotatingTitles = [
-      ["MAKE FLAWLESS,", "A STANDARD"],
-      ["ZERO DEFECT", "LAUNCHES"],
-      ["AI-ENABLED", "TESTING"],
-      ["SHIP FASTER,", "NO BUGS"],
+      //["MAXIMISE ALL GAINS,", "ALWAYS - M.A.G.A"],
+      ["MAKE FLAWLESS", "YOUR STANDARD"],
       ["AI AUTOMATED", "DIGITAL TESTING"],
-      ["CATCH DEFECTS,", "BEFORE USERS"],
+      ["LOWER COSTS", "SCALE MARGINS"],
+      ["ZERO DEFECT", "LAUNCHES"],
+      ["SHIP FASTER", "LEAD THE MARKET"],
+      ["CATCH DEFECTS", "BEFORE USERS"],
       ["ZERO DEFECTS", "INFINITE PEACE"],
   ]
 
