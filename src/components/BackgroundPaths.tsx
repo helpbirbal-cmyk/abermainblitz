@@ -317,7 +317,7 @@ export default function BackgroundPaths({
                 px: 1
               }}
             >
-              AI enabled testing on Real Devices on Real Network, Catch Defects Early & get Realtime Insights
+              AI Automated tests on REAL Devices & REAL Networks, Catch Defects Early with Actionable Insights
             </Typography>
 
             {/* Divider */}
